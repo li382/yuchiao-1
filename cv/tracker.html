@@ -1,135 +1,132 @@
-<title>Yu Chiao Job Search</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,600;1,6..96,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Hardcore Life</title>
 <style>
-/* Layout: fixed left menu (drawer on phones) + one working column per page. Deliberately single-theme: black, like a fashion house lookbook. */
+/* Layout: fixed left menu (drawer on phones) + one working column per page. Single theme: black, white and one cobalt accent, all in Arial. */
 :root {
   color-scheme: dark;
-  --bg: #0a0a0b; --panel: #131315; --panel-2: #1a1a1d; --line: #29292e; --line-2: #3a3a41;
-  --fg: #f3f1ec; --muted: #9a98a0; --dim: #6c6a72;
-  --accent: #8ea6ff; --accent-deep: #2b45c4; --accent-soft: rgba(142,166,255,.12);
-  --ok: #7fd1a1; --warn: #f0b86e; --bad: #ef8f8f;
-  --f-display: "Bodoni Moda", "Didot", Georgia, serif;
-  --f-sans: "DM Sans", -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-  --side: 248px;
+  --bg: #0b0b0d; --panel: #16161a; --panel-2: #202027; --line: #2c2c34; --line-2: #42424d;
+  --fg: #ffffff; --muted: #c4c4ce; --dim: #8f8f9b;
+  --accent: #3d6bff; --accent-hover: #5a82ff; --accent-text: #93b0ff; --accent-soft: rgba(61,107,255,.18);
+  --ok: #5fd39a; --warn: #ffbe5c; --bad: #ff7b7b;
+  --f: Arial, "Helvetica Neue", Helvetica, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --side: 240px;
 }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
 html, body { background: var(--bg); color: var(--fg) }
-body { font-family: var(--f-sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased }
-a { color: var(--accent) }
+body { font-family: var(--f); font-size: 16px; line-height: 1.55 }
+a { color: var(--accent-text) }
 button, input, select, textarea { font: inherit; color: inherit }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px }
 
 /* ---- menu ---- */
-.side { position: fixed; inset: 0 auto 0 0; width: var(--side); background: #050506; border-right: 1px solid var(--line); padding: calc(26px + env(safe-area-inset-top, 0px)) 18px 22px; display: flex; flex-direction: column; gap: 28px; z-index: 20 }
+.side { position: fixed; inset: 0 auto 0 0; width: var(--side); background: #000; border-right: 1px solid var(--line); padding: calc(26px + env(safe-area-inset-top, 0px)) 16px 22px; display: flex; flex-direction: column; gap: 30px; z-index: 20 }
 .brand { display: flex; gap: 12px; align-items: center }
-.brand .mono { width: 40px; height: 40px; border: 1px solid var(--fg); display: grid; place-items: center; font-family: var(--f-display); font-size: 1.05rem; letter-spacing: .04em }
-.brand b { display: block; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; font-size: .8rem }
-.brand small { color: var(--muted); font-size: .78rem; letter-spacing: .04em }
-.menu { display: grid; gap: 2px }
-.menu button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 10px 12px; color: var(--muted); cursor: pointer; font-size: .93rem }
-.menu button svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.5 }
-.menu button .n { margin-left: auto; font-family: var(--f-mono); font-size: .75rem; color: var(--dim) }
+.brand .mark { width: 42px; height: 42px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 1rem; color: #fff }
+.brand b { display: block; font-weight: 700; font-size: 1.05rem; letter-spacing: .02em }
+.brand small { color: var(--muted); font-size: .85rem }
+.menu { display: grid; gap: 4px }
+.menu button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-radius: 10px; padding: 11px 12px; color: var(--muted); cursor: pointer; font-size: 1rem }
+.menu button svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7 }
+.menu button .n { margin-left: auto; font-size: .82rem; color: var(--fg); background: var(--panel-2); border-radius: 999px; padding: 1px 8px }
+.menu button .n:empty { display: none }
 .menu button:hover { color: var(--fg); background: var(--panel) }
-.menu button[aria-current="page"] { color: var(--fg); background: var(--panel-2); box-shadow: inset 2px 0 0 var(--accent) }
-.side-foot { margin-top: auto; color: var(--dim); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase }
+.menu button[aria-current="page"] { color: #fff; background: var(--accent); font-weight: 700 }
+.menu button[aria-current="page"] .n { background: rgba(255,255,255,.22) }
+.side-foot { margin-top: auto; color: var(--dim); font-size: .85rem }
 .mbar { display: none }
 .scrim { display: none }
 @media (max-width: 900px) {
   .side { transform: translateX(-102%); transition: transform .22s ease; box-shadow: 20px 0 60px rgba(0,0,0,.6) }
   body.menu-open .side { transform: none }
-  body.menu-open .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 15 }
-  .mbar { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(10,10,11,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line) }
-  .mbar .t { font-family: var(--f-display); font-size: 1.15rem }
-  .mbar button { background: none; border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: .85rem }
+  body.menu-open .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 15 }
+  .mbar { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #000; border-bottom: 1px solid var(--line) }
+  .mbar .t { font-weight: 700; font-size: 1.1rem }
+  .mbar button { background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-size: .95rem }
 }
 @media (prefers-reduced-motion: reduce) { .side { transition: none } }
 
 /* ---- page ---- */
 main { margin-left: var(--side); min-height: 100vh }
 @media (max-width: 900px) { main { margin-left: 0 } }
-.page { max-width: 1120px; margin: 0 auto; padding-inline: 32px; padding-block: 40px 96px; display: grid; gap: 26px }
-@media (max-width: 600px) { .page { padding-inline: 16px; padding-block: 24px 80px } }
-.eyebrow { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted) }
-h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(2rem, 4.2vw, 2.9rem); line-height: 1.05; margin: 4px 0 0; letter-spacing: -.01em; text-wrap: balance }
-h1 em { font-style: italic; color: var(--accent) }
-.lede { color: var(--muted); margin: 8px 0 0; max-width: 62ch }
-h2 { font-family: var(--f-display); font-weight: 500; font-size: 1.45rem; margin: 0; line-height: 1.2 }
-h3 { font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--muted); margin: 0 }
+.page { max-width: 1120px; margin: 0 auto; padding-inline: 32px; padding-block: 36px 96px; display: grid; gap: 24px }
+@media (max-width: 600px) { .page { padding-inline: 16px; padding-block: 22px 80px } }
+.eyebrow { font-size: .9rem; font-weight: 700; color: var(--accent-text) }
+h1 { font-weight: 700; font-size: clamp(1.8rem, 3.6vw, 2.4rem); line-height: 1.15; margin: 4px 0 0; text-wrap: balance }
+h1 em { font-style: normal; color: var(--accent-text) }
+.lede { color: var(--muted); margin: 8px 0 0; max-width: 64ch; font-size: 1.02rem }
+h2 { font-weight: 700; font-size: 1.35rem; margin: 0; line-height: 1.25 }
+h3 { font-size: 1.02rem; font-weight: 700; color: var(--fg); margin: 0 }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0 }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
 .between { justify-content: space-between }
-.muted { color: var(--muted) } .small { font-size: .85rem } .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.muted { color: var(--muted) } .small { font-size: .9rem } .mono { font-variant-numeric: tabular-nums }
 
-.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: transparent; border-radius: 999px; padding: 8px 16px; font-size: .86rem; font-weight: 500; cursor: pointer; text-decoration: none; color: var(--fg); white-space: nowrap }
-.btn:hover { border-color: var(--fg) }
-.btn.solid { background: var(--fg); color: #0a0a0b; border-color: var(--fg) }
-.btn.solid:hover { background: #ffffff }
-.btn.ghost { border-color: transparent; color: var(--muted) } .btn.ghost:hover { color: var(--fg) }
-.btn.danger { color: var(--bad); border-color: rgba(239,143,143,.4) }
-.btn:disabled { opacity: .45; cursor: progress }
-.btn.sm { padding: 5px 12px; font-size: .8rem }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: var(--panel-2); border-radius: 10px; padding: 9px 16px; font-size: .95rem; font-weight: 700; cursor: pointer; text-decoration: none; color: var(--fg); white-space: nowrap }
+.btn:hover { border-color: var(--muted) }
+.btn.solid { background: var(--accent); color: #fff; border-color: var(--accent) }
+.btn.solid:hover { background: var(--accent-hover); border-color: var(--accent-hover) }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); font-weight: 400 } .btn.ghost:hover { color: var(--fg) }
+.btn.danger { color: var(--bad); border-color: rgba(255,123,123,.5); background: transparent }
+.btn:disabled { opacity: .5; cursor: progress }
+.btn.sm { padding: 6px 12px; font-size: .88rem }
 
-label.f { display: grid; gap: 6px; font-size: .8rem; color: var(--muted); letter-spacing: .02em }
-input, select, textarea { background: var(--bg); border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; font-size: .92rem; width: 100%; min-width: 0; color: var(--fg) }
-select { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 30px }
+label.f { display: grid; gap: 6px; font-size: .92rem; font-weight: 700; color: var(--muted) }
+input, select, textarea { background: #0f0f12; border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; font-size: 1rem; width: 100%; min-width: 0; color: var(--fg); font-weight: 400 }
+select { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px; cursor: pointer }
 select option, select optgroup { background: var(--panel); color: var(--fg) }
 textarea { resize: vertical; line-height: 1.5 }
 
 /* ---- discover ---- */
-.filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px }
-@media (max-width: 1000px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+@media (max-width: 760px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
 .jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
 @media (max-width: 760px) { .jobs { grid-template-columns: 1fr } }
-.job { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; transition: border-color .15s }
+.job { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0 }
 .job:hover { border-color: var(--line-2) }
-.job .co { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted) }
-.job .tt { font-family: var(--f-display); font-size: 1.18rem; line-height: 1.25 }
-.job p { margin: 0; color: #cfcdd4; font-size: .88rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.job .co { font-size: .92rem; font-weight: 700; color: var(--accent-text) }
+.job .tt { font-size: 1.12rem; font-weight: 700; line-height: 1.3 }
+.job p { margin: 0; color: var(--muted); font-size: .95rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
 .tags { display: flex; flex-wrap: wrap; gap: 6px }
-.tag { font-size: .72rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: #d8d6dd; white-space: nowrap }
-.tag.hi { border-color: transparent; background: var(--accent-soft); color: var(--accent) }
-.job .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 2px }
-.job .fit { margin-left: auto; font-family: var(--f-mono); font-size: .78rem; color: var(--accent) }
+.tag { font-size: .82rem; padding: 3px 10px; border-radius: 999px; background: var(--panel-2); color: var(--fg); white-space: nowrap }
+.tag.hi { background: var(--accent-soft); color: var(--accent-text); font-weight: 700 }
+.job .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px }
+.job .fit { margin-left: auto; font-size: .9rem; font-weight: 700; color: var(--ok) }
 .empty { border: 1px dashed var(--line-2); border-radius: 14px; padding: 28px; text-align: center; color: var(--muted) }
 
 /* ---- tailor ---- */
-textarea#jd { min-height: 260px; font-size: .88rem }
+textarea#jd { min-height: 260px; font-size: .95rem }
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
-.steps li { display: flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--muted) }
-.steps .dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none }
-.steps li.run { color: var(--fg) } .steps li.run .dot { border-color: var(--accent); background: var(--accent-soft) }
-.steps li.done { color: var(--fg) } .steps li.done .dot { background: var(--accent); border-color: var(--accent) }
+.steps li { display: flex; gap: 10px; align-items: center; font-size: .95rem; color: var(--muted) }
+.steps .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--line-2); flex: none }
+.steps li.run, .steps li.done { color: var(--fg) } .steps li.run .dot { border-color: var(--accent-text); background: var(--accent-soft) }
+.steps li.done .dot { background: var(--ok); border-color: var(--ok) }
 .steps li.fail .dot { background: var(--bad); border-color: var(--bad) }
-.steps .meta { font-family: var(--f-mono); font-size: .75rem; color: var(--dim) }
+.steps .meta { font-size: .85rem; color: var(--dim) }
 @media (prefers-reduced-motion: no-preference) { .steps li.run .dot { animation: pulse 1.1s infinite } @keyframes pulse { 50% { opacity: .3 } } }
-.err { color: var(--bad); font-size: .88rem; margin: 0 }
+.err { color: var(--bad); font-size: .95rem; margin: 0 }
 
 /* ---- tracker ---- */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; display: grid; gap: 4px; cursor: pointer; text-align: left }
-.stat[aria-pressed="true"] { border-color: var(--fg) }
-.stat .v { font-family: var(--f-display); font-size: 2rem; line-height: 1 }
-.stat .k { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px }
-.stat.total { background: var(--fg); color: #0a0a0b; border-color: var(--fg) } .stat.total .k { color: #3a3a40 }
-.sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 6px; cursor: pointer; text-align: left }
+.stat[aria-pressed="true"] { border-color: var(--accent-text); box-shadow: inset 0 0 0 1px var(--accent-text) }
+.stat .v { font-size: 1.9rem; font-weight: 700; line-height: 1 }
+.stat .k { font-size: .88rem; color: var(--muted); display: flex; align-items: center; gap: 6px }
+.stat.total { background: var(--accent); border-color: var(--accent) } .stat.total .k { color: #fff }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none }
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--panel) }
-table.sheet { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 940px; font-size: .86rem }
-.sheet th:first-child, .sheet td:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); box-shadow: 1px 0 0 var(--line); min-width: 190px }
+table.sheet { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 960px; font-size: .93rem }
+.sheet th { text-align: left; font-size: .85rem; color: var(--muted); font-weight: 700; padding: 12px; border-bottom: 1px solid var(--line); background: var(--panel-2) }
+.sheet td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; background: var(--panel) }
+.sheet th:first-child, .sheet td:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--line); min-width: 190px }
 .sheet td.nw { white-space: nowrap }
-.sheet th { text-align: left; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 12px; border-bottom: 1px solid var(--line); background: var(--panel) }
-.sheet td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: middle }
 .sheet tbody tr:last-child td { border-bottom: 0 }
 .sheet tbody tr:hover td { background: var(--panel-2) }
-.sheet .co { font-weight: 600 } .sheet .ro { color: var(--muted); font-size: .8rem }
-.sheet select, .sheet input { padding: 6px 10px; font-size: .82rem; border-radius: 8px }
-.sheet select { padding-right: 26px; min-width: 124px }
-.sheet input[type=date] { width: 138px }
-.sheet input.note { min-width: 180px }
-.pill { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line-2); white-space: nowrap }
+.sheet .co { font-weight: 700 } .sheet .ro { color: var(--muted); font-size: .85rem }
+.sheet select, .sheet input { padding: 7px 10px; font-size: .9rem; border-radius: 8px }
+.sheet select { padding-right: 28px; min-width: 130px }
+.sheet input[type=date] { width: 145px }
+.sheet input.note { min-width: 190px }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: .88rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: var(--panel-2); white-space: nowrap }
 
 /* ---- interview ---- */
 .board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
@@ -137,68 +134,75 @@ table.sheet { border-collapse: separate; border-spacing: 0; width: 100%; min-wid
 .gauge { display: flex; align-items: center; gap: 20px }
 .gauge svg { width: 132px; height: 132px; flex: none }
 .riskbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
-.riskbar span { height: 8px; border-radius: 4px; background: var(--line) }
+.riskbar span { height: 10px; border-radius: 5px; background: var(--line) }
 .riskbar span.on.low { background: var(--ok) } .riskbar span.on.medium { background: var(--warn) } .riskbar span.on.high { background: var(--bad) }
-.risklabels { display: grid; grid-template-columns: repeat(3, 1fr); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--dim) }
-.lvl { font-family: var(--f-display); font-size: 1.9rem; text-transform: capitalize; line-height: 1 }
-ul.clean { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
-ul.clean li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: .9rem; align-items: start }
-ul.clean li .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 600 }
-.ic.s { background: rgba(127,209,161,.14); color: var(--ok) } .ic.g { background: rgba(240,184,110,.14); color: var(--warn) } .ic.r { background: rgba(239,143,143,.14); color: var(--bad) }
-ul.clean li small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px }
+.risklabels { display: grid; grid-template-columns: repeat(3, 1fr); font-size: .85rem; color: var(--dim) }
+.lvl { font-size: 1.8rem; font-weight: 700; text-transform: capitalize; line-height: 1 }
+.lvl.low { color: var(--ok) } .lvl.medium { color: var(--warn) } .lvl.high { color: var(--bad) }
+ul.clean { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px }
+ul.clean li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; font-size: .97rem; align-items: start }
+ul.clean li .ic { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 700 }
+.ic.s { background: rgba(95,211,154,.18); color: var(--ok) } .ic.g { background: rgba(255,190,92,.18); color: var(--warn) } .ic.r { background: rgba(255,123,123,.18); color: var(--bad) }
+ul.clean li small { display: block; color: var(--muted); font-size: .9rem; margin-top: 3px }
 details.fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel) }
-details.fold > summary { cursor: pointer; padding: 14px 18px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 500 }
+details.fold > summary { cursor: pointer; padding: 15px 18px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700 }
 details.fold > summary::-webkit-details-marker { display: none }
-details.fold > summary::after { content: "+"; font-family: var(--f-mono); color: var(--muted); font-size: 1.1rem; margin-left: auto }
+details.fold > summary::after { content: "+"; color: var(--muted); font-size: 1.3rem; margin-left: auto }
 details.fold[open] > summary::after { content: "–" }
-details.fold > .in { padding: 0 18px 18px; display: grid; gap: 12px; font-size: .9rem; min-width: 0 }
-details.fold ul, details.fold ol { margin: 0; padding-left: 20px; display: grid; gap: 4px }
-.jd { white-space: pre-wrap; font-size: .82rem; max-height: 360px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: #cfcdd4 }
-table.kw { border-collapse: collapse; width: 100%; font-size: .84rem } table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: left; padding: 7px 10px 7px 0; vertical-align: top } table.kw th { color: var(--muted); font-weight: 500 }
+details.fold > .in { padding: 0 18px 18px; display: grid; gap: 12px; font-size: .97rem; min-width: 0 }
+details.fold ul, details.fold ol { margin: 0; padding-left: 20px; display: grid; gap: 5px }
+.jd { white-space: pre-wrap; font-size: .9rem; max-height: 360px; overflow: auto; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: var(--muted) }
+table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: left; padding: 8px 10px 8px 0; vertical-align: top } table.kw th { color: var(--muted) }
 
 /* ---- base CV ---- */
-.paper { background: #ffffff; color: #111; border-radius: 6px; padding: 26px 28px; font-family: Calibri, Carlito, "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 3px; position: relative; min-width: 0; box-shadow: 0 30px 80px rgba(0,0,0,.5) }
+.paper { background: #ffffff; color: #111; border-radius: 6px; padding: 26px 28px; font-family: Calibri, Carlito, Arial, sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 3px; position: relative; min-width: 0 }
 .paper .ph { position: absolute; top: 18px; right: 22px; width: 74px; height: 92px; object-fit: cover }
 .paper .nm { font-size: 20px; font-weight: 700; padding-right: 90px }
 .paper .tg { padding-right: 90px }
 .paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
 .paper ul { margin: 0; padding-left: 18px } .paper p { margin: 0 }
-.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 999px; padding: 3px }
-.seg button { background: none; border: 0; border-radius: 999px; padding: 5px 14px; font-size: .82rem; cursor: pointer; color: var(--muted) }
-.seg button[aria-pressed="true"] { background: var(--fg); color: #0a0a0b }
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 10px; padding: 3px; background: #0f0f12 }
+.seg button { background: none; border: 0; border-radius: 8px; padding: 6px 14px; font-size: .92rem; cursor: pointer; color: var(--muted) }
+.seg button[aria-pressed="true"] { background: var(--fg); color: #000; font-weight: 700 }
+.subtabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 12px }
+.subtabs button { background: var(--panel); border: 1px solid var(--line-2); border-radius: 999px; padding: 9px 16px; font-size: .95rem; font-weight: 700; cursor: pointer; color: var(--muted) }
+.subtabs button[aria-selected="true"] { background: var(--fg); color: #000; border-color: var(--fg) }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px }
 .supp { display: grid; gap: 8px }
-.supp .it { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .88rem }
-.supp .it small { color: var(--dim); display: block; font-size: .74rem; margin-top: 2px }
+.supp .it { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: .97rem }
+.supp .it small { color: var(--dim); display: block; font-size: .85rem; margin-top: 3px }
 .photo-wrap { display: flex; gap: 16px; align-items: center }
-.photo-wrap img { width: 64px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line-2) }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #0a0a0b; padding: 10px 18px; border-radius: 999px; font-size: .88rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
+.photo-wrap img { width: 64px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-2) }
+.drop { border: 2px dashed var(--line-2); border-radius: 14px; padding: 22px; text-align: center; display: grid; gap: 10px; justify-items: center }
+.drop.over { border-color: var(--accent-text); background: var(--accent-soft) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #000; font-weight: 700; padding: 11px 18px; border-radius: 12px; font-size: .95rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
 </style>
 
 <aside class="side" id="side" aria-label="Menu">
-  <div class="brand"><span class="mono">YC</span><div><b>Yu Chiao Lin</b><small>Career studio</small></div></div>
+  <div class="brand"><span class="mark">HL</span><div><b>Hardcore Life</b><small>Yu Chiao Lin</small></div></div>
   <nav class="menu" id="menu">
     <button type="button" data-page="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover<span class="n" id="n-discover"></span></button>
     <button type="button" data-page="tailor"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Tailor a CV</button>
     <button type="button" data-page="tracker"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>Tracker<span class="n" id="n-tracker"></span></button>
     <button type="button" data-page="interview"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Interview</button>
-    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Base CV &amp; steps</button>
+    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>My base CV</button>
   </nav>
-  <div class="side-foot">Supply chain · Luxury · Beauty</div>
+  <div class="side-foot">Supply chain career studio</div>
 </aside>
 <div class="scrim" id="scrim"></div>
 
 <main>
-  <div class="mbar"><span class="t">Yu Chiao Lin</span><button type="button" id="menuBtn" aria-controls="side" aria-expanded="false">Menu</button></div>
+  <div class="mbar"><span class="t">Hardcore Life</span><button type="button" id="menuBtn" aria-controls="side" aria-expanded="false">Menu</button></div>
 
   <section class="page" id="p-discover" hidden>
     <header class="row between" style="align-items:end">
-      <div><div class="eyebrow">Recommended for you</div><h1>Discover <em>roles</em></h1><p class="lede" id="discMeta">Real openings found by web search for your profile, worldwide. Refreshed every hour.</p></div>
+      <div><div class="eyebrow">Recommended for you</div><h1>Discover <em>roles</em></h1><p class="lede" id="discMeta">Real openings found by web search for your profile, worldwide: luxury, beauty, food, pharma and tech. Refreshed every hour.</p></div>
       <button class="btn" type="button" id="refreshJobs" hidden>Search now</button>
     </header>
     <div class="filters">
       <label class="f" for="fCountry">Country<select id="fCountry"></select></label>
       <label class="f" for="fLevel">Level<select id="fLevel"></select></label>
+      <label class="f" for="fInd">Industry<select id="fInd"></select></label>
       <label class="f" for="fLang">Languages required<select id="fLang"></select></label>
       <label class="f" for="fStart">Start date<select id="fStart"></select></label>
       <label class="f" for="fSort">Sort by<select id="fSort"><option value="fit">Best fit</option><option value="new">Newest</option></select></label>
@@ -239,24 +243,52 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .84rem } table.kw 
   </section>
 
   <section class="page" id="p-base" hidden>
-    <header><div class="eyebrow">Source of every CV</div><h1>Base CV &amp; <em>steps</em></h1><p class="lede">Everything here feeds each new CV. Open a section only when you want to change it.</p></header>
-    <div class="card">
-      <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><b>CV photo</b><div class="muted small">Shown top right on every CV.</div></div></div>
+    <header><div class="eyebrow">Source of every CV</div><h1>My base CV</h1><p class="lede">Every tailored CV starts from this version. View it, edit it, or replace it with a new CV.</p></header>
+    <nav class="subtabs" id="baseTabs" role="tablist" aria-label="Base CV sections">
+      <button type="button" role="tab" data-t="view">Preview</button>
+      <button type="button" role="tab" data-t="edit">Edit</button>
+      <button type="button" role="tab" data-t="replace">Replace with a new CV</button>
+      <button type="button" role="tab" data-t="supp">Supplementary info <span id="suppCount"></span></button>
+      <button type="button" role="tab" data-t="steps">Facts &amp; steps</button>
+    </nav>
+
+    <div id="bt-view" class="card">
+      <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>CV photo</h3><div class="muted small">Shown top right on every CV.</div></div></div>
         <div class="row"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div>
-      <div class="row between"><h3>Preview</h3><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
+      <div class="row between"><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div>
+        <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div></div>
       <div id="basePaper"></div>
-      <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
     </div>
-    <details class="fold" open><summary>Supplementary information <span class="muted small" id="suppCount"></span></summary><div class="in">
-      <p class="muted small">Add anything new that is true: a project, a tool, a result, a certificate, a responsibility. Every new CV reads all of it and works in the items that answer that job's requirements or close its gaps. Items that don't help a job are left out of that CV.</p>
+
+    <div id="bt-edit" class="card" hidden>
+      <div class="row between"><h3>Edit your base CV</h3><div class="seg" id="editLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
+      <p class="muted small" style="margin:0">Change any line, then press Save at the bottom. Each new tailored CV starts from what you save here.</p>
+      <div id="edit-en" style="display:grid;gap:14px"></div>
+      <div id="edit-fr" style="display:grid;gap:14px" hidden></div>
+    </div>
+
+    <div id="bt-replace" class="card" hidden>
+      <h3>Replace your base CV with a new one</h3>
+      <p class="muted small" style="margin:0">Upload your new CV as a Word file, or paste its text. Claude turns it into your base CV in English and French without adding anything. You check it before it replaces the current one.</p>
+      <div class="drop" id="drop"><b>Drop your Word CV here</b><span class="muted small">or</span><label class="btn" for="cvFile">Choose a .docx file</label><input type="file" id="cvFile" accept=".docx,.txt" hidden><span class="muted small" id="cvFileName"></span></div>
+      <label class="f" for="cvText">CV text (you can also paste it here)<textarea id="cvText" rows="12" placeholder="Paste the full text of your new CV…"></textarea></label>
+      <div class="row"><button class="btn solid" type="button" id="importBtn">Convert to my base CV</button><span class="muted small" id="importState"></span></div>
+      <div id="importResult"></div>
+      <div id="undoBox"></div>
+    </div>
+
+    <div id="bt-supp" class="card" hidden>
+      <h3>Supplementary information</h3>
+      <p class="muted small" style="margin:0">Add anything new that is true: a project, a tool, a result, a certificate, a responsibility. Every new CV reads all of it and works in the items that answer that job's requirements or close its gaps. Items that don't help a job are left out of that CV.</p>
       <div class="supp" id="suppList"></div>
       <label class="f" for="suppNew">New item<textarea id="suppNew" rows="3" placeholder="Example: Since November 2026 I also build the weekly stock forecast for 3 brands in Excel."></textarea></label>
-      <div class="row"><button class="btn solid sm" type="button" id="suppAdd">Add</button></div>
-    </div></details>
-    <details class="fold"><summary>Base CV · English</summary><div class="in" id="edit-en"></div></details>
-    <details class="fold"><summary>Base CV · Français</summary><div class="in" id="edit-fr"></div></details>
-    <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small">One fact per line. Claude may use these even when they are not on the base CV.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
-    <div id="stepFolds" style="display:grid;gap:12px"></div>
+      <div class="row"><button class="btn solid" type="button" id="suppAdd">Add</button></div>
+    </div>
+
+    <div id="bt-steps" hidden style="display:grid;gap:12px">
+      <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line. Claude may use these even when they are not on the base CV.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
+      <div id="stepFolds" style="display:grid;gap:12px"></div>
+    </div>
   </section>
 </main>
 <div class="toast" id="toast" hidden></div>
@@ -269,7 +301,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .84rem } table.kw 
 const K = window.CVKit;
 const $ = id => document.getElementById(id);
 const PAGES = ['discover', 'tailor', 'tracker', 'interview', 'base'];
-const STATUS = [['prep', 'Not applied', '#8d8a80'], ['sent', 'Applied', '#8ea6ff'], ['screen', 'HR screen', '#6fc3df'], ['int', 'Interview', '#c8a2ff'], ['final', 'Final round', '#f0b86e'], ['offer', 'Offer', '#7fd1a1'], ['no', 'Rejected', '#ef8f8f'], ['drop', 'Withdrawn', '#77757d']];
+const STATUS = [['prep', 'Not applied', '#9a9aa6'], ['sent', 'Applied', '#5a82ff'], ['screen', 'HR screen', '#3ccfe0'], ['int', 'Interview', '#b98bff'], ['final', 'Final round', '#ffbe5c'], ['offer', 'Offer', '#5fd39a'], ['no', 'Rejected', '#ff7b7b'], ['drop', 'Withdrawn', '#6f6f7a']];
 const ST = Object.fromEntries(STATUS.map(([k, l, c]) => [k, { l, c }]));
 const SALARY_TYPE = { estimate: 'est.', posted: 'posted', offer: 'offer' };
 const DEFAULT_STEPS = {
@@ -303,7 +335,7 @@ function profile() {
     steps: { ...DEFAULT_STEPS, ...(p.steps || {}) }, supplements: Array.isArray(p.supplements) ? p.supplements : [], photo: p.photo || '',
   };
 }
-async function saveProfile(patchObj) { await db.doc('profile/main').set({ ...profile(), ...patchObj, updatedAt: new Date().toISOString() }); }
+async function saveProfile(patchObj) { await db.doc('profile/main').set({ ...(saved || {}), ...profile(), ...patchObj, updatedAt: new Date().toISOString() }); }
 let photoData = null, photoFor = null;
 async function images() {
   const p = profile();
@@ -660,7 +692,7 @@ function analysisFolds(r) {
 }
 function gauge(score) {
   const v = Math.max(0, Math.min(100, Math.round(Number(score) || 0))), r = 52, c = 2 * Math.PI * r;
-  return `<svg viewBox="0 0 132 132" role="img" aria-label="Fit score ${v} out of 100"><circle cx="66" cy="66" r="${r}" fill="none" stroke="#29292e" stroke-width="10"/><circle cx="66" cy="66" r="${r}" fill="none" stroke="#8ea6ff" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(c * v / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 66 66)"/><text x="66" y="76" text-anchor="middle" fill="#f3f1ec" font-family="Bodoni Moda, Georgia, serif" font-size="32">${v}</text></svg>`;
+  return `<svg viewBox="0 0 132 132" role="img" aria-label="Fit score ${v} out of 100"><circle cx="66" cy="66" r="${r}" fill="none" stroke="#2c2c34" stroke-width="12"/><circle cx="66" cy="66" r="${r}" fill="none" stroke="#3d6bff" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(c * v / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 66 66)"/><text x="66" y="76" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="700" font-size="30">${v}</text></svg>`;
 }
 function insightBoard(r) {
   const s = r.insight, b = busy[r.id];
@@ -668,7 +700,7 @@ function insightBoard(r) {
   const lv = ['low', 'medium', 'high'].includes(s.risk_level) ? s.risk_level : 'medium', idx = { low: 1, medium: 2, high: 3 }[lv];
   return `<div class="board">
     <div class="card"><h3>Fit score</h3><div class="gauge">${gauge(s.fit_score)}<div><div class="muted small">How well your CV for this job answers its requirements.</div>${r.matchBefore ? `<div class="small" style="margin-top:10px">ATS keyword match<br><span class="mono">${esc(r.matchBefore)}% → ${esc(r.match || '–')}%</span></div>` : ''}</div></div></div>
-    <div class="card"><h3>Risk</h3><div class="lvl">${lv}</div><div class="riskbar">${[1, 2, 3].map(i => `<span class="${i <= idx ? 'on ' + lv : ''}"></span>`).join('')}</div><div class="risklabels"><span>Low</span><span style="text-align:center">Medium</span><span style="text-align:right">High</span></div>
+    <div class="card"><h3>Risk</h3><div class="lvl ${lv}">${lv}</div><div class="riskbar">${[1, 2, 3].map(i => `<span class="${i <= idx ? 'on ' + lv : ''}"></span>`).join('')}</div><div class="risklabels"><span>Low</span><span style="text-align:center">Medium</span><span style="text-align:right">High</span></div>
       <ul class="clean">${(s.risks || []).map(x => `<li><span class="ic r">!</span><span>${esc(x)}</span></li>`).join('')}</ul></div>
     <div class="card"><h3>Strengths</h3><ul class="clean">${(s.strengths || []).map(x => `<li><span class="ic s">✓</span><span>${esc(x)}</span></li>`).join('')}</ul></div>
     <div class="card"><h3>Gaps · and how to answer them</h3><ul class="clean">${(s.gaps || []).map(g => `<li><span class="ic g">◇</span><span>${esc(g.gap || g)}${g.how_to_address ? `<small>${esc(g.how_to_address)}</small>` : ''}</span></li>`).join('')}</ul></div>
@@ -682,12 +714,14 @@ const LANGS = [['en+fr', 'English + French'], ['en+zh', 'English + Chinese'], ['
 const LANG_NAME = { en: 'English', fr: 'French', zh: 'Chinese' };
 let jobs = [], jobsMeta = null, jobsCol = null;
 const F = (() => { try { return JSON.parse(localStorage.getItem('jobFilters2')) || {}; } catch { return {}; } })();
-['country', 'level', 'lang', 'start'].forEach(k => { if (typeof F[k] !== 'string') F[k] = ''; }); F.sort = F.sort || 'fit';
+['country', 'level', 'lang', 'start', 'ind'].forEach(k => { if (typeof F[k] !== 'string') F[k] = ''; }); F.sort = F.sort || 'fit';
 function saveF() { try { localStorage.setItem('jobFilters2', JSON.stringify(F)); } catch {} }
 const langKey = j => [...new Set((j.languages || []).filter(l => LANG_NAME[l]))].sort().join('+');
 const levelOf = j => (LEVELS.some(([k]) => k === j.level) ? j.level : 'na');
 const isMonth = m => /^\d{4}-\d{2}$/.test(m || '');
 function monthLabel(m) { if (!isMonth(m)) return ''; const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
+const INDUSTRIES = [['beauty', 'Beauty & cosmetics', /beaut|cosmet|fragranc|perfum|skin/i], ['pharma', 'Pharma & healthcare', /pharma|health|medic|biotech|life science/i], ['food', 'Food & beverage (FMCG)', /food|beverage|fmcg|drink|spirit|wine|dairy|consumer goods/i], ['luxury', 'Luxury & fashion', /luxur|fashion|leather|watch|jewel|maison|couture/i], ['tech', 'Tech & electronics', /tech|electron|semicon|hardware|software|it\b|device/i], ['retail', 'Retail & e-commerce', /retail|e-?commerce|store/i]];
+const indOf = j => { const t = (j.industry || '') + ' ' + (j.company || ''); const hit = INDUSTRIES.find(([, , re]) => re.test(t)); return hit ? hit[0] : 'other'; };
 const live = () => jobs.filter(j => j.status !== 'dismissed' && j.status !== 'expired');
 function opts(sel, list, cur) { $(sel).innerHTML = list.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join(''); }
 function renderFilters() {
@@ -695,6 +729,7 @@ function renderFilters() {
   const countries = [...new Set(L.map(j => j.country).filter(Boolean))].sort();
   opts('fCountry', [['', `All countries · ${L.length}`], ...countries.map(c => [c, `${c} · ${count(j => j.country === c)}`])], F.country);
   opts('fLevel', [['', 'All levels'], ...LEVELS.map(([k, l]) => [k, `${l} · ${count(j => levelOf(j) === k)}`])], F.level);
+  opts('fInd', [['', 'All industries'], ...INDUSTRIES.map(([k, l]) => [k, `${l} · ${count(j => indOf(j) === k)}`]), ['other', `Other · ${count(j => indOf(j) === 'other')}`]], F.ind);
   opts('fLang', [['', 'Any languages'], ...LANGS.map(([k, l]) => [k, `${l} · ${count(j => langKey(j) === k)}`])], F.lang);
   const months = [...new Set(L.map(j => j.start).filter(isMonth))].sort();
   opts('fStart', [['', 'Any start date'], ['asap', 'As soon as possible'], ...months.map(m => ['m:' + m, `From ${monthLabel(m)}`]), ['none', 'Not stated']], F.start);
@@ -704,6 +739,7 @@ function passes(j) {
   if (j.status === 'dismissed' || j.status === 'expired') return false;
   if (F.country && j.country !== F.country) return false;
   if (F.level && levelOf(j) !== F.level) return false;
+  if (F.ind && indOf(j) !== F.ind) return false;
   if (F.lang && langKey(j) !== F.lang) return false;
   if (F.start === 'asap' && j.start !== 'asap') return false;
   if (F.start === 'none' && (isMonth(j.start) || j.start === 'asap')) return false;
@@ -714,7 +750,7 @@ function jobCard(j) {
   const lv = (LEVELS.find(([k]) => k === levelOf(j)))[1], lk = langKey(j), start = j.start === 'asap' ? 'ASAP' : monthLabel(j.start);
   return `<article class="job">
     <div class="co">${esc(j.company)}</div><div class="tt">${esc(j.title)}</div>
-    <div class="tags"><span class="tag hi">${esc(lv)}</span><span class="tag">${esc(place(j))}</span>${lk ? `<span class="tag">${esc(lk.split('+').map(l => LANG_NAME[l]).join(' + '))}</span>` : ''}${start ? `<span class="tag">Start ${esc(start)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' est.'}</span>` : ''}</div>
+    <div class="tags"><span class="tag hi">${esc(lv)}</span><span class="tag">${esc(place(j))}</span>${lk ? `<span class="tag">${esc(lk.split('+').map(l => LANG_NAME[l]).join(' + '))}</span>` : ''}${start ? `<span class="tag">Start ${esc(start)}</span>` : ''}${j.industry ? `<span class="tag">${esc(j.industry)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' est.'}</span>` : ''}</div>
     ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}
     <div class="foot"><a class="btn solid sm" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">View job ↗</a><button class="btn sm" type="button" data-act="job-tailor" data-id="${esc(j.id)}">Tailor CV</button><button class="btn ghost sm" type="button" data-act="job-dismiss" data-id="${esc(j.id)}">Hide</button>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
   </article>`;
@@ -725,10 +761,10 @@ function renderDiscover() {
   const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || (b.fit || 0) - (a.fit || 0) : (b.fit || 0) - (a.fit || 0));
   $('jobCount').textContent = `${list.length} of ${live().length} roles`;
   $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="empty" style="grid-column:1/-1">${jobs.length ? 'No roles match these filters.' : 'No recommendations yet. The hourly search adds them here.'}</div>`;
-  if (jobsMeta?.lastRun) $('discMeta').textContent = `Real openings found by web search for your profile, worldwide. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
+  if (jobsMeta?.lastRun) $('discMeta').textContent = `Real supply chain openings for your profile, worldwide: luxury, beauty, food, pharma and tech. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
 }
-[['fCountry', 'country'], ['fLevel', 'level'], ['fLang', 'lang'], ['fStart', 'start'], ['fSort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; saveF(); renderDiscover(); }));
-$('fReset').addEventListener('click', () => { Object.assign(F, { country: '', level: '', lang: '', start: '' }); saveF(); renderDiscover(); });
+[['fCountry', 'country'], ['fLevel', 'level'], ['fInd', 'ind'], ['fLang', 'lang'], ['fStart', 'start'], ['fSort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; saveF(); renderDiscover(); }));
+$('fReset').addEventListener('click', () => { Object.assign(F, { country: '', level: '', lang: '', start: '', ind: '' }); saveF(); renderDiscover(); });
 $('refreshJobs').addEventListener('click', async () => {
   const b = $('refreshJobs'); b.disabled = true;
   try { await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: TRIGGER_ID }); toast('Searching now. New roles appear in about 15–30 minutes.'); b.textContent = 'Search started'; }
@@ -840,23 +876,101 @@ function readEditor(lang) {
   });
   return lang === 'fr' ? K.deepMap(cv, K.frTypo) : cv;
 }
+let baseTab = 'view', editLang = 'en', pendingImport = null, importLang = 'en';
 function renderBase() {
   const p = profile();
+  document.querySelectorAll('#baseTabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === baseTab));
+  ['view', 'edit', 'replace', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
   $('photoThumb').src = photoSrc();
   document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
+  document.querySelectorAll('#editLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === editLang));
+  $('edit-en').hidden = editLang !== 'en'; $('edit-fr').hidden = editLang !== 'fr';
   $('basePaper').innerHTML = cvPaper(p['cv_' + baseLang], baseLang, photoSrc());
-  $('suppCount').textContent = p.supplements.length ? `· ${p.supplements.length} item${p.supplements.length > 1 ? 's' : ''}` : '';
+  $('suppCount').textContent = p.supplements.length ? `(${p.supplements.length})` : '';
   $('suppList').innerHTML = p.supplements.length ? p.supplements.map(s => `<div class="it"><div>${esc(s.text)}<small>Added ${esc(shortDate(s.addedAt))}</small></div><button class="btn ghost sm" type="button" data-act="supp-del" data-id="${esc(s.id)}">Remove</button></div>`).join('') : '<div class="muted small">Nothing added yet.</div>';
+  $('importResult').innerHTML = pendingImport ? `<div style="display:grid;gap:12px"><div class="row between"><h3>Check your new base CV</h3><div class="seg" id="importLang"><button type="button" data-l="en" aria-pressed="${importLang === 'en'}">English</button><button type="button" data-l="fr" aria-pressed="${importLang === 'fr'}">Français</button></div></div>${cvPaper(pendingImport['cv_' + importLang], importLang, photoSrc())}<div class="row"><button class="btn solid" type="button" data-act="import-save">Save as my base CV</button><button class="btn ghost" type="button" data-act="import-cancel">Cancel</button></div></div>` : '';
+  $('undoBox').innerHTML = saved?.prevBase ? `<div class="row"><span class="muted small">Replaced on ${esc(shortDate(saved.prevBase.savedAt))}.</span><button class="btn ghost sm" type="button" data-act="import-undo">Bring back the previous base CV</button></div>` : '';
   // Rebuild the editors only when the stored profile changed, so typing is never interrupted.
   const sig = JSON.stringify([p.cv_en, p.cv_fr, p.facts, p.steps]);
   if (sig !== baseSig) {
     baseSig = sig;
     $('edit-en').innerHTML = cvEditor('en'); $('edit-fr').innerHTML = cvEditor('fr');
     $('factsBox').value = p.facts.join('\n');
-    $('stepFolds').innerHTML = Object.keys(STEP_NAMES).map(k => `<details class="fold"><summary>${STEP_NAMES[k]}${p.steps[k] !== DEFAULT_STEPS[k] ? ' <span class="muted small">· edited</span>' : ''}</summary><div class="in"><p class="muted small">Claude follows this text when it runs this step. The page fixes the format of the answer, so you only change the instructions.</p><textarea id="step-${k}" rows="12" aria-label="${STEP_NAMES[k]}">${esc(p.steps[k])}</textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-step" data-k="${k}">Save</button><button class="btn ghost sm" type="button" data-act="reset-step" data-k="${k}">Restore original</button></div></div></details>`).join('')
+    $('stepFolds').innerHTML = Object.keys(STEP_NAMES).map(k => `<details class="fold"><summary>${STEP_NAMES[k]}${p.steps[k] !== DEFAULT_STEPS[k] ? ' <span class="muted small">(edited)</span>' : ''}</summary><div class="in"><p class="muted small" style="margin:0">Claude follows this text when it runs this step. The page fixes the format of the answer, so you only change the instructions.</p><textarea id="step-${k}" rows="12" aria-label="${STEP_NAMES[k]}">${esc(p.steps[k])}</textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-step" data-k="${k}">Save</button><button class="btn ghost sm" type="button" data-act="reset-step" data-k="${k}">Restore original</button></div></div></details>`).join('')
       + `<details class="fold"><summary>CV rules</summary><div class="in"><ol>${li(K.RULES)}</ol></div></details>`;
   }
 }
+$('baseTabs').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (b) { baseTab = b.dataset.t; renderBase(); } });
+$('editLang').addEventListener('click', e => { const b = e.target.closest('button[data-l]'); if (b) { editLang = b.dataset.l; renderBase(); } });
+$('importResult').addEventListener('click', e => { const b = e.target.closest('#importLang button[data-l]'); if (b) { importLang = b.dataset.l; renderBase(); } });
+
+/* ---------- replace the base CV from a Word file or pasted text ---------- */
+async function docxText(file) {
+  const buf = new Uint8Array(await file.arrayBuffer()), dv = new DataView(buf.buffer), dec = new TextDecoder();
+  let e = buf.length - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('This file is not a Word .docx file.');
+  let ptr = dv.getUint32(e + 16, true); const n = dv.getUint16(e + 10, true); let xml = null;
+  for (let i = 0; i < n; i++) {
+    const method = dv.getUint16(ptr + 10, true), csize = dv.getUint32(ptr + 20, true), nl = dv.getUint16(ptr + 28, true), el = dv.getUint16(ptr + 30, true), cl = dv.getUint16(ptr + 32, true), off = dv.getUint32(ptr + 42, true);
+    if (dec.decode(buf.subarray(ptr + 46, ptr + 46 + nl)) === 'word/document.xml') {
+      const start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true), data = buf.subarray(start, start + csize);
+      xml = method === 0 ? dec.decode(data) : await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+    }
+    ptr += 46 + nl + el + cl;
+  }
+  if (!xml) throw new Error('Could not find the text inside this Word file.');
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  return [...doc.getElementsByTagNameNS('*', 'p')].map(p => {
+    const t = [...p.getElementsByTagNameNS('*', 't')].map(x => x.textContent).join('');
+    return t && p.getElementsByTagNameNS('*', 'numPr').length ? '• ' + t : t;
+  }).filter(t => t.trim()).join('\n');
+}
+async function loadCvFile(f) {
+  if (!f) return;
+  try { $('cvText').value = /\.docx$/i.test(f.name) ? await docxText(f) : await f.text(); $('cvFileName').textContent = f.name + ' loaded. Check the text below, then convert.'; }
+  catch (err) { toast(err.message || String(err)); }
+}
+$('cvFile').addEventListener('change', e => { loadCvFile(e.target.files?.[0]); e.target.value = ''; });
+['dragover', 'dragenter'].forEach(t => $('drop').addEventListener(t, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => $('drop').addEventListener(t, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('drop').addEventListener('drop', e => loadCvFile(e.dataTransfer?.files?.[0]));
+function normCv(c) {
+  const s = v => typeof v === 'string' ? v.trim() : '', arr = v => Array.isArray(v) ? v.map(s).filter(Boolean) : [];
+  c = c || {};
+  return {
+    target: s(c.target), summary: s(c.summary), skills: { hard: s(c.skills?.hard), soft: s(c.skills?.soft), tools: s(c.skills?.tools) },
+    experience: (Array.isArray(c.experience) ? c.experience : []).map(e => { const o = { title: s(e?.title), company_line: s(e?.company_line), bullets: arr(e?.bullets) }; if (s(e?.description)) o.description = s(e.description); return o; }).filter(e => e.title || e.bullets.length),
+    education: (Array.isArray(c.education) ? c.education : []).map(e => ({ title: s(e?.title), school_line: s(e?.school_line), details: s(e?.details) })).filter(e => e.title),
+    languages: arr(c.languages),
+  };
+}
+function promptImport(text) {
+  return `Convert this CV into structured JSON, in English and in French. Keep the candidate's own content: do not add, remove or invent any experience, skill, number or result. Only reorganise it into the fields below and translate.
+
+Fields: "target" = the target role line if there is one, otherwise the most recent job title; "summary"; "skills" grouped into exactly three strings "hard" (semicolon-separated), "soft" (semicolon-separated) and "tools" (software only, comma-separated); "experience" in the CV's order, each with "title", "company_line" written as "Company, City, Country | Month YYYY to Month YYYY (N months)" using only what the CV states, optional "description" (a line describing the company, if the CV has one) and "bullets"; "education" with "title" (programme, with ranking in brackets if the CV gives one), "school_line" ("School, City, Country | Month YYYY to Month YYYY") and "details"; "languages" as lines like "English: Fluent".
+
+English version: British English, present tense for current roles, past tense for finished roles. French version: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral job titles, a space before ":" ";" "%", keep supply chain terms used in France (S&OP, KPI, OTD, OTIF, lead time, Incoterms) and all brand and tool names.
+
+Return ONLY JSON: {"cv_en": ${CV_SHAPE}, "cv_fr": ${CV_SHAPE}}
+
+CV TEXT
+"""
+${text}
+"""`;
+}
+$('importBtn').addEventListener('click', async () => {
+  const text = $('cvText').value.trim();
+  if (text.length < 300) { toast('Add the full CV text first (it looks too short).'); return; }
+  $('importBtn').disabled = true; $('importState').textContent = 'Converting… about 1 minute';
+  try {
+    const r = await askJSON(promptImport(text), { modelTier: 'complex' }, n => { $('importState').textContent = `Converting… ${n.toLocaleString()} characters`; });
+    const en = normCv(r.cv_en), fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
+    if (!en.experience.length || !en.summary) throw new Error('Claude could not read the CV structure. Check the text and try again.');
+    pendingImport = { cv_en: en, cv_fr: fr.experience.length ? fr : null }; importLang = 'en';
+    $('importState').textContent = 'Done. Check it below.';
+  } catch (err) { $('importState').textContent = ''; toast(err.message || String(err)); }
+  $('importBtn').disabled = false; renderBase();
+});
 $('baseLang').addEventListener('click', e => { const b = e.target.closest('button[data-l]'); if (b) { baseLang = b.dataset.l; renderBase(); } });
 $('photoFile').addEventListener('change', async e => {
   const f = e.target.files?.[0]; if (!f) return;
@@ -902,6 +1016,9 @@ document.addEventListener('click', async e => {
     else if (act === 'reset-facts') { await saveProfile({ facts: K.FACTS }); toast('Original facts restored'); }
     else if (act === 'save-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: $('step-' + k).value.trim() || DEFAULT_STEPS[k] } }); toast(STEP_NAMES[k] + ' saved'); }
     else if (act === 'reset-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: DEFAULT_STEPS[k] } }); toast('Original restored'); }
+    else if (act === 'import-save') { const cur = profile(); await saveProfile({ cv_en: pendingImport.cv_en, cv_fr: pendingImport.cv_fr || cur.cv_fr, prevBase: { cv_en: cur.cv_en, cv_fr: cur.cv_fr, savedAt: new Date().toISOString() } }); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; baseTab = 'view'; toast('Your new base CV is saved'); renderBase(); }
+    else if (act === 'import-cancel') { pendingImport = null; renderBase(); }
+    else if (act === 'import-undo') { const pb = saved.prevBase; await saveProfile({ cv_en: pb.cv_en, cv_fr: pb.cv_fr, prevBase: null }); toast('Previous base CV restored'); }
     else if (act === 'base-dl') { el.disabled = true; await cvFile(profile()['cv_' + baseLang], baseLang, el.dataset.what, `CV_Yu_Chiao_Lin_Base_${baseLang.toUpperCase()}`); el.disabled = false; }
   } catch (err) { toast(err.message || String(err)); el.disabled = false; }
 });
