@@ -45,3 +45,9 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - **Saved tab:** tailored CVs that have not been sent yet.
 - When the base CV or the confirmed facts change, update `BASE_EN`, `BASE_FR` and `FACTS` in `tracker-render.js` and republish the page.
 - Each row records company, role, country, city, industry, contract, salary (and whether it is an estimate, posted in the job ad, or a real offer), status, date applied, match score before and after tailoring, the CV in English and French, the motivation letter, the Step 1–3 analysis and the interview prep.
+
+## Recommended jobs
+- Section at the bottom of the "New application" tab. It reads the artifact database collection `jobs`; the date of the last search is stored in `meta/jobs`.
+- Four filters: country, level (internship, junior, senior, not stated), required languages (EN+FR, EN+ZH, FR, ZH, EN+ZH+FR, ZH+FR, EN) and start-date range. Filters are remembered in the browser.
+- Filled automatically by the routine "Yu Chiao job recommendations" (trigger `trig_01PxYDcde3UJrHVrMazYDgKE`), every Monday and Thursday at 08:47 Paris time. Each run starts a fresh session that web-searches for real openings and adds 8–15 jobs. The page's "Search for new jobs now" button fires the same routine.
+- Rules for each run: only real postings from search results (never invent a job or a link), no duplicates, and estimated salaries are marked as estimates. Closed jobs and jobs whose start date has passed are set to `expired`; jobs marked `dismissed` or `used` are left alone.

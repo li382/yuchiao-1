@@ -90,6 +90,25 @@ table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: lef
 .msg { border: 1px dashed var(--line); border-radius: 10px; padding: 22px; color: var(--muted); text-align: center }
 .err { color: var(--bad); font-size: .88rem }
 .note { font-size: .85rem; color: var(--muted) }
+.recs-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between }
+.filters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) }
+.fgroup { display: grid; gap: 6px; min-width: 0 }
+.fgroup > .flabel { font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted) }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { font: inherit; font-size: .82rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 4px 10px; border-radius: 999px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
+.months { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .85rem }
+.months input[type=month] { width: auto; padding: 5px 8px; font-size: .85rem }
+.job { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0 }
+.job .t { font-weight: 600; font-size: 1rem }
+.job .c { color: var(--muted); font-size: .9rem }
+.job .tags { display: flex; flex-wrap: wrap; gap: 6px }
+.tag { font-size: .74rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); white-space: nowrap }
+.tag.navy { background: var(--navy-soft); color: var(--navy); border-color: transparent }
+.fit { font-family: var(--f-mono); font-size: .8rem; color: var(--navy); font-weight: 500 }
+.job p { margin: 0; font-size: .88rem }
+.job .why { color: var(--fg) }
+.job .verify { font-size: .76rem; color: var(--muted) }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: .9rem; max-width: calc(100% - 32px) }
 </style>
 
@@ -129,6 +148,24 @@ table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: lef
       <p class="err" id="genErr" hidden></p>
     </form>
     <div id="newResult"></div>
+
+    <section class="panel" id="recs" aria-labelledby="recsTitle">
+      <div class="recs-head">
+        <div><h2 id="recsTitle">Recommended jobs</h2><p class="muted small" id="recsMeta">Real openings found by web search for your profile, worldwide. Updated automatically every Monday and Thursday.</p></div>
+        <button class="btn" type="button" id="refreshJobs" hidden>Search for new jobs now</button>
+      </div>
+      <div class="filters">
+        <div class="fgroup"><span class="flabel">1 · Country</span><select id="fCountry" aria-label="Country"></select></div>
+        <div class="fgroup"><span class="flabel">2 · Level</span><div class="chips" id="fLevel"></div></div>
+        <div class="fgroup"><span class="flabel">3 · Languages required</span><div class="chips" id="fLang"></div></div>
+        <div class="fgroup"><span class="flabel">4 · Start date</span>
+          <div class="months"><label class="check" for="fFrom">From <input type="month" id="fFrom"></label><label class="check" for="fTo">to <input type="month" id="fTo"></label></div>
+          <label class="check small" for="fOpen"><input type="checkbox" id="fOpen" checked> Include “ASAP” and “not stated”</label>
+        </div>
+      </div>
+      <div class="row small"><label class="check" for="fSort">Sort <select id="fSort"><option value="fit">Best fit</option><option value="new">Newest</option></select></label><span class="muted" id="recsCount"></span><button class="btn" type="button" id="fReset">Clear filters</button></div>
+      <div class="list" id="jobList"><div class="msg">Loading recommended jobs…</div></div>
+    </section>
   </section>
 
   <section id="tab-applied" hidden><div class="list" id="appliedList"></div></section>
@@ -583,12 +620,105 @@ document.addEventListener('change', async e => {
   try { await patch(el.dataset.id, { status: el.value }); toast('Status updated'); } catch (err) { toast(err.message || String(err)); }
 });
 
+
+/* ---------- recommended jobs ---------- */
+const TRIGGER_ID = 'trig_01PxYDcde3UJrHVrMazYDgKE';
+const LEVELS = [['stage', 'Internship (stage)'], ['junior', 'Junior'], ['senior', 'Senior'], ['na', 'Not stated']];
+const LANGS = [['en+fr', 'English + French'], ['en+zh', 'English + Chinese'], ['fr', 'French'], ['zh', 'Chinese'], ['en+fr+zh', 'English + Chinese + French'], ['fr+zh', 'Chinese + French'], ['en', 'English']];
+const LANG_NAME = { en: 'English', fr: 'French', zh: 'Chinese' };
+let jobs = [], jobsMeta = null, jobsCol = null, mcp = null;
+const F = (() => { try { return JSON.parse(localStorage.getItem('jobFilters')) || {}; } catch { return {}; } })();
+F.level = F.level || []; F.lang = F.lang || []; F.country = F.country || ''; F.from = F.from || ''; F.to = F.to || ''; F.open = F.open !== false; F.sort = F.sort || 'fit';
+function saveF() { try { localStorage.setItem('jobFilters', JSON.stringify(F)); } catch {} }
+const langKey = j => [...new Set((j.languages || []).filter(l => LANG_NAME[l]))].sort().join('+');
+function monthLabel(m) { if (!/^\d{4}-\d{2}$/.test(m || '')) return ''; const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
+
+function chips(el, opts, sel) {
+  el.innerHTML = opts.map(([k, l]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${sel.includes(k)}">${l}</button>`).join('');
+}
+function renderFilters() {
+  const live = jobs.filter(j => j.status !== 'dismissed' && j.status !== 'expired');
+  const counts = {}; live.forEach(j => { if (j.country) counts[j.country] = (counts[j.country] || 0) + 1; });
+  const cs = Object.keys(counts).sort();
+  if (F.country && !cs.includes(F.country)) cs.unshift(F.country);
+  $('fCountry').innerHTML = `<option value="">All countries (${live.length})</option>` + cs.map(c => `<option value="${esc(c)}" ${F.country === c ? 'selected' : ''}>${esc(c)} (${counts[c] || 0})</option>`).join('');
+  chips($('fLevel'), LEVELS, F.level); chips($('fLang'), LANGS, F.lang);
+  $('fFrom').value = F.from; $('fTo').value = F.to; $('fOpen').checked = F.open; $('fSort').value = F.sort;
+}
+function passes(j) {
+  if (j.status === 'dismissed' || j.status === 'expired') return false;
+  if (F.country && j.country !== F.country) return false;
+  if (F.level.length && !F.level.includes(LEVELS.some(([k]) => k === j.level) ? j.level : 'na')) return false;
+  if (F.lang.length && !F.lang.includes(langKey(j))) return false;
+  const m = /^\d{4}-\d{2}$/.test(j.start || '') ? j.start : null;
+  if (!m) return F.open;
+  if (F.from && m < F.from) return false;
+  if (F.to && m > F.to) return false;
+  return true;
+}
+function jobCard(j) {
+  const lv = (LEVELS.find(([k]) => k === j.level) || LEVELS[3])[1];
+  const lk = langKey(j), ln = lk ? lk.split('+').map(l => LANG_NAME[l]).join(' + ') : 'Languages not stated';
+  const start = j.start === 'asap' ? 'Start ASAP' : monthLabel(j.start) ? 'Start ' + monthLabel(j.start) : (j.startText ? 'Start: ' + j.startText : 'Start not stated');
+  const id = esc(j.id);
+  return `<article class="job">
+    <div class="row" style="justify-content:space-between;align-items:baseline"><div style="min-width:0"><div class="t">${esc(j.title)}</div><div class="c">${esc(j.company)} · ${esc([j.city, j.country].filter(Boolean).join(', '))}</div></div>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
+    <div class="tags"><span class="tag navy">${esc(lv)}</span><span class="tag" title="${esc(j.langNote || '')}">${esc(ln)}</span><span class="tag">${esc(start)}</span>${j.contract ? `<span class="tag">${esc(j.contract)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' (est.)'}</span>` : ''}${j.industry ? `<span class="tag">${esc(j.industry)}</span>` : ''}</div>
+    ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}${j.why ? `<p class="why"><b>Why it fits:</b> ${esc(j.why)}</p>` : ''}
+    <p class="verify">${esc(j.verify || '')}${j.langNote ? ' · ' + esc(j.langNote) : ''}${j.posted ? ' · Posted ' + esc(j.posted) : ''}</p>
+    <div class="row"><a class="btn" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">Open the job ad ↗</a><button class="primary btn" data-act="job-tailor" data-id="${id}">Tailor my CV</button><button class="btn" data-act="job-dismiss" data-id="${id}">Not interested</button></div>
+  </article>`;
+}
+function renderJobs() {
+  if (!jobsCol) return;
+  renderFilters();
+  const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || (b.fit || 0) - (a.fit || 0) : (b.fit || 0) - (a.fit || 0));
+  $('recsCount').textContent = `${list.length} job${list.length === 1 ? '' : 's'} match`;
+  $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="msg">${jobs.length ? 'No jobs match these filters. Try another country or language, or clear the filters.' : 'No recommendations yet. The next automatic search adds them here.'}</div>`;
+  if (jobsMeta?.lastRun) $('recsMeta').textContent = `Real openings found by web search for your profile, worldwide. Last search ${new Date(jobsMeta.lastRun).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}${jobsMeta.added != null ? ` (${jobsMeta.added} added)` : ''}. Updated automatically every Monday and Thursday.`;
+}
+$('fCountry').addEventListener('change', e => { F.country = e.target.value; saveF(); renderJobs(); });
+['fFrom', 'fTo'].forEach(id => $(id).addEventListener('change', e => { F[id === 'fFrom' ? 'from' : 'to'] = e.target.value; saveF(); renderJobs(); }));
+$('fOpen').addEventListener('change', e => { F.open = e.target.checked; saveF(); renderJobs(); });
+$('fSort').addEventListener('change', e => { F.sort = e.target.value; saveF(); renderJobs(); });
+$('fReset').addEventListener('click', () => { Object.assign(F, { level: [], lang: [], country: '', from: '', to: '', open: true }); saveF(); renderJobs(); });
+['fLevel', 'fLang'].forEach(id => $(id).addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  const arr = F[id === 'fLevel' ? 'level' : 'lang'], i = arr.indexOf(b.dataset.k);
+  if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.k);
+  saveF(); renderJobs();
+}));
+$('jobList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const j = jobs.find(x => x.id === b.dataset.id); if (!j) return;
+  if (b.dataset.act === 'job-dismiss') { try { await jobsCol.doc(j.id).update({ status: 'dismissed' }); toast('Hidden from your recommendations'); } catch (err) { toast(err.message || String(err)); } }
+  if (b.dataset.act === 'job-tailor') {
+    $('jobLink').value = j.link || '';
+    $('newForm').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('jd').focus();
+    toast('Open the job ad, copy the full description, and paste it here.');
+    try { await jobsCol.doc(j.id).update({ status: 'used' }); } catch {}
+  }
+});
+$('refreshJobs').addEventListener('click', async () => {
+  const b = $('refreshJobs'); b.disabled = true;
+  try { await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: TRIGGER_ID }); toast('Searching now. New jobs appear here in about 15–30 minutes.'); b.textContent = 'Search started'; }
+  catch (err) { toast('Could not start the search: ' + (err?.message || err?.code || err)); b.disabled = false; }
+});
+async function startJobs(db) {
+  jobsCol = db.collection('jobs');
+  jobsCol.onSnapshot(snap => { jobs = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderJobs(); }, err => { $('jobList').innerHTML = `<div class="msg">Could not load recommendations (${esc(err.code)}).</div>`; });
+  db.doc('meta/jobs').onSnapshot(s => { jobsMeta = s.exists ? s.data() : null; renderJobs(); }, () => {});
+  mcp = await window.claude?.use?.('mcp');
+  if (mcp) $('refreshJobs').hidden = false;
+}
+
 (async () => {
   const start = (location.hash || '').slice(1);
   setTab(['new', 'applied', 'saved'].includes(start) ? start : 'new');
   const db = await window.claude?.use?.('db');
-  if (!db) { loadState = 'Sign in to claude.ai and open this page there to see your applications.'; render(); return; }
+  if (!db) { loadState = 'Sign in to claude.ai and open this page there to see your applications.'; $('jobList').innerHTML = '<div class="msg">Sign in to claude.ai to see your recommended jobs.</div>'; render(); return; }
   col = db.collection('applications');
+  startJobs(db);
   col.orderBy('createdAt', 'desc').onSnapshot(snap => { rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
     err => { loadState = `Could not load your applications (${err.code}). Reload the page.`; col = null; render(); });
 })();
