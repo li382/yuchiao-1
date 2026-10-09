@@ -25,7 +25,7 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 4. **Mock interview.** Ask one question at a time: background and motivation, 3 role-specific questions, 2 behavioural questions and 1 question about working under pressure. Assess each answer with STAR. End with 3 areas to practise.
 
 ## Career targets (October 2026)
-- **Industries:** luxury, cosmetics, food (FMCG), tech.
+- **Industries:** all industries (any supply chain role).
 - **Roles:** Supply Planner, Production Tracker, Supply Chain Performance Analyst, Distribution Planner, Retail Planner (stretch). Also suggested: Demand Planner, Supply / Launch Coordinator, because they bridge supply chain and marketing.
 - **Positioning:** finds data errors and fixes them (data reliability). Communicates well with people and enjoys brainstorming. Interested in marketing, but has no direct marketing experience.
 
@@ -41,14 +41,14 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 ## Job Search page: "Hardcore Life"
 - Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm. Source: `cv/tracker.html` and `cv/tracker-render.js`; the libraries and fonts are published files of the artifact.
 - Black background, white text and one cobalt-blue accent, Arial everywhere, with a left menu (a drawer on phones) and five pages:
-  1. **Discover:** recommended jobs (collection `jobs`), shown as a short summary plus a link. Dropdown filters for country, level, industry, required languages and start date, plus sorting.
+  1. **Discover:** recommended jobs (collection `jobs`), shown as a short summary plus a link. Dropdown filters for country, level, industry, required languages and start date, plus sorting. "+ Add a job I found" saves a job she found herself (link, details, optional job description) with `manual: true`; "Save and tailor my CV" sends it straight to Tailor.
   2. **Tailor a CV:** paste a job description. Steps 1–3 run on the base CV, confirmed facts and all supplementary information, and produce EN and FR CVs (Word and PDF), an optional English letter and a fit/risk insight. Then choose **I applied**, **Not yet, keep it** or **Discard**.
-  3. **Tracker:** Excel-style table with status, date applied, interview date and notes editable in each row. Counts for total applied and for each status. Export to CSV (opens in Excel). Statuses: Not applied, Applied, HR screen, Interview, Final round, Offer, Rejected, Withdrawn.
+  3. **Tracker:** Excel-style table with status, date applied, interview date and notes editable in each row. Counts for total applied and for each status. "+ Add application" records applications sent outside the page. Export to CSV (opens in Excel). Statuses: Not applied, Applied, HR screen, Interview, Final round, Offer, Rejected, Withdrawn.
   4. **Interview:** per application, a fit score gauge, a risk level with reasons, strengths, gaps with how to answer them, interview date and notes, Step 4 prep PDFs (EN / FR / 中文), documents and the Step 1–3 analysis.
   5. **My base CV:** tabs for Preview (photo can be replaced; PDF and Word download), Edit (every line, EN and FR), Replace with a new CV (upload a .docx or paste text, which Claude converts to EN and FR; you check it before saving; the previous version can be restored), Supplementary info, and Facts & steps (Step 1–4 texts and CV rules).
 - The base CV, facts, steps, supplements and photo live in the database doc `profile/main`; the defaults are in `tracker-render.js`.
 - **Supplementary information:** every new CV reads all items, works in the ones that answer the job's requirements or close its gaps, and leaves out the rest. The analysis lists which items were used and where.
 
 ## Recommended jobs
-- Routine "Yu Chiao job recommendations (hourly)" (trigger `trig_01VMzruXt77Q1wroKgvEMrPP`) runs every hour at minute 11, with notifications off. Each run takes one of eight focus areas based on the hour, covering tech, food, pharma, luxury, beauty and retail on 104, CakeResume, LinkedIn, Indeed, Glassdoor, Welcome to the Jungle, JobsDB, JobStreet, JobTeaser and company career pages,, runs 3–5 web searches, adds at most 5 new real jobs, expires closed ones, keeps about 150 active, and writes `meta/jobs`.
+- Routine "Yu Chiao job recommendations (hourly)" (trigger `trig_01VMzruXt77Q1wroKgvEMrPP`) runs every hour at minute 11, with notifications off. It searches all industries and any supply chain role. Each run takes one of eight region or programme focuses based on the hour: Taiwan, France, DACH and Benelux, Hong Kong / Singapore / China, UK / Ireland / Southern Europe / Nordics, graduate and VIE programmes, French internships and junior roles, and Japan / Korea / North America. Each run does 4–6 web searches on 104, CakeResume, LinkedIn, Indeed, Welcome to the Jungle, JobsDB, JobStreet, JobTeaser and similar sites, adds up to 8 real jobs, expires closed ones (never manual ones), keeps about 250 active, and writes `meta/jobs`.
 - Never invent a job or a link. Estimated salaries are marked as estimates.

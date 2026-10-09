@@ -196,9 +196,26 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 
   <section class="page" id="p-discover" hidden>
     <header class="row between" style="align-items:end">
-      <div><div class="eyebrow">Recommended for you</div><h1>Discover <em>roles</em></h1><p class="lede" id="discMeta">Real openings found by web search for your profile, worldwide: luxury, beauty, food, pharma and tech. Refreshed every hour.</p></div>
-      <button class="btn" type="button" id="refreshJobs" hidden>Search now</button>
+      <div><div class="eyebrow">Recommended for you</div><h1>Discover <em>roles</em></h1><p class="lede" id="discMeta">Real openings found by web search for your profile, worldwide, in every industry. Refreshed every hour.</p></div>
+      <div class="row"><button class="btn solid" type="button" id="addJobBtn">+ Add a job I found</button><button class="btn" type="button" id="refreshJobs" hidden>Search now</button></div>
     </header>
+    <form class="card" id="addJobForm" hidden>
+      <h3>Add a job you found (104, LinkedIn, Indeed, any site)</h3>
+      <label class="f" for="aj-link">Job link<input id="aj-link" type="url" placeholder="https://" required></label>
+      <div class="grid2">
+        <label class="f" for="aj-title">Job title<input id="aj-title" required></label>
+        <label class="f" for="aj-company">Company<input id="aj-company" required></label>
+        <label class="f" for="aj-country">Country<input id="aj-country" placeholder="France, Taiwan…"></label>
+        <label class="f" for="aj-city">City<input id="aj-city"></label>
+        <label class="f" for="aj-level">Level<select id="aj-level"><option value="stage">Internship (stage)</option><option value="junior" selected>Junior</option><option value="senior">Senior</option><option value="na">Not stated</option></select></label>
+        <label class="f" for="aj-industry">Industry<input id="aj-industry" placeholder="Tech, food, pharma, automotive…"></label>
+        <label class="f" for="aj-start">Start month<input id="aj-start" type="month"></label>
+        <label class="f" for="aj-salary">Salary (if shown)<input id="aj-salary"></label>
+      </div>
+      <div class="row"><span class="muted small" style="font-weight:700">Languages required</span><label class="row small" for="aj-en"><input type="checkbox" id="aj-en" style="width:auto" checked> English</label><label class="row small" for="aj-fr"><input type="checkbox" id="aj-fr" style="width:auto"> French</label><label class="row small" for="aj-zh"><input type="checkbox" id="aj-zh" style="width:auto"> Chinese</label></div>
+      <label class="f" for="aj-jd">Job description (optional, paste it to tailor your CV in one click)<textarea id="aj-jd" rows="6"></textarea></label>
+      <div class="row"><button class="btn solid" type="submit" data-then="list">Save to my list</button><button class="btn" type="submit" data-then="tailor">Save and tailor my CV</button><button class="btn ghost" type="button" id="addJobCancel">Cancel</button></div>
+    </form>
     <div class="filters">
       <label class="f" for="fCountry">Country<select id="fCountry"></select></label>
       <label class="f" for="fLevel">Level<select id="fLevel"></select></label>
@@ -212,7 +229,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
   </section>
 
   <section class="page" id="p-tailor" hidden>
-    <header><div class="eyebrow">Steps 1–3</div><h1>Tailor a <em>CV</em></h1><p class="lede">Paste the full job description. Claude starts from your base CV, your confirmed facts and all your supplementary information, then writes the English and French CVs for this job.</p></header>
+    <header><div class="eyebrow">Steps 1–3</div><h1>Tailor a <em>CV</em></h1><p class="lede">Paste the full description of any job, including ones you found yourself on 104, LinkedIn or any other site. Claude starts from your base CV, your confirmed facts and all your supplementary information, then writes the English and French CVs for this job.</p></header>
     <form class="card" id="newForm">
       <label class="f" for="jd">Job description<textarea id="jd" placeholder="Paste the complete job ad: company, title, missions, profile, location, salary if shown…" required></textarea></label>
       <div class="grid2">
@@ -229,8 +246,24 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
   <section class="page" id="p-tracker" hidden>
     <header class="row between" style="align-items:end">
       <div><div class="eyebrow">Every application</div><h1>Application <em>tracker</em></h1><p class="lede">Change the status, dates and notes right in the table. Each change saves at once.</p></div>
-      <button class="btn" type="button" id="exportBtn">Export to Excel</button>
+      <div class="row"><button class="btn solid" type="button" id="addAppBtn">+ Add application</button><button class="btn" type="button" id="exportBtn">Export to Excel</button></div>
     </header>
+    <form class="card" id="addAppForm" hidden>
+      <h3>Add an application you sent yourself</h3>
+      <div class="grid2">
+        <label class="f" for="aa-company">Company<input id="aa-company" required></label>
+        <label class="f" for="aa-role">Job title<input id="aa-role" required></label>
+        <label class="f" for="aa-country">Country<input id="aa-country"></label>
+        <label class="f" for="aa-city">City<input id="aa-city"></label>
+        <label class="f" for="aa-status">Status<select id="aa-status"></select></label>
+        <label class="f" for="aa-date">Date applied<input id="aa-date" type="date"></label>
+        <label class="f" for="aa-salary">Salary (if known)<input id="aa-salary"></label>
+        <label class="f" for="aa-link">Job link<input id="aa-link" type="url" placeholder="https://"></label>
+      </div>
+      <label class="f" for="aa-jd">Job description (optional, needed for the fit analysis and interview prep)<textarea id="aa-jd" rows="4"></textarea></label>
+      <label class="f" for="aa-notes">Notes<input id="aa-notes"></label>
+      <div class="row"><button class="btn solid" type="submit">Add to tracker</button><button class="btn ghost" type="button" id="addAppCancel">Cancel</button></div>
+    </form>
     <div class="stats" id="stats"></div>
     <div class="row"><input id="tSearch" type="search" placeholder="Search company, role, country, notes…" style="max-width:340px" aria-label="Search applications"></div>
     <div class="tablewrap"><table class="sheet" id="sheet"></table></div>
@@ -720,7 +753,7 @@ const langKey = j => [...new Set((j.languages || []).filter(l => LANG_NAME[l]))]
 const levelOf = j => (LEVELS.some(([k]) => k === j.level) ? j.level : 'na');
 const isMonth = m => /^\d{4}-\d{2}$/.test(m || '');
 function monthLabel(m) { if (!isMonth(m)) return ''; const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
-const INDUSTRIES = [['beauty', 'Beauty & cosmetics', /beaut|cosmet|fragranc|perfum|skin/i], ['pharma', 'Pharma & healthcare', /pharma|health|medic|biotech|life science/i], ['food', 'Food & beverage (FMCG)', /food|beverage|fmcg|drink|spirit|wine|dairy|consumer goods/i], ['luxury', 'Luxury & fashion', /luxur|fashion|leather|watch|jewel|maison|couture/i], ['tech', 'Tech & electronics', /tech|electron|semicon|hardware|software|it\b|device/i], ['retail', 'Retail & e-commerce', /retail|e-?commerce|store/i]];
+const INDUSTRIES = [['beauty', 'Beauty & cosmetics', /beaut|cosmet|fragranc|perfum|skin/i], ['pharma', 'Pharma & healthcare', /pharma|health|medic|biotech|life science/i], ['food', 'Food & beverage (FMCG)', /food|beverage|fmcg|drink|spirit|wine|dairy|consumer goods/i], ['luxury', 'Luxury & fashion', /luxur|fashion|leather|watch|jewel|maison|couture/i], ['tech', 'Tech & electronics', /tech|electron|semicon|hardware|software|it\b|device/i], ['retail', 'Retail & e-commerce', /retail|e-?commerce|store/i], ['logistics', 'Logistics & transport', /logist|transport|freight|shipping|3pl|warehous/i], ['industrial', 'Industrial, automotive & aerospace', /automot|aero|industr|manufactur|machin|engineer/i], ['energy', 'Chemicals & energy', /chemic|energy|oil|gas|materials/i]];
 const indOf = j => { const t = (j.industry || '') + ' ' + (j.company || ''); const hit = INDUSTRIES.find(([, , re]) => re.test(t)); return hit ? hit[0] : 'other'; };
 const live = () => jobs.filter(j => j.status !== 'dismissed' && j.status !== 'expired');
 function opts(sel, list, cur) { $(sel).innerHTML = list.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join(''); }
@@ -749,7 +782,7 @@ function passes(j) {
 function jobCard(j) {
   const lv = (LEVELS.find(([k]) => k === levelOf(j)))[1], lk = langKey(j), start = j.start === 'asap' ? 'ASAP' : monthLabel(j.start);
   return `<article class="job">
-    <div class="co">${esc(j.company)}</div><div class="tt">${esc(j.title)}</div>
+    <div class="co">${esc(j.company)}${j.manual ? ' <span class="tag" style="margin-left:6px">Added by you</span>' : ''}</div><div class="tt">${esc(j.title)}</div>
     <div class="tags"><span class="tag hi">${esc(lv)}</span><span class="tag">${esc(place(j))}</span>${lk ? `<span class="tag">${esc(lk.split('+').map(l => LANG_NAME[l]).join(' + '))}</span>` : ''}${start ? `<span class="tag">Start ${esc(start)}</span>` : ''}${j.industry ? `<span class="tag">${esc(j.industry)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' est.'}</span>` : ''}</div>
     ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}
     <div class="foot"><a class="btn solid sm" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">View job ↗</a><button class="btn sm" type="button" data-act="job-tailor" data-id="${esc(j.id)}">Tailor CV</button><button class="btn ghost sm" type="button" data-act="job-dismiss" data-id="${esc(j.id)}">Hide</button>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
@@ -761,7 +794,7 @@ function renderDiscover() {
   const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || (b.fit || 0) - (a.fit || 0) : (b.fit || 0) - (a.fit || 0));
   $('jobCount').textContent = `${list.length} of ${live().length} roles`;
   $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="empty" style="grid-column:1/-1">${jobs.length ? 'No roles match these filters.' : 'No recommendations yet. The hourly search adds them here.'}</div>`;
-  if (jobsMeta?.lastRun) $('discMeta').textContent = `Real supply chain openings for your profile, worldwide: luxury, beauty, food, pharma and tech. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
+  if (jobsMeta?.lastRun) $('discMeta').textContent = `Real supply chain openings for your profile, worldwide, in every industry. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
 }
 [['fCountry', 'country'], ['fLevel', 'level'], ['fInd', 'ind'], ['fLang', 'lang'], ['fStart', 'start'], ['fSort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; saveF(); renderDiscover(); }));
 $('fReset').addEventListener('click', () => { Object.assign(F, { country: '', level: '', lang: '', start: '', ind: '' }); saveF(); renderDiscover(); });
@@ -1008,7 +1041,7 @@ document.addEventListener('click', async e => {
     else if (act === 'open-iv') { pickId = id; go('interview'); }
     else if (act === 'save-jd') { const v = $('jd-' + id)?.value.trim(); if (v) { await patch(id, { jd: v }); toast('Job description saved'); } }
     else if (act === 'job-dismiss') { await jobsCol.doc(id).update({ status: 'dismissed' }); toast('Hidden'); }
-    else if (act === 'job-tailor') { const j = jobs.find(x => x.id === id); go('tailor'); $('jobLink').value = j?.link || ''; $('jd').focus(); toast('Open the job ad, copy the full description, and paste it here.'); jobsCol.doc(id).update({ status: 'used' }).catch(() => {}); }
+    else if (act === 'job-tailor') { const j = jobs.find(x => x.id === id); go('tailor'); $('jobLink').value = j?.link || ''; if (j?.jd) $('jd').value = j.jd; $('jd').focus(); toast(j?.jd ? 'Job description filled in. Press Generate.' : 'Open the job ad, copy the full description, and paste it here.'); jobsCol.doc(id).update({ status: 'used' }).catch(() => {}); }
     else if (act === 'supp-del') { await saveProfile({ supplements: profile().supplements.filter(s => s.id !== id) }); toast('Removed'); }
     else if (act === 'save-cv') { await saveProfile({ ['cv_' + el.dataset.lang]: readEditor(el.dataset.lang) }); toast('Base CV saved'); }
     else if (act === 'reset-cv') { await saveProfile({ ['cv_' + el.dataset.lang]: el.dataset.lang === 'en' ? K.BASE_EN : K.BASE_FR }); toast('Original restored'); }
@@ -1032,6 +1065,38 @@ function renderAll() {
   if (page === 'interview') renderInterview();
   if (page === 'base') renderBase();
 }
+
+/* ---------- add jobs and applications by hand ---------- */
+$('addJobBtn').addEventListener('click', () => { $('addJobForm').hidden = false; $('aj-link').focus(); });
+$('addJobCancel').addEventListener('click', () => { $('addJobForm').hidden = true; });
+$('addJobForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!jobsCol) { toast('Sign in to claude.ai to save jobs.'); return; }
+  const v = id => $(id).value.trim(), then = e.submitter?.dataset.then || 'list';
+  const doc = { title: v('aj-title'), company: v('aj-company'), country: v('aj-country'), city: v('aj-city'), level: $('aj-level').value,
+    languages: ['en', 'fr', 'zh'].filter(l => $('aj-' + l).checked), start: v('aj-start'), salary: v('aj-salary'), salaryType: v('aj-salary') ? 'posted' : '',
+    industry: v('aj-industry'), summary: v('aj-jd').slice(0, 160), jd: v('aj-jd'), link: v('aj-link'), source: 'Added by me', manual: true,
+    fit: null, status: 'new', foundAt: new Date().toISOString() };
+  try {
+    const ref = await jobsCol.add(doc);
+    $('addJobForm').reset(); $('addJobForm').hidden = true; toast('Saved to your list');
+    if (then === 'tailor') { go('tailor'); $('jobLink').value = doc.link; $('jd').value = doc.jd; $('jd').focus(); jobsCol.doc(ref.id).update({ status: 'used' }).catch(() => {}); if (!doc.jd) toast('Paste the job description, then press Generate.'); }
+  } catch (err) { toast('Could not save: ' + (err.message || err.code)); }
+});
+$('aa-status').innerHTML = STATUS.map(([k, l]) => `<option value="${k}" ${k === 'sent' ? 'selected' : ''}>${l}</option>`).join('');
+$('addAppBtn').addEventListener('click', () => { $('addAppForm').hidden = false; $('aa-date').value = today(); $('aa-company').focus(); });
+$('addAppCancel').addEventListener('click', () => { $('addAppForm').hidden = true; });
+$('addAppForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!col) { toast('Sign in to claude.ai to save applications.'); return; }
+  const v = id => $(id).value.trim(), now = new Date().toISOString();
+  try {
+    await col.add({ company: v('aa-company'), role: v('aa-role'), country: v('aa-country'), city: v('aa-city'), status: $('aa-status').value,
+      appliedDate: $('aa-status').value === 'prep' ? '' : (v('aa-date') || today()), interviewDate: '', salary: v('aa-salary'), salaryType: v('aa-salary') ? 'posted' : 'estimate',
+      link: v('aa-link'), jd: v('aa-jd'), notes: v('aa-notes'), manual: true, createdAt: now, updatedAt: now });
+    $('addAppForm').reset(); $('addAppForm').hidden = true; toast('Added to your tracker');
+  } catch (err) { toast('Could not save: ' + (err.message || err.code)); }
+});
 
 (async () => {
   go((location.hash || '').slice(1));
