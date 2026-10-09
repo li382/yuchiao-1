@@ -1,176 +1,264 @@
 <title>Yu Chiao Job Search</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,600;1,6..96,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one centred working column; tabs = New application / Applied / Saved; each application is a "file" card */
+/* Layout: fixed left menu (drawer on phones) + one working column per page. Deliberately single-theme: black, like a fashion house lookbook. */
 :root {
-  --bg: #ffffff; --surface: #f5f7fb; --paper: #ffffff; --fg: #0b0d12; --muted: #4b5366; --line: #d8dde7;
-  --navy: #14306b; --navy-ink: #ffffff; --navy-soft: #e8edf7;
-  --ok: #1f6b45; --ok-bg: #e2f2e9; --warn: #8a5a00; --warn-bg: #f8eed6; --bad: #a12f2f; --bad-bg: #f8e4e4;
-  --f-sans: "IBM Plex Sans", -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color-scheme: dark;
+  --bg: #0a0a0b; --panel: #131315; --panel-2: #1a1a1d; --line: #29292e; --line-2: #3a3a41;
+  --fg: #f3f1ec; --muted: #9a98a0; --dim: #6c6a72;
+  --accent: #8ea6ff; --accent-deep: #2b45c4; --accent-soft: rgba(142,166,255,.12);
+  --ok: #7fd1a1; --warn: #f0b86e; --bad: #ef8f8f;
+  --f-display: "Bodoni Moda", "Didot", Georgia, serif;
+  --f-sans: "DM Sans", -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --side: 248px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #07090d; --surface: #10141c; --paper: #161b25; --fg: #eef1f6; --muted: #a2aabb; --line: #273042;
-  --navy: #8eaaf0; --navy-ink: #07090d; --navy-soft: #1b2742;
-  --ok: #82d3a8; --ok-bg: #173226; --warn: #e6c27a; --warn-bg: #352a14; --bad: #ef9d9d; --bad-bg: #3b1f1f; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #07090d; --surface: #10141c; --paper: #161b25; --fg: #eef1f6; --muted: #a2aabb; --line: #273042;
-  --navy: #8eaaf0; --navy-ink: #07090d; --navy-soft: #1b2742;
-  --ok: #82d3a8; --ok-bg: #173226; --warn: #e6c27a; --warn-bg: #352a14; --bad: #ef9d9d; --bad-bg: #3b1f1f; color-scheme: dark }
 * { box-sizing: border-box }
-body { background: var(--bg); color: var(--fg); font-family: var(--f-sans); font-size: 15px; line-height: 1.55 }
-.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 80px; display: grid; gap: 20px }
-header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--fg); padding-bottom: 14px }
-h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; text-wrap: balance }
-h1 span { color: var(--navy) }
-.top p { margin: 2px 0 0; color: var(--muted); font-size: .9rem }
-nav.tabs { display: flex; gap: 4px; flex-wrap: wrap }
-nav.tabs button { font: inherit; font-size: .9rem; font-weight: 500; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 7px 14px; border-radius: 6px; cursor: pointer }
-nav.tabs button[aria-selected="true"] { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
-nav.tabs .count { font-family: var(--f-mono); font-size: .8rem; opacity: .8; margin-left: 4px }
-h2 { font-size: 1.15rem; margin: 0; font-weight: 600 }
-h3 { font-size: .95rem; margin: 0; font-weight: 600 }
-.muted { color: var(--muted) }
-.small { font-size: .85rem }
-.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
-label { display: grid; gap: 5px; font-size: .85rem; font-weight: 500 }
-input, select, textarea { font: inherit; font-size: .95rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0 }
-textarea#jd { min-height: 240px; resize: vertical; font-size: .9rem; line-height: 1.5 }
+[hidden] { display: none !important }
+html, body { background: var(--bg); color: var(--fg) }
+body { font-family: var(--f-sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased }
+a { color: var(--accent) }
+button, input, select, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+/* ---- menu ---- */
+.side { position: fixed; inset: 0 auto 0 0; width: var(--side); background: #050506; border-right: 1px solid var(--line); padding: calc(26px + env(safe-area-inset-top, 0px)) 18px 22px; display: flex; flex-direction: column; gap: 28px; z-index: 20 }
+.brand { display: flex; gap: 12px; align-items: center }
+.brand .mono { width: 40px; height: 40px; border: 1px solid var(--fg); display: grid; place-items: center; font-family: var(--f-display); font-size: 1.05rem; letter-spacing: .04em }
+.brand b { display: block; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; font-size: .8rem }
+.brand small { color: var(--muted); font-size: .78rem; letter-spacing: .04em }
+.menu { display: grid; gap: 2px }
+.menu button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 10px 12px; color: var(--muted); cursor: pointer; font-size: .93rem }
+.menu button svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.5 }
+.menu button .n { margin-left: auto; font-family: var(--f-mono); font-size: .75rem; color: var(--dim) }
+.menu button:hover { color: var(--fg); background: var(--panel) }
+.menu button[aria-current="page"] { color: var(--fg); background: var(--panel-2); box-shadow: inset 2px 0 0 var(--accent) }
+.side-foot { margin-top: auto; color: var(--dim); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase }
+.mbar { display: none }
+.scrim { display: none }
+@media (max-width: 900px) {
+  .side { transform: translateX(-102%); transition: transform .22s ease; box-shadow: 20px 0 60px rgba(0,0,0,.6) }
+  body.menu-open .side { transform: none }
+  body.menu-open .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 15 }
+  .mbar { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(10,10,11,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line) }
+  .mbar .t { font-family: var(--f-display); font-size: 1.15rem }
+  .mbar button { background: none; border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: .85rem }
+}
+@media (prefers-reduced-motion: reduce) { .side { transition: none } }
+
+/* ---- page ---- */
+main { margin-left: var(--side); min-height: 100vh }
+@media (max-width: 900px) { main { margin-left: 0 } }
+.page { max-width: 1120px; margin: 0 auto; padding-inline: 32px; padding-block: 40px 96px; display: grid; gap: 26px }
+@media (max-width: 600px) { .page { padding-inline: 16px; padding-block: 24px 80px } }
+.eyebrow { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted) }
+h1 { font-family: var(--f-display); font-weight: 500; font-size: clamp(2rem, 4.2vw, 2.9rem); line-height: 1.05; margin: 4px 0 0; letter-spacing: -.01em; text-wrap: balance }
+h1 em { font-style: italic; color: var(--accent) }
+.lede { color: var(--muted); margin: 8px 0 0; max-width: 62ch }
+h2 { font-family: var(--f-display); font-weight: 500; font-size: 1.45rem; margin: 0; line-height: 1.2 }
+h3 { font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--muted); margin: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0 }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
-.check { display: flex; gap: 8px; align-items: center; font-weight: 400 }
-.check input { width: auto }
-button.btn, .btn, button.primary, button.dark, button.danger { font: inherit; font-size: .88rem; font-weight: 500; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 7px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none }
-button.primary { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
-button.dark { background: var(--fg); border-color: var(--fg); color: var(--bg) }
-button.danger { color: var(--bad); border-color: var(--bad) }
-button:disabled { opacity: .5; cursor: progress }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px }
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
-.steps li { display: flex; gap: 10px; align-items: baseline; font-size: .9rem }
-.steps .dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--line); flex: none; transform: translateY(1px) }
-.steps li.run .dot { border-color: var(--navy); background: var(--navy-soft) }
-.steps li.done .dot { border-color: var(--navy); background: var(--navy) }
-.steps li.fail .dot { border-color: var(--bad); background: var(--bad) }
-.steps .meta { color: var(--muted); font-family: var(--f-mono); font-size: .78rem }
-@media (prefers-reduced-motion: no-preference) { .steps li.run .dot { animation: pulse 1.2s infinite } @keyframes pulse { 50% { opacity: .35 } } }
-.list { display: grid; gap: 14px }
-.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; min-width: 0 }
-.card-head { padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: start; cursor: pointer }
-.card-head .who { min-width: 0 }
-.card-head .co { font-weight: 600; font-size: 1.05rem }
-.card-head .role { color: var(--muted); font-size: .92rem }
-.facts { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .82rem; color: var(--muted) }
-.facts b { color: var(--fg); font-weight: 500 }
-.pill { font-size: .75rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; background: var(--navy-soft); color: var(--navy) }
-.pill.ok { background: var(--ok-bg); color: var(--ok) } .pill.warn { background: var(--warn-bg); color: var(--warn) } .pill.bad { background: var(--bad-bg); color: var(--bad) }
-.card-body { border-top: 1px solid var(--line); padding: 14px 16px 16px; display: grid; gap: 14px; min-width: 0 }
-.dl { display: grid; gap: 8px }
-.dl .row > span { min-width: 120px; font-size: .85rem; font-weight: 500 }
-details { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0 }
-details > summary { cursor: pointer; padding: 9px 12px; font-weight: 600; font-size: .92rem; list-style-position: inside }
-details > .in { padding: 4px 14px 14px; display: grid; gap: 10px; font-size: .9rem; min-width: 0 }
-details ul, details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px }
-.score { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap }
-.score .big { font-family: var(--f-mono); font-size: 1.8rem; font-weight: 500; color: var(--navy); line-height: 1 }
-table.kw { border-collapse: collapse; width: 100%; font-size: .85rem }
-table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: left; padding: 6px 8px 6px 0; vertical-align: top }
-.tablewrap { overflow-x: auto }
-.paper { background: #ffffff; color: #111111; border: 1px solid var(--line); border-radius: 4px; padding: 18px 20px; font-family: Calibri, Carlito, "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 4px; min-width: 0 }
-.paper .nm { font-size: 19px; font-weight: 700 }
+.between { justify-content: space-between }
+.muted { color: var(--muted) } .small { font-size: .85rem } .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-2); background: transparent; border-radius: 999px; padding: 8px 16px; font-size: .86rem; font-weight: 500; cursor: pointer; text-decoration: none; color: var(--fg); white-space: nowrap }
+.btn:hover { border-color: var(--fg) }
+.btn.solid { background: var(--fg); color: #0a0a0b; border-color: var(--fg) }
+.btn.solid:hover { background: #ffffff }
+.btn.ghost { border-color: transparent; color: var(--muted) } .btn.ghost:hover { color: var(--fg) }
+.btn.danger { color: var(--bad); border-color: rgba(239,143,143,.4) }
+.btn:disabled { opacity: .45; cursor: progress }
+.btn.sm { padding: 5px 12px; font-size: .8rem }
+
+label.f { display: grid; gap: 6px; font-size: .8rem; color: var(--muted); letter-spacing: .02em }
+input, select, textarea { background: var(--bg); border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; font-size: .92rem; width: 100%; min-width: 0; color: var(--fg) }
+select { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 30px }
+select option, select optgroup { background: var(--panel); color: var(--fg) }
+textarea { resize: vertical; line-height: 1.5 }
+
+/* ---- discover ---- */
+.filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px }
+@media (max-width: 1000px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+.jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+@media (max-width: 760px) { .jobs { grid-template-columns: 1fr } }
+.job { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; transition: border-color .15s }
+.job:hover { border-color: var(--line-2) }
+.job .co { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted) }
+.job .tt { font-family: var(--f-display); font-size: 1.18rem; line-height: 1.25 }
+.job p { margin: 0; color: #cfcdd4; font-size: .88rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.tags { display: flex; flex-wrap: wrap; gap: 6px }
+.tag { font-size: .72rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line-2); color: #d8d6dd; white-space: nowrap }
+.tag.hi { border-color: transparent; background: var(--accent-soft); color: var(--accent) }
+.job .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 2px }
+.job .fit { margin-left: auto; font-family: var(--f-mono); font-size: .78rem; color: var(--accent) }
+.empty { border: 1px dashed var(--line-2); border-radius: 14px; padding: 28px; text-align: center; color: var(--muted) }
+
+/* ---- tailor ---- */
+textarea#jd { min-height: 260px; font-size: .88rem }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
+.steps li { display: flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--muted) }
+.steps .dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-2); flex: none }
+.steps li.run { color: var(--fg) } .steps li.run .dot { border-color: var(--accent); background: var(--accent-soft) }
+.steps li.done { color: var(--fg) } .steps li.done .dot { background: var(--accent); border-color: var(--accent) }
+.steps li.fail .dot { background: var(--bad); border-color: var(--bad) }
+.steps .meta { font-family: var(--f-mono); font-size: .75rem; color: var(--dim) }
+@media (prefers-reduced-motion: no-preference) { .steps li.run .dot { animation: pulse 1.1s infinite } @keyframes pulse { 50% { opacity: .3 } } }
+.err { color: var(--bad); font-size: .88rem; margin: 0 }
+
+/* ---- tracker ---- */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; display: grid; gap: 4px; cursor: pointer; text-align: left }
+.stat[aria-pressed="true"] { border-color: var(--fg) }
+.stat .v { font-family: var(--f-display); font-size: 2rem; line-height: 1 }
+.stat .k { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px }
+.stat.total { background: var(--fg); color: #0a0a0b; border-color: var(--fg) } .stat.total .k { color: #3a3a40 }
+.sw { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--panel) }
+table.sheet { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 940px; font-size: .86rem }
+.sheet th:first-child, .sheet td:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); box-shadow: 1px 0 0 var(--line); min-width: 190px }
+.sheet td.nw { white-space: nowrap }
+.sheet th { text-align: left; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 12px; border-bottom: 1px solid var(--line); background: var(--panel) }
+.sheet td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: middle }
+.sheet tbody tr:last-child td { border-bottom: 0 }
+.sheet tbody tr:hover td { background: var(--panel-2) }
+.sheet .co { font-weight: 600 } .sheet .ro { color: var(--muted); font-size: .8rem }
+.sheet select, .sheet input { padding: 6px 10px; font-size: .82rem; border-radius: 8px }
+.sheet select { padding-right: 26px; min-width: 124px }
+.sheet input[type=date] { width: 138px }
+.sheet input.note { min-width: 180px }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line-2); white-space: nowrap }
+
+/* ---- interview ---- */
+.board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+@media (max-width: 760px) { .board { grid-template-columns: 1fr } }
+.gauge { display: flex; align-items: center; gap: 20px }
+.gauge svg { width: 132px; height: 132px; flex: none }
+.riskbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.riskbar span { height: 8px; border-radius: 4px; background: var(--line) }
+.riskbar span.on.low { background: var(--ok) } .riskbar span.on.medium { background: var(--warn) } .riskbar span.on.high { background: var(--bad) }
+.risklabels { display: grid; grid-template-columns: repeat(3, 1fr); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--dim) }
+.lvl { font-family: var(--f-display); font-size: 1.9rem; text-transform: capitalize; line-height: 1 }
+ul.clean { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
+ul.clean li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: .9rem; align-items: start }
+ul.clean li .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 600 }
+.ic.s { background: rgba(127,209,161,.14); color: var(--ok) } .ic.g { background: rgba(240,184,110,.14); color: var(--warn) } .ic.r { background: rgba(239,143,143,.14); color: var(--bad) }
+ul.clean li small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px }
+details.fold { border: 1px solid var(--line); border-radius: 12px; background: var(--panel) }
+details.fold > summary { cursor: pointer; padding: 14px 18px; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 500 }
+details.fold > summary::-webkit-details-marker { display: none }
+details.fold > summary::after { content: "+"; font-family: var(--f-mono); color: var(--muted); font-size: 1.1rem; margin-left: auto }
+details.fold[open] > summary::after { content: "–" }
+details.fold > .in { padding: 0 18px 18px; display: grid; gap: 12px; font-size: .9rem; min-width: 0 }
+details.fold ul, details.fold ol { margin: 0; padding-left: 20px; display: grid; gap: 4px }
+.jd { white-space: pre-wrap; font-size: .82rem; max-height: 360px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: #cfcdd4 }
+table.kw { border-collapse: collapse; width: 100%; font-size: .84rem } table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: left; padding: 7px 10px 7px 0; vertical-align: top } table.kw th { color: var(--muted); font-weight: 500 }
+
+/* ---- base CV ---- */
+.paper { background: #ffffff; color: #111; border-radius: 6px; padding: 26px 28px; font-family: Calibri, Carlito, "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 3px; position: relative; min-width: 0; box-shadow: 0 30px 80px rgba(0,0,0,.5) }
+.paper .ph { position: absolute; top: 18px; right: 22px; width: 74px; height: 92px; object-fit: cover }
+.paper .nm { font-size: 20px; font-weight: 700; padding-right: 90px }
+.paper .tg { padding-right: 90px }
 .paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
-.paper ul { margin: 0; padding-left: 18px }
-.paper p { margin: 0 }
-.jd { white-space: pre-wrap; font-size: .85rem; max-height: 340px; overflow: auto; background: var(--surface); border-radius: 6px; padding: 10px 12px }
-.decide { border: 2px solid var(--navy); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; background: var(--paper) }
-.decide .row input[type=date] { width: auto }
-.msg { border: 1px dashed var(--line); border-radius: 10px; padding: 22px; color: var(--muted); text-align: center }
-.err { color: var(--bad); font-size: .88rem }
-.note { font-size: .85rem; color: var(--muted) }
-.recs-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between }
-.filters { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) }
-.fgroup { display: grid; gap: 6px; min-width: 0 }
-.fgroup > .flabel { font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted) }
-.chips { display: flex; flex-wrap: wrap; gap: 6px }
-.chip { font: inherit; font-size: .82rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 4px 10px; border-radius: 999px; cursor: pointer }
-.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
-.months { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .85rem }
-.months input[type=month] { width: auto; padding: 5px 8px; font-size: .85rem }
-.job { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0 }
-.job .t { font-weight: 600; font-size: 1rem }
-.job .c { color: var(--muted); font-size: .9rem }
-.job .tags { display: flex; flex-wrap: wrap; gap: 6px }
-.tag { font-size: .74rem; font-weight: 500; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); white-space: nowrap }
-.tag.navy { background: var(--navy-soft); color: var(--navy); border-color: transparent }
-.fit { font-family: var(--f-mono); font-size: .8rem; color: var(--navy); font-weight: 500 }
-.job p { margin: 0; font-size: .88rem }
-.job .why { color: var(--fg) }
-.job .verify { font-size: .76rem; color: var(--muted) }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: .9rem; max-width: calc(100% - 32px) }
+.paper ul { margin: 0; padding-left: 18px } .paper p { margin: 0 }
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 999px; padding: 3px }
+.seg button { background: none; border: 0; border-radius: 999px; padding: 5px 14px; font-size: .82rem; cursor: pointer; color: var(--muted) }
+.seg button[aria-pressed="true"] { background: var(--fg); color: #0a0a0b }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px }
+.supp { display: grid; gap: 8px }
+.supp .it { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .88rem }
+.supp .it small { color: var(--dim); display: block; font-size: .74rem; margin-top: 2px }
+.photo-wrap { display: flex; gap: 16px; align-items: center }
+.photo-wrap img { width: 64px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line-2) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #0a0a0b; padding: 10px 18px; border-radius: 999px; font-size: .88rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <div>
-      <h1>Yu Chiao <span>Job Search</span></h1>
-      <p>Paste a job description, get a tailored CV in English and French, track every application.</p>
-    </div>
-    <nav class="tabs" role="tablist" id="tabs">
-      <button type="button" role="tab" data-tab="new">New application</button>
-      <button type="button" role="tab" data-tab="applied">Applied <span class="count" id="c-applied">0</span></button>
-      <button type="button" role="tab" data-tab="saved">Saved <span class="count" id="c-saved">0</span></button>
-    </nav>
-  </header>
+<aside class="side" id="side" aria-label="Menu">
+  <div class="brand"><span class="mono">YC</span><div><b>Yu Chiao Lin</b><small>Career studio</small></div></div>
+  <nav class="menu" id="menu">
+    <button type="button" data-page="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover<span class="n" id="n-discover"></span></button>
+    <button type="button" data-page="tailor"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Tailor a CV</button>
+    <button type="button" data-page="tracker"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>Tracker<span class="n" id="n-tracker"></span></button>
+    <button type="button" data-page="interview"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Interview</button>
+    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Base CV &amp; steps</button>
+  </nav>
+  <div class="side-foot">Supply chain · Luxury · Beauty</div>
+</aside>
+<div class="scrim" id="scrim"></div>
 
-  <section id="tab-new" hidden>
-    <form class="panel" id="newForm">
-      <div>
-        <h2>1. Paste the job description</h2>
-        <p class="muted small">Claude compares it with your base CV and everything you confirmed about Pure Trade, runs Steps 1–3, and writes the English and French CVs. It never adds experience you don't have.</p>
-      </div>
-      <label for="jd">Full job description
-        <textarea id="jd" placeholder="Paste the complete job ad here: company, job title, missions, profile, location, salary if shown…" required></textarea>
-      </label>
+<main>
+  <div class="mbar"><span class="t">Yu Chiao Lin</span><button type="button" id="menuBtn" aria-controls="side" aria-expanded="false">Menu</button></div>
+
+  <section class="page" id="p-discover" hidden>
+    <header class="row between" style="align-items:end">
+      <div><div class="eyebrow">Recommended for you</div><h1>Discover <em>roles</em></h1><p class="lede" id="discMeta">Real openings found by web search for your profile, worldwide. Refreshed every hour.</p></div>
+      <button class="btn" type="button" id="refreshJobs" hidden>Search now</button>
+    </header>
+    <div class="filters">
+      <label class="f" for="fCountry">Country<select id="fCountry"></select></label>
+      <label class="f" for="fLevel">Level<select id="fLevel"></select></label>
+      <label class="f" for="fLang">Languages required<select id="fLang"></select></label>
+      <label class="f" for="fStart">Start date<select id="fStart"></select></label>
+      <label class="f" for="fSort">Sort by<select id="fSort"><option value="fit">Best fit</option><option value="new">Newest</option></select></label>
+    </div>
+    <div class="row between small"><span class="muted" id="jobCount"></span><button class="btn ghost sm" type="button" id="fReset">Clear filters</button></div>
+    <div class="jobs" id="jobList"><div class="empty" style="grid-column:1/-1">Loading recommended roles…</div></div>
+  </section>
+
+  <section class="page" id="p-tailor" hidden>
+    <header><div class="eyebrow">Steps 1–3</div><h1>Tailor a <em>CV</em></h1><p class="lede">Paste the full job description. Claude starts from your base CV, your confirmed facts and all your supplementary information, then writes the English and French CVs for this job.</p></header>
+    <form class="card" id="newForm">
+      <label class="f" for="jd">Job description<textarea id="jd" placeholder="Paste the complete job ad: company, title, missions, profile, location, salary if shown…" required></textarea></label>
       <div class="grid2">
-        <label for="jobLink">Job link (optional)<input id="jobLink" type="url" placeholder="https://"></label>
-        <label for="letterMode">Motivation letter (English)
-          <select id="letterMode"><option value="auto">Write one if the job asks for it</option><option value="yes">Always write one</option><option value="no">Don't write one</option></select>
-        </label>
+        <label class="f" for="jobLink">Job link<input id="jobLink" type="url" placeholder="https://"></label>
+        <label class="f" for="letterMode">Motivation letter (English)<select id="letterMode"><option value="auto">Only if the job asks for one</option><option value="yes">Always write one</option><option value="no">Don't write one</option></select></label>
       </div>
-      <div class="row">
-        <button class="primary" type="submit" id="genBtn">Generate tailored CV</button>
-        <span class="muted small">Takes about 1–2 minutes.</span>
-      </div>
+      <div class="row"><button class="btn solid" type="submit" id="genBtn">Generate tailored CV</button><span class="muted small">About 1–2 minutes</span></div>
       <ol class="steps" id="genSteps" hidden></ol>
       <p class="err" id="genErr" hidden></p>
     </form>
     <div id="newResult"></div>
-
-    <section class="panel" id="recs" aria-labelledby="recsTitle">
-      <div class="recs-head">
-        <div><h2 id="recsTitle">Recommended jobs</h2><p class="muted small" id="recsMeta">Real openings found by web search for your profile, worldwide. Updated automatically every Monday and Thursday.</p></div>
-        <button class="btn" type="button" id="refreshJobs" hidden>Search for new jobs now</button>
-      </div>
-      <div class="filters">
-        <div class="fgroup"><span class="flabel">1 · Country</span><select id="fCountry" aria-label="Country"></select></div>
-        <div class="fgroup"><span class="flabel">2 · Level</span><div class="chips" id="fLevel"></div></div>
-        <div class="fgroup"><span class="flabel">3 · Languages required</span><div class="chips" id="fLang"></div></div>
-        <div class="fgroup"><span class="flabel">4 · Start date</span>
-          <div class="months"><label class="check" for="fFrom">From <input type="month" id="fFrom"></label><label class="check" for="fTo">to <input type="month" id="fTo"></label></div>
-          <label class="check small" for="fOpen"><input type="checkbox" id="fOpen" checked> Include “ASAP” and “not stated”</label>
-        </div>
-      </div>
-      <div class="row small"><label class="check" for="fSort">Sort <select id="fSort"><option value="fit">Best fit</option><option value="new">Newest</option></select></label><span class="muted" id="recsCount"></span><button class="btn" type="button" id="fReset">Clear filters</button></div>
-      <div class="list" id="jobList"><div class="msg">Loading recommended jobs…</div></div>
-    </section>
   </section>
 
-  <section id="tab-applied" hidden><div class="list" id="appliedList"></div></section>
-  <section id="tab-saved" hidden><div class="list" id="savedList"></div></section>
-</div>
+  <section class="page" id="p-tracker" hidden>
+    <header class="row between" style="align-items:end">
+      <div><div class="eyebrow">Every application</div><h1>Application <em>tracker</em></h1><p class="lede">Change the status, dates and notes right in the table. Each change saves at once.</p></div>
+      <button class="btn" type="button" id="exportBtn">Export to Excel</button>
+    </header>
+    <div class="stats" id="stats"></div>
+    <div class="row"><input id="tSearch" type="search" placeholder="Search company, role, country, notes…" style="max-width:340px" aria-label="Search applications"></div>
+    <div class="tablewrap"><table class="sheet" id="sheet"></table></div>
+  </section>
+
+  <section class="page" id="p-interview" hidden>
+    <header><div class="eyebrow">Step 4</div><h1>Interview <em>room</em></h1><p class="lede">Fit, risk, strengths and gaps for one application, with interview prep in English, French and Chinese.</p></header>
+    <label class="f" for="iPick" style="max-width:520px">Application<select id="iPick"></select></label>
+    <div id="iBody"></div>
+  </section>
+
+  <section class="page" id="p-base" hidden>
+    <header><div class="eyebrow">Source of every CV</div><h1>Base CV &amp; <em>steps</em></h1><p class="lede">Everything here feeds each new CV. Open a section only when you want to change it.</p></header>
+    <div class="card">
+      <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><b>CV photo</b><div class="muted small">Shown top right on every CV.</div></div></div>
+        <div class="row"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div>
+      <div class="row between"><h3>Preview</h3><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
+      <div id="basePaper"></div>
+      <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
+    </div>
+    <details class="fold" open><summary>Supplementary information <span class="muted small" id="suppCount"></span></summary><div class="in">
+      <p class="muted small">Add anything new that is true: a project, a tool, a result, a certificate, a responsibility. Every new CV reads all of it and works in the items that answer that job's requirements or close its gaps. Items that don't help a job are left out of that CV.</p>
+      <div class="supp" id="suppList"></div>
+      <label class="f" for="suppNew">New item<textarea id="suppNew" rows="3" placeholder="Example: Since November 2026 I also build the weekly stock forecast for 3 brands in Excel."></textarea></label>
+      <div class="row"><button class="btn solid sm" type="button" id="suppAdd">Add</button></div>
+    </div></details>
+    <details class="fold"><summary>Base CV · English</summary><div class="in" id="edit-en"></div></details>
+    <details class="fold"><summary>Base CV · Français</summary><div class="in" id="edit-fr"></div></details>
+    <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small">One fact per line. Claude may use these even when they are not on the base CV.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
+    <div id="stepFolds" style="display:grid;gap:12px"></div>
+  </section>
+</main>
 <div class="toast" id="toast" hidden></div>
 
 <script src="lib/tracker-render.js"></script>
@@ -180,42 +268,85 @@ table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: lef
 <script>
 const K = window.CVKit;
 const $ = id => document.getElementById(id);
-const APPLIED = ['sent', 'int', 'offer', 'no', 'drop'];
-const STATUS = { prep: ['Not applied yet', 'warn'], sent: ['Applied', ''], int: ['Interviewing', ''], offer: ['Offer', 'ok'], no: ['Rejected', 'bad'], drop: ['Withdrawn', 'bad'] };
-const SALARY_TYPE = { estimate: 'estimate', posted: 'from job ad', offer: 'offer' };
-let rows = [], col = null, sample = null, downloads = null, tab = 'new', openId = null, newId = null, pendingDelete = null;
-const busy = {}; // per-record job flags, e.g. busy[id] = 'prep'
+const PAGES = ['discover', 'tailor', 'tracker', 'interview', 'base'];
+const STATUS = [['prep', 'Not applied', '#8d8a80'], ['sent', 'Applied', '#8ea6ff'], ['screen', 'HR screen', '#6fc3df'], ['int', 'Interview', '#c8a2ff'], ['final', 'Final round', '#f0b86e'], ['offer', 'Offer', '#7fd1a1'], ['no', 'Rejected', '#ef8f8f'], ['drop', 'Withdrawn', '#77757d']];
+const ST = Object.fromEntries(STATUS.map(([k, l, c]) => [k, { l, c }]));
+const SALARY_TYPE = { estimate: 'est.', posted: 'posted', offer: 'offer' };
+const DEFAULT_STEPS = {
+  s1: `You are reviewing my resume for the role and company described below. Compare my resume against the full job description and give a candid, evidence-based assessment.\n\nPlease provide: a match score with a short rationale; the 8 to 10 most important requirements or keywords that are missing or under-evidenced; where each one could truthfully appear in the resume; five issues a recruiter may notice in a quick review; and a section-by-section review of my summary, experience, skills, and education.\n\nFlag any issue that cannot be fixed with wording alone because I have not provided relevant experience. Do not assume I have skills, projects, metrics, or results that are not in my materials.`,
+  s2: `Using the diagnosis above, rewrite my experience section for this specific role. Keep every claim grounded in the resume and notes I supplied.\n\nFor each bullet, use a clear action + context or method + result structure. Include relevant terms from the JD only where they are genuinely supported. Replace vague wording with precise descriptions of my contribution. If a result cannot be quantified truthfully, make the scope or outcome concrete without inventing a metric.\n\nAlso draft: a two- or three-sentence professional summary tailored to this role, and a skills section that removes irrelevant items and highlights relevant ones.\n\nFirst explain the main changes. Then provide copy-ready resume text. Keep bullet points concise and natural.`,
+  s3: `Review the revised resume in two ways.\n\nFirst, assess ATS readability. Flag tables, columns, unusual symbols, headers or footers, formatting choices, and section labels that could make parsing less reliable. Check whether the most relevant JD requirements appear naturally.\n\nSecond, simulate a recruiter who has only a few seconds to skim the page. Tell me what stands out first, what is easy to miss, which bullets feel repetitive, and which detail should move higher on the page.\n\nEnd with a prioritized list of edits. Do not recommend adding experience or metrics that I cannot verify.`,
+  s4: `Act as an interviewer for this exact role. You have my final resume and the job description.\nAsk one question at a time. Begin with my background and motivation. Then ask three role-specific questions, two behavioral questions, and one question that tests how I think under pressure.\n\nAfter each answer, assess whether I gave a clear situation, action, and result; whether the answer matches the role; and what evidence or detail is missing. Suggest a clearer structure, but do not invent an answer, accomplishment, or metric for me.\nAt the end, list the three areas I should practice before the interview.`,
+};
+const STEP_NAMES = { s1: 'Step 1 · Diagnosis', s2: 'Step 2 · Rewrite', s3: 'Step 3 · ATS and recruiter review', s4: 'Step 4 · Interview' };
+
+let rows = [], col = null, db = null, sample = null, downloads = null, assets = null, mcp = null;
+let page = 'discover', newId = null, pickId = null, pendingDelete = null, saved = null;
+const busy = {};
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function safeUrl(u) { const s = String(u || ''); return /^https?:\/\//i.test(s) || s.startsWith('/_blob/') ? s : '#'; }
 function today() { return new Date().toISOString().slice(0, 10); }
 function longDate(d = new Date()) { return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
-function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3200); }
+function shortDate(s) { if (!s) return ''; const d = new Date(s); return isNaN(d) ? s : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3400); }
 function slug(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'Job'; }
+function rowById(id) { return rows.find(r => r.id === id); }
+const clone = o => JSON.parse(JSON.stringify(o));
+const place = r => [r.city, r.country].filter(Boolean).join(', ');
 
-/* ---------- tabs ---------- */
-function setTab(t) {
-  tab = t;
-  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
-  ['new', 'applied', 'saved'].forEach(k => { $('tab-' + k).hidden = k !== t; });
-  try { history.replaceState(null, '', '#' + t); } catch {}
-  render();
+/* ---------- profile: base CV, facts, steps, supplements, photo ---------- */
+function profile() {
+  const p = saved || {};
+  return {
+    cv_en: p.cv_en || K.BASE_EN, cv_fr: p.cv_fr || K.BASE_FR, facts: Array.isArray(p.facts) ? p.facts : K.FACTS,
+    steps: { ...DEFAULT_STEPS, ...(p.steps || {}) }, supplements: Array.isArray(p.supplements) ? p.supplements : [], photo: p.photo || '',
+  };
 }
-$('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
+async function saveProfile(patchObj) { await db.doc('profile/main').set({ ...profile(), ...patchObj, updatedAt: new Date().toISOString() }); }
+let photoData = null, photoFor = null;
+async function images() {
+  const p = profile();
+  if (!p.photo) return window.CV_IMAGES;
+  if (photoFor !== p.photo) {
+    const blob = await (await fetch(p.photo)).blob();
+    photoData = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+    photoFor = p.photo;
+  }
+  return { ...window.CV_IMAGES, photo: photoData };
+}
+function photoSrc() { return profile().photo || window.CV_IMAGES?.photo || ''; }
+
+/* ---------- navigation ---------- */
+function go(p) {
+  page = PAGES.includes(p) ? p : 'discover';
+  PAGES.forEach(k => { $('p-' + k).hidden = k !== page; });
+  document.querySelectorAll('#menu button').forEach(b => { if (b.dataset.page === page) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  document.body.classList.remove('menu-open'); $('menuBtn').setAttribute('aria-expanded', 'false');
+  try { history.replaceState(null, '', '#' + page); } catch {}
+  renderAll(); window.scrollTo(0, 0);
+}
+$('menu').addEventListener('click', e => { const b = e.target.closest('button[data-page]'); if (b) go(b.dataset.page); });
+$('menuBtn').addEventListener('click', () => { const o = document.body.classList.toggle('menu-open'); $('menuBtn').setAttribute('aria-expanded', o); });
+$('scrim').addEventListener('click', () => document.body.classList.remove('menu-open'));
 
 /* ---------- Claude prompts ---------- */
 function ctx() {
-  return `RULES (follow every one)\n${K.RULES.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nCAREER TARGETS\n${K.TARGETS}\n\nCONFIRMED FACTS (true; may be used; nothing beyond these and the base CV)\n${K.FACTS.map(f => '- ' + f).join('\n')}`;
+  const p = profile();
+  const supp = p.supplements.length ? p.supplements.map((s, i) => `${i + 1}. ${s.text}`).join('\n') : '(none)';
+  return `CV RULES (follow every one)\n${K.RULES.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nCAREER TARGETS\n${K.TARGETS}\n\nCONFIRMED FACTS (true; may be used)\n${p.facts.map(f => '- ' + f).join('\n')}\n\nSUPPLEMENTARY INFORMATION (true; added by the candidate after the base CV)\n${supp}\nReview every supplementary item. Work an item into the tailored CV (summary, the matching experience bullet, skills or tools) when it is relevant to this job, giving priority to items that close this job's gaps or match its key requirements. Leave out items that do not help this job. Never stretch an item beyond what it says.`;
 }
 const CV_SHAPE = `{"target": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
+const INSIGHT_SHAPE = `{"fit_score": number 0-100, "risk_level": "low"|"medium"|"high", "risks": [string] (2-4 reasons the application could fail, e.g. experience level, language, location, visa), "strengths": [string] (3-5 strongest proofs for this job, from her real experience), "gaps": [{"gap": string, "how_to_address": string}] (3-5; how_to_address must be honest: reframe true experience, prepare an example, or learn; never invent)}`;
 
 function promptTailor(jd, link) {
-  return `You are a senior recruiter and CV writer for supply chain jobs in France. You are tailoring the CV of Yu Chiao Lin for one specific job. Her goal: pass the ATS and match the job at least 80%, using only true information.
+  const p = profile();
+  return `You are a senior recruiter and CV writer for supply chain jobs. You are tailoring the CV of Yu Chiao Lin for one specific job. Her goal: pass the ATS and match the job at least 80%, using only true information.
 
 ${ctx()}
 
 BASE CV (JSON, English)
-${JSON.stringify(K.BASE_EN)}
+${JSON.stringify(p.cv_en)}
 
 JOB DESCRIPTION
 """
@@ -223,19 +354,23 @@ ${jd}
 """
 ${link ? 'Job link: ' + link : ''}
 
-TASKS
-Step 1 (diagnosis): Compare the base CV with the full job description. Give a candid, evidence-based match score from 0 to 100 for the BASE CV with a short rationale; the 8 to 10 most important requirements or keywords that are missing or under-evidenced, and for each where it could truthfully appear in the CV (or "cannot be added truthfully"); five issues a recruiter may notice in a quick review; a section-by-section review of the summary, experience, skills and education; and every gap that wording alone cannot fix because she has not provided that experience.
-Step 2 (rewrite): Rewrite the CV for this job following every rule. For each bullet use action + context or method + result; include job description terms only where her experience genuinely supports them; when a result cannot be quantified truthfully, make the scope or outcome concrete without inventing a metric. List the main changes.
-Job facts: extract company, job title, country, city, industry, contract type (CDI, CDD, internship, VIE…). If the job description states a salary, copy it and set salary_type "posted". Otherwise estimate the gross annual salary range for this role, seniority and city in local currency (France: like "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter.
+STEP 1 – her instructions:
+${p.steps.s1}
+
+STEP 2 – her instructions (rewrite the whole CV, not only the experience, following the CV rules):
+${p.steps.s2}
+
+ALSO: extract job facts (company, job title, country, city, industry, contract type). If the job description states a salary, copy it and set salary_type "posted"; otherwise estimate the gross annual range for this role, seniority and city in local currency (France: "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter. Give an honest fit and risk assessment of the TAILORED CV against this job.
 
 Return ONLY one JSON object, no markdown fences, with exactly this shape:
 {"job": {"company": string, "role": string, "country": string, "city": string, "industry": string, "contract": string, "salary": string, "salary_type": "posted"|"estimate", "jd_language": "en"|"fr"|"other", "cover_letter_requested": boolean},
  "step1": {"match_score": number, "rationale": string, "missing": [{"keyword": string, "where": string}], "recruiter_issues": [string], "section_review": {"summary": string, "experience": string, "skills": string, "education": string}, "cannot_fix": [string]},
  "step2": {"changes": [string]},
+ "supplements_used": [{"item": string, "where": string}],
  "cv_en": ${CV_SHAPE},
- "match_after": number}`;
+ "match_after": number,
+ "insight": ${INSIGHT_SHAPE}}`;
 }
-
 function promptReview(jd, cv) {
   return `You are an ATS specialist and a busy recruiter. Review this tailored CV for the job below.
 
@@ -249,11 +384,11 @@ ${jd}
 TAILORED CV (JSON)
 ${JSON.stringify(cv)}
 
-Step 3: First assess ATS readability: flag tables, columns, unusual symbols, headers or footers, formatting choices and section labels that could make parsing less reliable, and check whether the most relevant job requirements appear naturally. Second, simulate a recruiter who has only a few seconds: what stands out first, what is easy to miss, which bullets feel repetitive, and which detail should move higher. End with a prioritised list of edits. Do not recommend adding experience or metrics she cannot verify.
+STEP 3 – her instructions:
+${profile().steps.s3}
 
 Return ONLY JSON: {"ats": {"format_flags": [string], "requirements_present": [string], "requirements_missing": [string]}, "recruiter": {"stands_out": string, "easy_to_miss": string, "repetitive": [string], "move_higher": string}, "edits": [string]}`;
 }
-
 function promptFr(cv, jdLang) {
   return `Translate this tailored CV from English into French for a recruiter in France. Return ONLY JSON with exactly the same shape and the same number of items in every list.
 
@@ -263,24 +398,23 @@ Rules:
 - Keep English supply chain terms that French companies use (supply chain, S&OP, KPI, OTD, OTIF, lead time, GWP, Incoterms, ETD/ETA, CAPA, BAT, ERP), and keep brand, company and tool names as they are.
 - Put a normal space before ":" ";" "%" as French typography requires.
 - "target": ${jdLang === 'fr' ? 'the job title exactly as the French job description writes it.' : 'keep the job title as the company writes it.'}
-- Reuse the wording of the base French CV below wherever the content is the same. Keep job titles, company lines, education and languages exactly as in the base French CV.
+- Reuse the wording of the base French CV below wherever the content is the same. Keep job titles, company lines and education titles exactly as in the base French CV.
 - Perfect French grammar.
 
 BASE FRENCH CV (reference)
-${JSON.stringify(K.BASE_FR)}
+${JSON.stringify(profile().cv_fr)}
 
 CV TO TRANSLATE
 ${JSON.stringify(cv)}`;
 }
-
 function promptLetter(jd, cv, job) {
-  return `Write a motivation letter in English for Yu Chiao Lin, based only on her tailored CV and confirmed facts below. Do not invent facts about her or about the company beyond what the job description says.
+  return `Write a motivation letter in English for Yu Chiao Lin, based only on her tailored CV, confirmed facts and supplementary information below. Do not invent facts about her or about the company beyond what the job description says.
 
 ${ctx()}
 
 JOB DESCRIPTION
 """
-${jd}
+${jd || '(not provided: base it on the job title ' + (job.role || '') + ' at ' + (job.company || '') + ')'}
 """
 
 TAILORED CV (JSON)
@@ -290,26 +424,44 @@ Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company,
 
 Return ONLY JSON: {"recipient": ${JSON.stringify((job.company || 'Company') + ' – Recruitment team')}, "date": ${JSON.stringify(longDate())}, "subject": string, "greeting": string, "paragraphs": [string], "closing": string}`;
 }
-
-function promptPrep(r) {
-  return `Act as an interviewer for this exact role. You have the candidate's final CV and the job description. Prepare a written interview preparation guide for her (Step 4).
+function promptInsight(r) {
+  return `Assess honestly how well Yu Chiao Lin fits this job, as an experienced recruiter would.
 
 ${ctx()}
 
-JOB: ${r.role} at ${r.company} (${[r.city, r.country].filter(Boolean).join(', ')})
+JOB: ${r.role} at ${r.company} (${place(r)})
+JOB DESCRIPTION
+"""
+${r.jd}
+"""
+
+HER CV FOR THIS JOB (JSON)
+${JSON.stringify(r.cv_en || profile().cv_en)}
+
+Return ONLY JSON: ${INSIGHT_SHAPE}`;
+}
+function promptPrep(r) {
+  return `Prepare a written interview preparation guide for Yu Chiao Lin for this exact role, following her Step 4 instructions below. Because this is a written guide, do not wait for answers: for each question, give the structure of a strong answer from her real experience instead.
+
+${ctx()}
+
+STEP 4 – her instructions:
+${profile().steps.s4}
+
+JOB: ${r.role} at ${r.company} (${place(r)})
 JOB DESCRIPTION
 """
 ${r.jd || '(not provided: base the questions on the job title and the CV)'}
 """
 
 FINAL CV (JSON)
-${JSON.stringify(r.cv_en || K.BASE_EN)}
+${JSON.stringify(r.cv_en || profile().cv_en)}
+${r.insight ? 'KNOWN GAPS AND RISKS (prepare her for questions on these)\n' + JSON.stringify({ gaps: r.insight.gaps, risks: r.insight.risks }) : ''}
 
-Write 7 questions in this order: 1 about her background and motivation, 3 role-specific, 2 behavioural, 1 that tests how she thinks under pressure. For each: what the interviewer assesses; a suggested answer structure with situation, action and result written as short first-person notes built ONLY from her real experience in the CV and facts (no invented accomplishments, numbers or results; where her evidence is thin, write "[prepare: …]" saying exactly what detail she should prepare); the evidence or detail to prepare; what to avoid. Also give a 60-second "tell me about yourself" outline as 4–5 bullet notes, the three areas she should practise before the interview (each with how to practise), and three smart questions she can ask the interviewer.
+Write 7 questions in this order: 1 about her background and motivation, 3 role-specific, 2 behavioural, 1 that tests how she thinks under pressure. For each: what the interviewer assesses; a suggested answer structure with situation, action and result written as short first-person notes built ONLY from her real experience (no invented accomplishments, numbers or results; where her evidence is thin, write "[prepare: …]" saying exactly what detail she should prepare); the evidence or detail to prepare; what to avoid. Also give a 60-second "tell me about yourself" outline as 4–5 bullet notes, the three areas she should practise before the interview (each with how to practise), and three smart questions she can ask the interviewer.
 
 Return ONLY JSON: {"pitch": [string], "questions": [{"category": string, "question": string, "assesses": string, "structure": {"situation": string, "action": string, "result": string}, "evidence_to_prepare": string, "avoid": string}], "practice_areas": [{"area": string, "how": string}], "ask_them": [string]}`;
 }
-
 function promptTranslate(obj, lang) {
   const target = lang === 'fr' ? 'French (France). Put a normal space before ":" ";" "%" as French typography requires.' : 'Traditional Chinese as used in Taiwan (繁體中文, 台灣用語). The first time a key supply chain term appears, keep the English term in parentheses, e.g. 交期達成率 (OTD).';
   return `Translate every string value of this JSON into ${target}
@@ -319,91 +471,83 @@ ${JSON.stringify(obj)}`;
 }
 
 /* ---------- Claude calls ---------- */
-async function getSample() {
+async function askJSON(prompt, opts, onLen) {
   if (!sample) sample = await window.claude?.use?.('sample');
   if (!sample) throw new Error('Claude is not available in this view. Open this page on claude.ai while signed in.');
-  return sample;
-}
-async function askJSON(prompt, opts, onLen) {
-  const s = await getSample();
-  try {
-    return await s.json(prompt, { ...opts, onText: onLen ? ({ text }) => onLen(text.length) : undefined });
-  } catch (e) {
-    if (e && e.code === 'invalid_json' && e.text) {
-      const t = e.text, a = t.indexOf('{'), b = t.lastIndexOf('}');
-      if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
-    }
+  try { return await sample.json(prompt, { ...opts, onText: onLen ? ({ text }) => onLen(text.length) : undefined }); }
+  catch (e) {
+    if (e && e.code === 'invalid_json' && e.text) { const t = e.text, a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} } }
     const m = { rate_limited: 'You have reached a usage limit. Wait a little, then try again.', not_granted: 'Claude access was declined for this page. Allow it from the page’s Permissions menu, then try again.', invalid_json: 'Claude’s answer was cut off. Try again.' }[e?.code];
     throw new Error(m || e?.message || String(e));
   }
 }
-
-// Keep facts that must never change (titles, companies, dates, education, languages) from the base CV.
+// Titles, companies and dates of existing roles never change. One extra role and new languages may come only from supplementary information.
 function guardCv(cv, base) {
-  const out = JSON.parse(JSON.stringify(base));
+  const out = clone(base);
   if (!cv || typeof cv !== 'object') return out;
-  if (typeof cv.target === 'string' && cv.target.trim()) out.target = cv.target.trim();
-  if (typeof cv.summary === 'string' && cv.summary.trim()) out.summary = cv.summary.trim();
-  ['hard', 'soft', 'tools'].forEach(k => { if (typeof cv.skills?.[k] === 'string' && cv.skills[k].trim()) out.skills[k] = cv.skills[k].trim(); });
+  const str = v => typeof v === 'string' && v.trim() ? v.trim() : null;
+  out.target = str(cv.target) || out.target; out.summary = str(cv.summary) || out.summary;
+  ['hard', 'soft', 'tools'].forEach(k => { out.skills[k] = str(cv.skills?.[k]) || out.skills[k]; });
+  const exp = Array.isArray(cv.experience) ? cv.experience : [];
   out.experience.forEach((e, i) => {
-    const g = Array.isArray(cv.experience) ? cv.experience[i] : null;
-    if (!g) return;
-    if (Array.isArray(g.bullets) && g.bullets.filter(b => typeof b === 'string' && b.trim()).length) e.bullets = g.bullets.filter(b => typeof b === 'string' && b.trim()).map(b => b.trim());
-    if (e.description && typeof g.description === 'string' && g.description.trim()) e.description = g.description.trim();
+    const g = exp[i]; if (!g) return;
+    const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean); if (b.length) e.bullets = b;
+    if (e.description && str(g.description)) e.description = str(g.description);
   });
-  out.education.forEach((e, i) => { const g = cv.education?.[i]; if (typeof g?.details === 'string' && g.details.trim()) e.details = g.details.trim(); });
+  exp.slice(out.experience.length, out.experience.length + 1).forEach(g => { if (str(g?.title) && str(g?.company_line) && Array.isArray(g.bullets)) out.experience.push({ title: str(g.title), company_line: str(g.company_line), bullets: g.bullets.map(str).filter(Boolean) }); });
+  out.education.forEach((e, i) => { const d = str(cv.education?.[i]?.details); if (d) e.details = d; });
+  const langs = Array.isArray(cv.languages) ? cv.languages.map(str).filter(Boolean) : [];
+  if (langs.length >= out.languages.length && langs.length <= 5) out.languages = langs;
   return out;
 }
 
-/* ---------- generation flow ---------- */
-const GEN_STEPS = [['tailor', 'Steps 1–2: diagnosis and English CV'], ['review', 'Step 3: ATS and recruiter review'], ['fr', 'French CV'], ['letter', 'Motivation letter (English)'], ['save', 'Save to your applications']];
-function stepsUI(state) {
+/* ---------- tailoring flow ---------- */
+const GEN_STEPS = [['tailor', 'Steps 1–2 · diagnosis, fit and English CV'], ['review', 'Step 3 · ATS and recruiter review'], ['fr', 'French CV'], ['letter', 'Motivation letter (English)'], ['save', 'Saved to your tracker']];
+function stepsUI(st) {
   $('genSteps').hidden = false;
-  $('genSteps').innerHTML = GEN_STEPS.filter(([k]) => state[k] !== 'skip').map(([k, l]) => {
-    const s = state[k] || '';
-    const meta = typeof state[k + 'Len'] === 'number' && s === 'run' ? ` · ${state[k + 'Len'].toLocaleString()} characters written` : s === 'fail' ? ' · failed' : '';
+  $('genSteps').innerHTML = GEN_STEPS.filter(([k]) => st[k] !== 'skip').map(([k, l]) => {
+    const s = st[k] || '', meta = typeof st[k + 'Len'] === 'number' && s === 'run' ? ` · ${st[k + 'Len'].toLocaleString()} characters` : s === 'fail' ? ' · failed' : '';
     return `<li class="${s}"><span class="dot"></span><span>${l}<span class="meta">${meta}</span></span></li>`;
   }).join('');
 }
-
 $('newForm').addEventListener('submit', async e => {
   e.preventDefault();
   const jd = $('jd').value.trim(), link = $('jobLink').value.trim(), mode = $('letterMode').value;
   $('genErr').hidden = true;
   if (jd.length < 150) { $('genErr').textContent = 'Paste the full job description (it looks too short).'; $('genErr').hidden = false; return; }
-  if (!col) { $('genErr').textContent = 'Your applications are not loaded yet. Sign in to claude.ai and reload the page.'; $('genErr').hidden = false; return; }
+  if (!col) { $('genErr').textContent = 'Your data is not loaded yet. Sign in to claude.ai and reload the page.'; $('genErr').hidden = false; return; }
   $('genBtn').disabled = true; newId = null; $('newResult').innerHTML = '';
   const st = { tailor: 'run' }; stepsUI(st);
   try {
+    const p = profile();
     const t = await askJSON(promptTailor(jd, link), { modelTier: 'complex' }, n => { st.tailorLen = n; stepsUI(st); });
-    const cv_en = guardCv(t.cv_en, K.BASE_EN), job = t.job || {};
+    const cv_en = guardCv(t.cv_en, p.cv_en), job = t.job || {};
     st.tailor = 'done';
     const wantLetter = mode === 'yes' || (mode === 'auto' && job.cover_letter_requested === true);
     Object.assign(st, { review: 'run', fr: 'run', letter: wantLetter ? 'run' : 'skip' }); stepsUI(st);
+    const track = (k, pr) => pr.then(v => { st[k] = 'done'; stepsUI(st); return v; }, err => { st[k] = 'fail'; stepsUI(st); throw err; });
     const [rev, fr, letter] = await Promise.allSettled([
-      askJSON(promptReview(jd, cv_en), { modelTier: 'default' }).then(v => { st.review = 'done'; stepsUI(st); return v; }, err => { st.review = 'fail'; stepsUI(st); throw err; }),
-      askJSON(promptFr(cv_en, job.jd_language), { modelTier: 'default' }).then(v => { st.fr = 'done'; stepsUI(st); return v; }, err => { st.fr = 'fail'; stepsUI(st); throw err; }),
-      wantLetter ? askJSON(promptLetter(jd, cv_en, job), { modelTier: 'complex' }).then(v => { st.letter = 'done'; stepsUI(st); return v; }, err => { st.letter = 'fail'; stepsUI(st); throw err; }) : Promise.resolve(null),
+      track('review', askJSON(promptReview(jd, cv_en), { modelTier: 'default' })),
+      track('fr', askJSON(promptFr(cv_en, job.jd_language), { modelTier: 'default' })),
+      wantLetter ? track('letter', askJSON(promptLetter(jd, cv_en, job), { modelTier: 'complex' })) : Promise.resolve(null),
     ]);
     st.save = 'run'; stepsUI(st);
     const now = new Date().toISOString();
-    const data = {
+    const ref = await col.add({
       company: job.company || 'Unknown company', role: job.role || cv_en.target, country: job.country || '', city: job.city || '',
       industry: job.industry || '', contract: job.contract || '', salary: job.salary || '', salaryType: job.salary_type === 'posted' ? 'posted' : 'estimate',
-      status: 'prep', appliedDate: '', jd, link, jdLanguage: job.jd_language || '',
+      status: 'prep', appliedDate: '', interviewDate: '', notes: '', jd, link, jdLanguage: job.jd_language || '',
       matchBefore: Number(t.step1?.match_score) || null, match: Number(t.match_after) || null,
       cvVersion: `${job.role || cv_en.target} – ${job.company || ''} (${today()})`,
-      cv_en, cv_fr: fr.status === 'fulfilled' ? K.deepMap(guardCv(fr.value, K.BASE_FR), K.frTypo) : null,
-      coverLetter: letter.status === 'fulfilled' ? letter.value : null, wantLetter,
+      cv_en, cv_fr: fr.status === 'fulfilled' ? K.deepMap(guardCv(fr.value, p.cv_fr), K.frTypo) : null,
+      coverLetter: letter.status === 'fulfilled' ? letter.value : null,
+      insight: t.insight || null, supplementsUsed: Array.isArray(t.supplements_used) ? t.supplements_used : [],
       analysis: { step1: t.step1 || null, step2: t.step2 || null, step3: rev.status === 'fulfilled' ? rev.value : null },
       createdAt: now, updatedAt: now,
-    };
-    const ref = await col.add(data);
+    });
     st.save = 'done'; stepsUI(st);
-    newId = ref.id; openId = ref.id;
-    $('jd').value = ''; $('jobLink').value = '';
-    render();
-    $('newResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    newId = ref.id; $('jd').value = ''; $('jobLink').value = '';
+    renderAll(); $('newResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     Object.keys(st).forEach(k => { if (st[k] === 'run') st[k] = 'fail'; }); stepsUI(st);
     $('genErr').textContent = err.message || String(err); $('genErr').hidden = false;
@@ -412,23 +556,23 @@ $('newForm').addEventListener('submit', async e => {
 });
 
 async function patch(id, data) { await col.doc(id).update({ ...data, updatedAt: new Date().toISOString() }); }
-function rowById(id) { return rows.find(r => r.id === id); }
-
-async function retryPart(id, part) {
+async function runPart(id, part) {
   const r = rowById(id); if (!r || busy[id]) return;
-  busy[id] = part; render();
+  busy[id] = part; renderAll();
   try {
-    if (part === 'fr') { const fr = await askJSON(promptFr(r.cv_en, r.jdLanguage), { modelTier: 'default' }); await patch(id, { cv_fr: K.deepMap(guardCv(fr, K.BASE_FR), K.frTypo) }); }
+    const p = profile();
+    if (part === 'fr') { const fr = await askJSON(promptFr(r.cv_en || p.cv_en, r.jdLanguage), { modelTier: 'default' }); await patch(id, { cv_fr: K.deepMap(guardCv(fr, p.cv_fr), K.frTypo) }); }
     if (part === 'review') { const v = await askJSON(promptReview(r.jd, r.cv_en), { modelTier: 'default' }); await patch(id, { analysis: { ...(r.analysis || {}), step3: v } }); }
-    if (part === 'letter') { const v = await askJSON(promptLetter(r.jd, r.cv_en || K.BASE_EN, r), { modelTier: 'complex' }); await patch(id, { coverLetter: v }); }
+    if (part === 'letter') { const v = await askJSON(promptLetter(r.jd, r.cv_en || p.cv_en, r), { modelTier: 'complex' }); await patch(id, { coverLetter: v }); }
+    if (part === 'insight') { const v = await askJSON(promptInsight(r), { modelTier: 'complex' }); await patch(id, { insight: v }); }
     if (part === 'prep') await genPrep(id);
     toast('Done');
   } catch (err) { toast(err.message || String(err)); }
-  delete busy[id]; render();
+  delete busy[id]; renderAll();
 }
-
 async function genPrep(id) {
-  const r = rowById(id);
+  let r = rowById(id);
+  if (!r.insight && r.jd) { const v = await askJSON(promptInsight(r), { modelTier: 'complex' }); await patch(id, { insight: v }); r = { ...r, insight: v }; }
   const en = await askJSON(promptPrep(r), { modelTier: 'complex' });
   await patch(id, { prep: { en, generatedAt: new Date().toISOString() } });
   const [fr, zh] = await Promise.allSettled([askJSON(promptTranslate(en, 'fr'), { modelTier: 'default' }), askJSON(promptTranslate(en, 'zh'), { modelTier: 'default' })]);
@@ -437,289 +581,352 @@ async function genPrep(id) {
 
 /* ---------- files ---------- */
 let fontCache = null, zhLoaded = false;
-async function b64(url) {
-  const buf = await (await fetch(url)).arrayBuffer(), bytes = new Uint8Array(buf);
-  let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-  return btoa(s);
-}
+async function b64(url) { const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer()); let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
 async function pdfFonts(zh) {
-  if (!fontCache) {
-    fontCache = {};
-    for (const f of ['Carlito-Regular', 'Carlito-Bold', 'Carlito-Italic', 'Carlito-BoldItalic']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf');
-  }
-  if (zh && !zhLoaded) {
-    for (const f of ['NotoSansTC-Regular', 'NotoSansTC-Bold']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf');
-    zhLoaded = true;
-  }
+  if (!fontCache) { fontCache = {}; for (const f of ['Carlito-Regular', 'Carlito-Bold', 'Carlito-Italic', 'Carlito-BoldItalic']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf'); }
+  if (zh && !zhLoaded) { for (const f of ['NotoSansTC-Regular', 'NotoSansTC-Bold']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf'); zhLoaded = true; }
   const fonts = { Carlito: { normal: 'Carlito-Regular.ttf', bold: 'Carlito-Bold.ttf', italics: 'Carlito-Italic.ttf', bolditalics: 'Carlito-BoldItalic.ttf' } };
   if (zhLoaded) fonts.NotoTC = { normal: 'NotoSansTC-Regular.ttf', bold: 'NotoSansTC-Bold.ttf', italics: 'NotoSansTC-Regular.ttf', bolditalics: 'NotoSansTC-Bold.ttf' };
   return fonts;
 }
-function makePdf(dd, fonts) {
-  return new Promise(res => { let pages = 0; const f0 = dd.footer; dd.footer = (c, t) => { pages = t; return f0 ? f0(c, t) : null; }; window.pdfMake.createPdf(dd, null, fonts, fontCache).getBlob(blob => res({ blob, pages })); });
-}
+function makePdf(dd, fonts) { return new Promise(res => { let pages = 0; const f0 = dd.footer; dd.footer = (c, t) => { pages = t; return f0 ? f0(c, t) : null; }; window.pdfMake.createPdf(dd, null, fonts, fontCache).getBlob(blob => res({ blob, pages })); }); }
 async function cvPdfFit(cv, lang) {
-  const fonts = await pdfFonts(false); let last;
-  for (const s of [1, 0.96, 0.92, 0.88, 0.84]) { last = await makePdf(K.cvPdf(cv, lang, s, window.CV_IMAGES), fonts); last.scale = s; if (last.pages <= 1) break; }
+  const fonts = await pdfFonts(false), img = await images(); let last;
+  for (const s of [1, 0.96, 0.92, 0.88, 0.84]) { last = await makePdf(K.cvPdf(cv, lang, s, img), fonts); last.scale = s; if (last.pages <= 1) break; }
   return last;
 }
-async function save(filename, blob) {
+async function save(filename, data) {
   if (!downloads) downloads = await window.claude?.use?.('downloads');
   if (!downloads) { toast('Downloads are not available in this view.'); return; }
-  try { const r = await downloads.save({ filename, data: blob }); if (r?.status === 'saved') toast('Saved ' + filename); }
+  try { const r = await downloads.save({ filename, data }); if (r?.status === 'saved') toast('Saved ' + filename); }
   catch (e) { if (e?.code !== 'cancelled' && e?.code !== 'declined') toast('Could not save: ' + (e?.message || e?.code)); }
+}
+async function cvFile(cv, lang, kind, name) {
+  if (kind === 'pdf') { const { blob, pages } = await cvPdfFit(cv, lang); if (pages > 1) toast('This CV runs to 2 pages. Shorten a bullet in the Word version.'); return save(name + '.pdf', blob); }
+  const { scale } = await cvPdfFit(cv, lang);
+  return save(name + '.docx', await window.docx.Packer.toBlob(K.cvDocx(cv, lang, scale, await images(), window.docx)));
 }
 async function download(id, what) {
   const r = rowById(id); if (!r) return;
-  const base = `${slug(r.role)}_${slug(r.company)}`;
+  const base = `${slug(r.role)}_${slug(r.company)}`, p = profile();
   try {
-    if (what === 'cv-en-pdf' || what === 'cv-fr-pdf') {
-      const lang = what.includes('-fr-') ? 'fr' : 'en', cv = lang === 'fr' ? r.cv_fr : (r.cv_en || K.BASE_EN);
-      const { blob, pages } = await cvPdfFit(cv, lang);
-      if (pages > 1) toast('Note: this CV runs to 2 pages. Shorten a bullet in the Word version.');
-      await save(`CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}.pdf`, blob);
-    } else if (what === 'cv-en-docx' || what === 'cv-fr-docx') {
-      const lang = what.includes('-fr-') ? 'fr' : 'en', cv = lang === 'fr' ? r.cv_fr : (r.cv_en || K.BASE_EN);
-      const { scale } = await cvPdfFit(cv, lang);
-      await save(`CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}.docx`, await window.docx.Packer.toBlob(K.cvDocx(cv, lang, scale, window.CV_IMAGES, window.docx)));
-    } else if (what === 'letter-pdf') {
-      const { blob } = await makePdf(K.letterPdf(r.coverLetter), await pdfFonts(false));
-      await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob);
-    } else if (what === 'letter-docx') {
-      await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx)));
-    } else if (what.startsWith('prep-')) {
-      const lang = what.slice(5);
-      if (lang === 'zh') toast('Loading the Chinese font…');
-      const { blob } = await makePdf(K.prepPdf(r.prep[lang], r, lang), await pdfFonts(lang === 'zh'));
-      await save(`Interview_Prep_${base}_${lang.toUpperCase()}.pdf`, blob);
-    }
+    if (what.startsWith('cv-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_fr : (r.cv_en || p.cv_en), lang, kind, `CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}`); }
+    else if (what === 'letter-pdf') { const { blob } = await makePdf(K.letterPdf(r.coverLetter), await pdfFonts(false)); await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob); }
+    else if (what === 'letter-docx') await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx)));
+    else if (what.startsWith('prep-')) { const lang = what.slice(5); if (lang === 'zh') toast('Loading the Chinese font…'); const { blob } = await makePdf(K.prepPdf(r.prep[lang], r, lang), await pdfFonts(lang === 'zh')); await save(`Interview_Prep_${base}_${lang.toUpperCase()}.pdf`, blob); }
   } catch (e) { toast('Could not create the file: ' + (e?.message || e)); }
 }
 
-/* ---------- rendering ---------- */
-function pill(r) { const [l, c] = STATUS[r.status] || STATUS.prep; return `<span class="pill ${c}">${l}</span>`; }
-function factsLine(r) {
-  const place = [r.city, r.country].filter(Boolean).join(', ');
-  return `<div class="facts">${place ? `<span>${esc(place)}</span>` : ''}${r.salary ? `<span><b>${esc(r.salary)}</b> (${SALARY_TYPE[r.salaryType] || 'estimate'})</span>` : ''}${r.contract ? `<span>${esc(r.contract)}</span>` : ''}${r.match ? `<span>Match <b class="mono">${esc(r.matchBefore ? r.matchBefore + '→' : '')}${esc(r.match)}%</b></span>` : ''}${r.appliedDate ? `<span>Applied <b class="mono">${esc(r.appliedDate)}</b></span>` : ''}</div>`;
-}
+/* ---------- shared pieces ---------- */
 function li(arr) { return (arr || []).map(x => `<li>${esc(x)}</li>`).join(''); }
-function cvPaper(cv, lang) {
+function statusPill(s) { const v = ST[s] || ST.prep; return `<span class="pill"><span class="sw" style="background:${v.c}"></span>${v.l}</span>`; }
+function salaryText(r) { return r.salary ? `${esc(r.salary)} (${SALARY_TYPE[r.salaryType] || 'est.'})` : ''; }
+function cvPaper(cv, lang, photo) {
   if (!cv) return '';
-  const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils'] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools'];
-  return `<div class="paper"><div class="nm">${esc(K.NAME)}</div><p>${esc(K.CONTACT)}</p><p><b>${esc(lang === 'fr' ? 'Poste visé : ' : 'Target: ')}${esc(cv.target)}</b></p>
+  const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : ' + K.AVAIL.fr] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: ' + K.AVAIL.en];
+  return `<div class="paper">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.NAME)}</div><p class="tg">${esc(K.CONTACT)}</p><p class="tg"><b>${esc(L[8])}${esc(cv.target)} | ${esc(L[9])}</b></p>
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
     <div class="sec">${L[1]}</div><p><b>${L[5]}:</b> ${esc(cv.skills.hard)}</p><p><b>${L[6]}:</b> ${esc(cv.skills.soft)}</p><p><b>${L[7]}:</b> ${esc(cv.skills.tools)}</p>
     <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}<ul>${li(e.bullets)}</ul>`).join('')}
     <div class="sec">${L[3]}</div>${cv.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p><p>${esc(e.details)}</p>`).join('')}
     <div class="sec">${L[4]}</div>${cv.languages.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
-function analysisHTML(r, open) {
-  const a = r.analysis || {}, s1 = a.step1, s2 = a.step2, s3 = a.step3, b = busy[r.id];
+function filesRow(r) {
+  const id = esc(r.id), b = busy[r.id];
+  const btn = (w, l) => `<button class="btn sm" type="button" data-act="dl" data-what="${w}" data-id="${id}">${l}</button>`;
+  const lab = t => `<span class="muted small" style="min-width:110px">${t}</span>`;
+  return `<div class="grid2">
+    <div class="row">${lab('CV · English')}${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
+    <div class="row">${lab('CV · Français')}${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
+    <div class="row">${lab('Letter')}${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one'}</button>`}</div>
+  </div>`;
+}
+function analysisFolds(r) {
+  const a = r.analysis || {}, s1 = a.step1, s2 = a.step2, s3 = a.step3;
   let h = '';
-  if (s1) h += `<details ${open ? 'open' : ''}><summary>Step 1 · Diagnosis</summary><div class="in">
-    <div class="score"><span class="big">${esc(s1.match_score)}%</span><span class="muted">base CV match${r.match ? ` → <b class="mono">${esc(r.match)}%</b> after tailoring` : ''}</span></div>
-    <p>${esc(s1.rationale)}</p>
-    <h3>Missing or under-evidenced</h3><div class="tablewrap"><table class="kw"><tr><th>Keyword / requirement</th><th>Where it can truthfully go</th></tr>${(s1.missing || []).map(m => `<tr><td>${esc(m.keyword)}</td><td>${esc(m.where)}</td></tr>`).join('')}</table></div>
+  if (s1) h += `<details class="fold"><summary>Step 1 · Diagnosis <span class="mono muted small">${esc(s1.match_score)}%${r.match ? ' → ' + esc(r.match) + '%' : ''}</span></summary><div class="in">
+    <p>${esc(s1.rationale)}</p><h3>Missing or under-evidenced</h3><div style="overflow-x:auto"><table class="kw"><tr><th>Keyword</th><th>Where it can truthfully go</th></tr>${(s1.missing || []).map(m => `<tr><td>${esc(m.keyword)}</td><td>${esc(m.where)}</td></tr>`).join('')}</table></div>
     <h3>What a recruiter may notice</h3><ol>${li(s1.recruiter_issues)}</ol>
     <h3>Section by section</h3><ul>${['summary', 'experience', 'skills', 'education'].map(k => s1.section_review?.[k] ? `<li><b>${k[0].toUpperCase() + k.slice(1)}:</b> ${esc(s1.section_review[k])}</li>` : '').join('')}</ul>
-    ${(s1.cannot_fix || []).length ? `<h3>Can't be fixed with wording alone</h3><ul>${li(s1.cannot_fix)}</ul>` : ''}
-  </div></details>`;
-  if (s2) h += `<details><summary>Step 2 · Main changes</summary><div class="in"><ul>${li(s2.changes)}</ul></div></details>`;
-  if (r.cv_en || r.cv_fr) h += `<details><summary>CV preview</summary><div class="in">${cvPaper(r.cv_en || K.BASE_EN, 'en')}${r.cv_fr ? `<p class="muted small">French version</p>${cvPaper(r.cv_fr, 'fr')}` : ''}</div></details>`;
-  if (s3) h += `<details><summary>Step 3 · ATS and recruiter review</summary><div class="in">
-    <h3>ATS readability</h3><ul>${li(s3.ats?.format_flags)}</ul>
-    ${(s3.ats?.requirements_present || []).length ? `<p><b>Requirements that appear:</b> ${esc((s3.ats.requirements_present).join(', '))}</p>` : ''}
-    ${(s3.ats?.requirements_missing || []).length ? `<p><b>Still missing:</b> ${esc((s3.ats.requirements_missing).join(', '))}</p>` : ''}
-    <h3>6-second recruiter skim</h3><ul><li><b>Stands out:</b> ${esc(s3.recruiter?.stands_out)}</li><li><b>Easy to miss:</b> ${esc(s3.recruiter?.easy_to_miss)}</li><li><b>Repetitive:</b> ${esc((s3.recruiter?.repetitive || []).join(' · '))}</li><li><b>Move higher:</b> ${esc(s3.recruiter?.move_higher)}</li></ul>
+    ${(s1.cannot_fix || []).length ? `<h3>Can't be fixed with wording alone</h3><ul>${li(s1.cannot_fix)}</ul>` : ''}</div></details>`;
+  if (s2 || (r.supplementsUsed || []).length) h += `<details class="fold"><summary>Step 2 · What changed</summary><div class="in"><ul>${li(s2?.changes)}</ul>${(r.supplementsUsed || []).length ? `<h3>Supplementary information used</h3><ul>${r.supplementsUsed.map(s => `<li>${esc(s.item)} <span class="muted">→ ${esc(s.where)}</span></li>`).join('')}</ul>` : ''}</div></details>`;
+  if (r.cv_en || r.cv_fr) h += `<details class="fold"><summary>CV preview</summary><div class="in">${cvPaper(r.cv_en || profile().cv_en, 'en', photoSrc())}${r.cv_fr ? cvPaper(r.cv_fr, 'fr', photoSrc()) : ''}</div></details>`;
+  if (s3) h += `<details class="fold"><summary>Step 3 · ATS and recruiter review</summary><div class="in"><h3>ATS readability</h3><ul>${li(s3.ats?.format_flags)}</ul>
+    ${(s3.ats?.requirements_missing || []).length ? `<p><b>Still missing:</b> ${esc(s3.ats.requirements_missing.join(', '))}</p>` : ''}
+    <h3>6-second skim</h3><ul><li><b>Stands out:</b> ${esc(s3.recruiter?.stands_out)}</li><li><b>Easy to miss:</b> ${esc(s3.recruiter?.easy_to_miss)}</li><li><b>Move higher:</b> ${esc(s3.recruiter?.move_higher)}</li></ul>
     <h3>Prioritised edits</h3><ol>${li(s3.edits)}</ol></div></details>`;
-  else if (r.cv_en && r.jd) h += `<div class="row"><button class="btn" data-act="retry-review" data-id="${esc(r.id)}" ${b ? 'disabled' : ''}>${b === 'review' ? 'Reviewing…' : 'Run Step 3 review'}</button></div>`;
+  else if (r.cv_en && r.jd) h += `<div class="row"><button class="btn sm" type="button" data-act="run" data-part="review" data-id="${esc(r.id)}" ${busy[r.id] ? 'disabled' : ''}>${busy[r.id] === 'review' ? 'Reviewing…' : 'Run Step 3 review'}</button></div>`;
   return h;
 }
-function filesHTML(r) {
-  const b = busy[r.id], id = esc(r.id);
-  const btn = (act, label) => `<button class="btn" data-act="dl" data-what="${act}" data-id="${id}">${label}</button>`;
-  let h = `<div class="dl">
-    <div class="row"><span>CV · English</span>${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
-    <div class="row"><span>CV · Français</span>${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn" data-act="retry-fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
-    <div class="row"><span>Motivation letter</span>${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') : `<button class="btn" data-act="retry-letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one (English)'}</button>`}</div>`;
-  if (Array.isArray(r.files) && r.files.length) h += `<div class="row"><span>Earlier files</span>${r.files.map(f => `<a class="btn" href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">${esc(f.label)}</a>`).join('')}</div>`;
-  return h + '</div>';
+function gauge(score) {
+  const v = Math.max(0, Math.min(100, Math.round(Number(score) || 0))), r = 52, c = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 132 132" role="img" aria-label="Fit score ${v} out of 100"><circle cx="66" cy="66" r="${r}" fill="none" stroke="#29292e" stroke-width="10"/><circle cx="66" cy="66" r="${r}" fill="none" stroke="#8ea6ff" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(c * v / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 66 66)"/><text x="66" y="76" text-anchor="middle" fill="#f3f1ec" font-family="Bodoni Moda, Georgia, serif" font-size="32">${v}</text></svg>`;
 }
-function jdHTML(r) {
-  if (r.jd) return `<details><summary>Job description</summary><div class="in">${r.link ? `<a href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">Open the job ad ↗</a>` : ''}<div class="jd">${esc(r.jd)}</div></div></details>`;
-  return `<div class="panel"><label for="jd-${esc(r.id)}">Add the job description (needed for a precise interview prep)<textarea id="jd-${esc(r.id)}" rows="6"></textarea></label><div class="row"><button class="btn" data-act="save-jd" data-id="${esc(r.id)}">Save job description</button></div></div>`;
+function insightBoard(r) {
+  const s = r.insight, b = busy[r.id];
+  if (!s) return `<div class="card"><h3>Fit &amp; risk</h3><p class="muted" style="margin:0">${r.jd ? 'Not analysed yet.' : 'Add the job description below to see your fit score, risks, strengths and gaps.'}</p>${r.jd ? `<div class="row"><button class="btn solid" type="button" data-act="run" data-part="insight" data-id="${esc(r.id)}" ${b ? 'disabled' : ''}>${b === 'insight' ? 'Analysing…' : 'Analyse fit and risk'}</button></div>` : ''}</div>`;
+  const lv = ['low', 'medium', 'high'].includes(s.risk_level) ? s.risk_level : 'medium', idx = { low: 1, medium: 2, high: 3 }[lv];
+  return `<div class="board">
+    <div class="card"><h3>Fit score</h3><div class="gauge">${gauge(s.fit_score)}<div><div class="muted small">How well your CV for this job answers its requirements.</div>${r.matchBefore ? `<div class="small" style="margin-top:10px">ATS keyword match<br><span class="mono">${esc(r.matchBefore)}% → ${esc(r.match || '–')}%</span></div>` : ''}</div></div></div>
+    <div class="card"><h3>Risk</h3><div class="lvl">${lv}</div><div class="riskbar">${[1, 2, 3].map(i => `<span class="${i <= idx ? 'on ' + lv : ''}"></span>`).join('')}</div><div class="risklabels"><span>Low</span><span style="text-align:center">Medium</span><span style="text-align:right">High</span></div>
+      <ul class="clean">${(s.risks || []).map(x => `<li><span class="ic r">!</span><span>${esc(x)}</span></li>`).join('')}</ul></div>
+    <div class="card"><h3>Strengths</h3><ul class="clean">${(s.strengths || []).map(x => `<li><span class="ic s">✓</span><span>${esc(x)}</span></li>`).join('')}</ul></div>
+    <div class="card"><h3>Gaps · and how to answer them</h3><ul class="clean">${(s.gaps || []).map(g => `<li><span class="ic g">◇</span><span>${esc(g.gap || g)}${g.how_to_address ? `<small>${esc(g.how_to_address)}</small>` : ''}</span></li>`).join('')}</ul></div>
+  </div>`;
 }
-function prepHTML(r) {
-  const b = busy[r.id], id = esc(r.id), p = r.prep;
-  if (b === 'prep') return `<div class="panel"><h3>Interview prep (Step 4)</h3><p class="muted small">Writing your interview prep in English, then French and Chinese… about 1–2 minutes.</p></div>`;
-  if (!p?.en) return `<div class="panel"><h3>Interview prep (Step 4)</h3><p class="muted small">7 likely questions (motivation, 3 role-specific, 2 behavioural, 1 under pressure) with answer structures built from your real experience, plus 3 areas to practise. PDF in English, French and Chinese.</p><div class="row"><button class="primary btn" data-act="retry-prep" data-id="${id}" ${b ? 'disabled' : ''}>Generate interview prep</button></div></div>`;
-  const btn = (l, label) => p[l] ? `<button class="btn" data-act="dl" data-what="prep-${l}" data-id="${id}">${label}</button>` : '';
-  return `<div class="panel"><h3>Interview prep (Step 4)</h3>
-    <div class="row">${btn('en', 'English PDF')}${btn('fr', 'Français PDF')}${btn('zh', '中文 PDF')}${!p.fr || !p.zh ? '<span class="muted small">Missing translations: regenerate to retry.</span>' : ''}</div>
-    <details><summary>Preview (English)</summary><div class="in"><h3>Tell me about yourself</h3><ul>${li(p.en.pitch)}</ul>${(p.en.questions || []).map((q, i) => `<div><p class="small muted">${i + 1}. ${esc(q.category)}</p><p><b>${esc(q.question)}</b></p><ul><li><b>Assesses:</b> ${esc(q.assesses)}</li><li><b>Situation:</b> ${esc(q.structure?.situation)}</li><li><b>Action:</b> ${esc(q.structure?.action)}</li><li><b>Result:</b> ${esc(q.structure?.result)}</li><li><b>Prepare:</b> ${esc(q.evidence_to_prepare)}</li><li><b>Avoid:</b> ${esc(q.avoid)}</li></ul></div>`).join('')}<h3>Practise</h3><ol>${(p.en.practice_areas || []).map(a => `<li><b>${esc(a.area)}.</b> ${esc(a.how)}</li>`).join('')}</ol></div></details>
-    <div class="row"><button class="btn" data-act="retry-prep" data-id="${id}" ${b ? 'disabled' : ''}>Regenerate</button><span class="muted small">Generated ${esc((p.generatedAt || '').slice(0, 10))}</span></div></div>`;
-}
-function decideHTML(r, inNew) {
-  const id = esc(r.id), del = pendingDelete === r.id;
-  return `<div class="decide"><h3>Did you send this application?</h3>
-    <div class="row"><label class="check" for="ad-${id}">Date <input type="date" id="ad-${id}" value="${today()}"></label>
-      <button class="primary" data-act="applied" data-id="${id}">I applied</button>
-      ${inNew ? `<button class="dark" data-act="later" data-id="${id}">Not applied yet</button>` : ''}
-      ${del ? `<button class="danger" data-act="del-yes" data-id="${id}">Delete for good</button><button class="btn" data-act="del-no">Keep</button>` : `<button class="btn danger" data-act="del" data-id="${id}">Discard</button>`}
-    </div>
-    <p class="note">“I applied” moves it to Applied and writes your interview prep. “Not applied yet” keeps it in Saved.</p></div>`;
-}
-function statusSelect(r) {
-  const id = esc(r.id);
-  return `<label class="check" for="st-${id}">Status <select id="st-${id}" data-act="status" data-id="${id}">${APPLIED.map(k => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${STATUS[k][0]}</option>`).join('')}</select></label>`;
-}
-function cardHTML(r, mode) {
-  const open = openId === r.id || mode === 'new';
-  let body = '';
-  if (open) {
-    body = `<div class="card-body">${mode === 'applied' ? `<div class="row">${statusSelect(r)}${pendingDelete === r.id ? `<button class="danger btn" data-act="del-yes" data-id="${esc(r.id)}">Delete for good</button><button class="btn" data-act="del-no">Keep</button>` : `<button class="btn" data-act="del" data-id="${esc(r.id)}">Delete</button>`}</div>` : ''}
-      ${filesHTML(r)}${analysisHTML(r, mode === 'new')}${jdHTML(r)}${mode === 'applied' ? prepHTML(r) : decideHTML(r, mode === 'new')}</div>`;
-  }
-  return `<article class="card"><div class="card-head" ${mode === 'new' ? '' : `data-act="toggle" data-id="${esc(r.id)}" role="button" tabindex="0" aria-expanded="${open}"`}>
-    <div class="who"><div class="co">${esc(r.company)}</div><div class="role">${esc(r.role)}</div>${factsLine(r)}</div>${pill(r)}</div>${body}</article>`;
-}
-function render() {
-  const applied = rows.filter(r => APPLIED.includes(r.status)), saved = rows.filter(r => r.status === 'prep');
-  $('c-applied').textContent = applied.length; $('c-saved').textContent = saved.length;
-  if (tab === 'new') { const r = newId && rowById(newId); $('newResult').innerHTML = r ? `<div class="list"><h2>2. Your tailored application</h2>${cardHTML(r, r.status === 'prep' ? 'new' : 'applied')}</div>` : ''; }
-  if (tab === 'applied') $('appliedList').innerHTML = !col ? loadingMsg() : applied.length ? applied.map(r => cardHTML(r, 'applied')).join('') : '<div class="msg">No applications marked as applied yet. Generate a CV in “New application”, then press “I applied”.</div>';
-  if (tab === 'saved') $('savedList').innerHTML = !col ? loadingMsg() : saved.length ? saved.map(r => cardHTML(r, 'saved')).join('') : '<div class="msg">Nothing saved. Tailored CVs you have not sent yet appear here.</div>';
-}
-let loadState = 'Loading your applications…';
-function loadingMsg() { return `<div class="msg">${esc(loadState)}</div>`; }
 
-document.addEventListener('click', async e => {
-  const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT') return;
-  const id = el.dataset.id, act = el.dataset.act;
-  if (act === 'toggle') { openId = openId === id ? null : id; pendingDelete = null; render(); return; }
-  if (act === 'dl') { el.disabled = true; await download(id, el.dataset.what); el.disabled = false; return; }
-  if (act === 'retry-fr') return retryPart(id, 'fr');
-  if (act === 'retry-review') return retryPart(id, 'review');
-  if (act === 'retry-letter') return retryPart(id, 'letter');
-  if (act === 'retry-prep') return retryPart(id, 'prep');
-  if (act === 'del') { pendingDelete = id; render(); return; }
-  if (act === 'del-no') { pendingDelete = null; render(); return; }
-  if (act === 'del-yes') { try { await col.doc(id).delete(); if (newId === id) newId = null; toast('Deleted'); } catch (err) { toast('Could not delete: ' + (err.message || err.code)); } pendingDelete = null; render(); return; }
-  if (act === 'later') { newId = null; toast('Saved for later'); setTab('saved'); openId = id; render(); return; }
-  if (act === 'save-jd') { const v = $('jd-' + id)?.value.trim(); if (!v) return; try { await patch(id, { jd: v }); toast('Job description saved'); } catch (err) { toast(err.message || String(err)); } return; }
-  if (act === 'applied') {
-    const date = $('ad-' + id)?.value || today();
-    try { await patch(id, { status: 'sent', appliedDate: date }); } catch (err) { toast('Could not update: ' + (err.message || err.code)); return; }
-    newId = null; openId = id; setTab('applied'); toast('Moved to Applied. Writing your interview prep…');
-    retryPart(id, 'prep');
-  }
-});
-document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.card-head[data-act="toggle"]')) { e.preventDefault(); e.target.click(); } });
-document.addEventListener('change', async e => {
-  const el = e.target; if (el.dataset.act !== 'status') return;
-  try { await patch(el.dataset.id, { status: el.value }); toast('Status updated'); } catch (err) { toast(err.message || String(err)); }
-});
-
-
-/* ---------- recommended jobs ---------- */
-const TRIGGER_ID = 'trig_01PxYDcde3UJrHVrMazYDgKE';
+/* ---------- DISCOVER ---------- */
+let TRIGGER_ID = 'trig_01VMzruXt77Q1wroKgvEMrPP';
 const LEVELS = [['stage', 'Internship (stage)'], ['junior', 'Junior'], ['senior', 'Senior'], ['na', 'Not stated']];
 const LANGS = [['en+fr', 'English + French'], ['en+zh', 'English + Chinese'], ['fr', 'French'], ['zh', 'Chinese'], ['en+fr+zh', 'English + Chinese + French'], ['fr+zh', 'Chinese + French'], ['en', 'English']];
 const LANG_NAME = { en: 'English', fr: 'French', zh: 'Chinese' };
-let jobs = [], jobsMeta = null, jobsCol = null, mcp = null;
-const F = (() => { try { return JSON.parse(localStorage.getItem('jobFilters')) || {}; } catch { return {}; } })();
-F.level = F.level || []; F.lang = F.lang || []; F.country = F.country || ''; F.from = F.from || ''; F.to = F.to || ''; F.open = F.open !== false; F.sort = F.sort || 'fit';
-function saveF() { try { localStorage.setItem('jobFilters', JSON.stringify(F)); } catch {} }
+let jobs = [], jobsMeta = null, jobsCol = null;
+const F = (() => { try { return JSON.parse(localStorage.getItem('jobFilters2')) || {}; } catch { return {}; } })();
+['country', 'level', 'lang', 'start'].forEach(k => { if (typeof F[k] !== 'string') F[k] = ''; }); F.sort = F.sort || 'fit';
+function saveF() { try { localStorage.setItem('jobFilters2', JSON.stringify(F)); } catch {} }
 const langKey = j => [...new Set((j.languages || []).filter(l => LANG_NAME[l]))].sort().join('+');
-function monthLabel(m) { if (!/^\d{4}-\d{2}$/.test(m || '')) return ''; const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
-
-function chips(el, opts, sel) {
-  el.innerHTML = opts.map(([k, l]) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${sel.includes(k)}">${l}</button>`).join('');
-}
+const levelOf = j => (LEVELS.some(([k]) => k === j.level) ? j.level : 'na');
+const isMonth = m => /^\d{4}-\d{2}$/.test(m || '');
+function monthLabel(m) { if (!isMonth(m)) return ''; const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); }
+const live = () => jobs.filter(j => j.status !== 'dismissed' && j.status !== 'expired');
+function opts(sel, list, cur) { $(sel).innerHTML = list.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join(''); }
 function renderFilters() {
-  const live = jobs.filter(j => j.status !== 'dismissed' && j.status !== 'expired');
-  const counts = {}; live.forEach(j => { if (j.country) counts[j.country] = (counts[j.country] || 0) + 1; });
-  const cs = Object.keys(counts).sort();
-  if (F.country && !cs.includes(F.country)) cs.unshift(F.country);
-  $('fCountry').innerHTML = `<option value="">All countries (${live.length})</option>` + cs.map(c => `<option value="${esc(c)}" ${F.country === c ? 'selected' : ''}>${esc(c)} (${counts[c] || 0})</option>`).join('');
-  chips($('fLevel'), LEVELS, F.level); chips($('fLang'), LANGS, F.lang);
-  $('fFrom').value = F.from; $('fTo').value = F.to; $('fOpen').checked = F.open; $('fSort').value = F.sort;
+  const L = live(), count = f => L.filter(f).length;
+  const countries = [...new Set(L.map(j => j.country).filter(Boolean))].sort();
+  opts('fCountry', [['', `All countries · ${L.length}`], ...countries.map(c => [c, `${c} · ${count(j => j.country === c)}`])], F.country);
+  opts('fLevel', [['', 'All levels'], ...LEVELS.map(([k, l]) => [k, `${l} · ${count(j => levelOf(j) === k)}`])], F.level);
+  opts('fLang', [['', 'Any languages'], ...LANGS.map(([k, l]) => [k, `${l} · ${count(j => langKey(j) === k)}`])], F.lang);
+  const months = [...new Set(L.map(j => j.start).filter(isMonth))].sort();
+  opts('fStart', [['', 'Any start date'], ['asap', 'As soon as possible'], ...months.map(m => ['m:' + m, `From ${monthLabel(m)}`]), ['none', 'Not stated']], F.start);
+  $('fSort').value = F.sort;
 }
 function passes(j) {
   if (j.status === 'dismissed' || j.status === 'expired') return false;
   if (F.country && j.country !== F.country) return false;
-  if (F.level.length && !F.level.includes(LEVELS.some(([k]) => k === j.level) ? j.level : 'na')) return false;
-  if (F.lang.length && !F.lang.includes(langKey(j))) return false;
-  const m = /^\d{4}-\d{2}$/.test(j.start || '') ? j.start : null;
-  if (!m) return F.open;
-  if (F.from && m < F.from) return false;
-  if (F.to && m > F.to) return false;
+  if (F.level && levelOf(j) !== F.level) return false;
+  if (F.lang && langKey(j) !== F.lang) return false;
+  if (F.start === 'asap' && j.start !== 'asap') return false;
+  if (F.start === 'none' && (isMonth(j.start) || j.start === 'asap')) return false;
+  if (F.start.startsWith('m:') && !(isMonth(j.start) && j.start >= F.start.slice(2))) return false;
   return true;
 }
 function jobCard(j) {
-  const lv = (LEVELS.find(([k]) => k === j.level) || LEVELS[3])[1];
-  const lk = langKey(j), ln = lk ? lk.split('+').map(l => LANG_NAME[l]).join(' + ') : 'Languages not stated';
-  const start = j.start === 'asap' ? 'Start ASAP' : monthLabel(j.start) ? 'Start ' + monthLabel(j.start) : (j.startText ? 'Start: ' + j.startText : 'Start not stated');
-  const id = esc(j.id);
+  const lv = (LEVELS.find(([k]) => k === levelOf(j)))[1], lk = langKey(j), start = j.start === 'asap' ? 'ASAP' : monthLabel(j.start);
   return `<article class="job">
-    <div class="row" style="justify-content:space-between;align-items:baseline"><div style="min-width:0"><div class="t">${esc(j.title)}</div><div class="c">${esc(j.company)} · ${esc([j.city, j.country].filter(Boolean).join(', '))}</div></div>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
-    <div class="tags"><span class="tag navy">${esc(lv)}</span><span class="tag" title="${esc(j.langNote || '')}">${esc(ln)}</span><span class="tag">${esc(start)}</span>${j.contract ? `<span class="tag">${esc(j.contract)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' (est.)'}</span>` : ''}${j.industry ? `<span class="tag">${esc(j.industry)}</span>` : ''}</div>
-    ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}${j.why ? `<p class="why"><b>Why it fits:</b> ${esc(j.why)}</p>` : ''}
-    <p class="verify">${esc(j.verify || '')}${j.langNote ? ' · ' + esc(j.langNote) : ''}${j.posted ? ' · Posted ' + esc(j.posted) : ''}</p>
-    <div class="row"><a class="btn" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">Open the job ad ↗</a><button class="primary btn" data-act="job-tailor" data-id="${id}">Tailor my CV</button><button class="btn" data-act="job-dismiss" data-id="${id}">Not interested</button></div>
+    <div class="co">${esc(j.company)}</div><div class="tt">${esc(j.title)}</div>
+    <div class="tags"><span class="tag hi">${esc(lv)}</span><span class="tag">${esc(place(j))}</span>${lk ? `<span class="tag">${esc(lk.split('+').map(l => LANG_NAME[l]).join(' + '))}</span>` : ''}${start ? `<span class="tag">Start ${esc(start)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' est.'}</span>` : ''}</div>
+    ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}
+    <div class="foot"><a class="btn solid sm" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">View job ↗</a><button class="btn sm" type="button" data-act="job-tailor" data-id="${esc(j.id)}">Tailor CV</button><button class="btn ghost sm" type="button" data-act="job-dismiss" data-id="${esc(j.id)}">Hide</button>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
   </article>`;
 }
-function renderJobs() {
+function renderDiscover() {
   if (!jobsCol) return;
   renderFilters();
   const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || (b.fit || 0) - (a.fit || 0) : (b.fit || 0) - (a.fit || 0));
-  $('recsCount').textContent = `${list.length} job${list.length === 1 ? '' : 's'} match`;
-  $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="msg">${jobs.length ? 'No jobs match these filters. Try another country or language, or clear the filters.' : 'No recommendations yet. The next automatic search adds them here.'}</div>`;
-  if (jobsMeta?.lastRun) $('recsMeta').textContent = `Real openings found by web search for your profile, worldwide. Last search ${new Date(jobsMeta.lastRun).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}${jobsMeta.added != null ? ` (${jobsMeta.added} added)` : ''}. Updated automatically every Monday and Thursday.`;
+  $('jobCount').textContent = `${list.length} of ${live().length} roles`;
+  $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="empty" style="grid-column:1/-1">${jobs.length ? 'No roles match these filters.' : 'No recommendations yet. The hourly search adds them here.'}</div>`;
+  if (jobsMeta?.lastRun) $('discMeta').textContent = `Real openings found by web search for your profile, worldwide. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
 }
-$('fCountry').addEventListener('change', e => { F.country = e.target.value; saveF(); renderJobs(); });
-['fFrom', 'fTo'].forEach(id => $(id).addEventListener('change', e => { F[id === 'fFrom' ? 'from' : 'to'] = e.target.value; saveF(); renderJobs(); }));
-$('fOpen').addEventListener('change', e => { F.open = e.target.checked; saveF(); renderJobs(); });
-$('fSort').addEventListener('change', e => { F.sort = e.target.value; saveF(); renderJobs(); });
-$('fReset').addEventListener('click', () => { Object.assign(F, { level: [], lang: [], country: '', from: '', to: '', open: true }); saveF(); renderJobs(); });
-['fLevel', 'fLang'].forEach(id => $(id).addEventListener('click', e => {
-  const b = e.target.closest('.chip'); if (!b) return;
-  const arr = F[id === 'fLevel' ? 'level' : 'lang'], i = arr.indexOf(b.dataset.k);
-  if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.k);
-  saveF(); renderJobs();
-}));
-$('jobList').addEventListener('click', async e => {
-  const b = e.target.closest('[data-act]'); if (!b) return;
-  const j = jobs.find(x => x.id === b.dataset.id); if (!j) return;
-  if (b.dataset.act === 'job-dismiss') { try { await jobsCol.doc(j.id).update({ status: 'dismissed' }); toast('Hidden from your recommendations'); } catch (err) { toast(err.message || String(err)); } }
-  if (b.dataset.act === 'job-tailor') {
-    $('jobLink').value = j.link || '';
-    $('newForm').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('jd').focus();
-    toast('Open the job ad, copy the full description, and paste it here.');
-    try { await jobsCol.doc(j.id).update({ status: 'used' }); } catch {}
-  }
-});
+[['fCountry', 'country'], ['fLevel', 'level'], ['fLang', 'lang'], ['fStart', 'start'], ['fSort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { F[k] = e.target.value; saveF(); renderDiscover(); }));
+$('fReset').addEventListener('click', () => { Object.assign(F, { country: '', level: '', lang: '', start: '' }); saveF(); renderDiscover(); });
 $('refreshJobs').addEventListener('click', async () => {
   const b = $('refreshJobs'); b.disabled = true;
-  try { await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: TRIGGER_ID }); toast('Searching now. New jobs appear here in about 15–30 minutes.'); b.textContent = 'Search started'; }
+  try { await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: TRIGGER_ID }); toast('Searching now. New roles appear in about 15–30 minutes.'); b.textContent = 'Search started'; }
   catch (err) { toast('Could not start the search: ' + (err?.message || err?.code || err)); b.disabled = false; }
 });
-async function startJobs(db) {
-  jobsCol = db.collection('jobs');
-  jobsCol.onSnapshot(snap => { jobs = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderJobs(); }, err => { $('jobList').innerHTML = `<div class="msg">Could not load recommendations (${esc(err.code)}).</div>`; });
-  db.doc('meta/jobs').onSnapshot(s => { jobsMeta = s.exists ? s.data() : null; renderJobs(); }, () => {});
-  mcp = await window.claude?.use?.('mcp');
-  if (mcp) $('refreshJobs').hidden = false;
+
+/* ---------- TAILOR result ---------- */
+function renderTailor() {
+  const r = newId && rowById(newId);
+  if (!r) { $('newResult').innerHTML = ''; return; }
+  const del = pendingDelete === r.id, id = esc(r.id);
+  $('newResult').innerHTML = `<div style="display:grid;gap:16px">
+    <div class="card"><div class="row between"><div><div class="eyebrow">${esc(r.company)}</div><h2>${esc(r.role)}</h2><div class="muted small">${esc(place(r))}${r.salary ? ' · ' + salaryText(r) : ''}</div></div>${statusPill(r.status)}</div>${filesRow(r)}</div>
+    ${insightBoard(r)}
+    ${analysisFolds(r)}
+    ${r.status === 'prep' ? `<div class="card" style="border-color:var(--fg)"><h2>Did you send it?</h2>
+      <div class="row"><label class="f" for="ad-${id}" style="max-width:190px">Date applied<input type="date" id="ad-${id}" value="${today()}"></label></div>
+      <div class="row"><button class="btn solid" type="button" data-act="applied" data-id="${id}">I applied</button><button class="btn" type="button" data-act="later" data-id="${id}">Not yet, keep it</button>${del ? `<button class="btn danger" type="button" data-act="del-yes" data-id="${id}">Delete for good</button><button class="btn ghost" type="button" data-act="del-no">Keep</button>` : `<button class="btn ghost" type="button" data-act="del" data-id="${id}">Discard</button>`}</div>
+      <p class="muted small" style="margin:0">“I applied” moves it into the tracker as Applied and prepares your interview room.</p></div>` : ''}
+  </div>`;
+}
+
+/* ---------- TRACKER ---------- */
+let tFilter = '', tSearch = '';
+function renderTracker() {
+  const applied = rows.filter(r => r.status !== 'prep'), cnt = k => rows.filter(r => r.status === k).length;
+  $('stats').innerHTML = `<button type="button" class="stat total" data-st="" aria-pressed="${tFilter === ''}"><span class="v">${applied.length}</span><span class="k">Total applied</span></button>` +
+    STATUS.map(([k, l, c]) => `<button type="button" class="stat" data-st="${k}" aria-pressed="${tFilter === k}"><span class="v">${cnt(k)}</span><span class="k"><span class="sw" style="background:${c}"></span>${l}</span></button>`).join('');
+  const q = tSearch.toLowerCase();
+  const list = rows.filter(r => (!tFilter || r.status === tFilter) && (!q || [r.company, r.role, r.country, r.city, r.notes].join(' ').toLowerCase().includes(q)));
+  $('sheet').innerHTML = `<thead><tr><th>Company · Role</th><th>Location</th><th>Salary</th><th>Applied</th><th>Status</th><th>Interview date</th><th>Notes</th><th>Fit</th><th></th></tr></thead><tbody>` +
+    (list.length ? list.map(r => { const id = esc(r.id); return `<tr>
+      <td><div class="co">${esc(r.company)}</div><div class="ro">${esc(r.role)}</div></td>
+      <td class="small">${esc(place(r))}</td>
+      <td class="small nw">${esc(r.salary || '')}${r.salary ? `<div class="ro">${SALARY_TYPE[r.salaryType] || 'est.'}</div>` : ''}</td>
+      <td><input type="date" value="${esc(r.appliedDate || '')}" data-field="appliedDate" data-id="${id}" aria-label="Date applied"></td>
+      <td><select data-field="status" data-id="${id}" aria-label="Status" style="box-shadow:inset 3px 0 0 ${(ST[r.status] || ST.prep).c}">${STATUS.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></td>
+      <td><input type="date" value="${esc(r.interviewDate || '')}" data-field="interviewDate" data-id="${id}" aria-label="Interview date"></td>
+      <td><input class="note" type="text" value="${esc(r.notes || '')}" placeholder="Add a note" data-field="notes" data-id="${id}" aria-label="Notes"></td>
+      <td class="mono">${esc(r.insight?.fit_score ?? r.match ?? '–')}</td>
+      <td><button class="btn sm" type="button" data-act="open-iv" data-id="${id}">Open</button></td></tr>`; }).join('') : `<tr><td colspan="9" class="muted" style="padding:28px;text-align:center">No applications here yet.</td></tr>`) + '</tbody>';
+}
+$('stats').addEventListener('click', e => { const b = e.target.closest('.stat'); if (!b) return; tFilter = tFilter === b.dataset.st ? '' : b.dataset.st; renderTracker(); });
+$('tSearch').addEventListener('input', e => { tSearch = e.target.value; renderTracker(); });
+document.addEventListener('change', async e => {
+  const el = e.target; if (!el.dataset.field || !el.dataset.id) return;
+  const data = { [el.dataset.field]: el.value };
+  if (el.dataset.field === 'status' && el.value !== 'prep' && !rowById(el.dataset.id)?.appliedDate) data.appliedDate = today();
+  try { await patch(el.dataset.id, data); toast('Saved'); } catch (err) { toast('Could not save: ' + (err.message || err.code)); }
+});
+$('exportBtn').addEventListener('click', () => {
+  const head = ['Company', 'Role', 'Country', 'City', 'Industry', 'Contract', 'Salary', 'Salary source', 'Status', 'Date applied', 'Interview date', 'Notes', 'Fit score', 'ATS match', 'Job link'];
+  const cell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [head.map(cell).join(','), ...rows.map(r => [r.company, r.role, r.country, r.city, r.industry, r.contract, r.salary, r.salary ? (SALARY_TYPE[r.salaryType] || 'est.') : '', (ST[r.status] || ST.prep).l, r.appliedDate, r.interviewDate, r.notes, r.insight?.fit_score ?? '', r.match ?? '', r.link].map(cell).join(','))];
+  save(`Yu_Chiao_applications_${today()}.csv`, '﻿' + lines.join('\r\n'));
+});
+
+/* ---------- INTERVIEW ---------- */
+function renderInterview() {
+  const appliedRows = rows.filter(r => r.status !== 'prep'), prepRows = rows.filter(r => r.status === 'prep');
+  if (!pickId || !rowById(pickId)) pickId = appliedRows[0]?.id || rows[0]?.id || null;
+  $('iPick').innerHTML = rows.length ? [['Applied', appliedRows], ['Not applied yet', prepRows]].filter(([, l]) => l.length).map(([g, l]) => `<optgroup label="${g}">${l.map(r => `<option value="${esc(r.id)}" ${r.id === pickId ? 'selected' : ''}>${esc(r.company)} — ${esc(r.role)}</option>`).join('')}</optgroup>`).join('') : '<option value="">No applications yet</option>';
+  const r = pickId && rowById(pickId);
+  if (!r) { $('iBody').innerHTML = `<div class="empty">Tailor a CV and mark it as applied to open its interview room.</div>`; return; }
+  const id = esc(r.id), b = busy[r.id], p = r.prep;
+  const prep = b === 'prep' ? `<p class="muted" style="margin:0">Writing your interview prep in English, then French and Chinese… about 1–2 minutes.</p>`
+    : !p?.en ? `<p class="muted small" style="margin:0">Seven likely questions (motivation, 3 role-specific, 2 behavioural, 1 under pressure) with answer structures from your real experience, aimed at this job's gaps, plus 3 areas to practise.</p><div class="row"><button class="btn solid" type="button" data-act="run" data-part="prep" data-id="${id}" ${b ? 'disabled' : ''}>Generate interview prep</button></div>`
+    : `<div class="row">${['en', 'fr', 'zh'].map(l => p[l] ? `<button class="btn ${l === 'en' ? 'solid' : ''}" type="button" data-act="dl" data-what="prep-${l}" data-id="${id}">${{ en: 'English PDF', fr: 'Français PDF', zh: '中文 PDF' }[l]}</button>` : '').join('')}</div>
+      <div class="row"><button class="btn ghost sm" type="button" data-act="run" data-part="prep" data-id="${id}" ${b ? 'disabled' : ''}>Regenerate</button><span class="muted small">Generated ${esc(shortDate(p.generatedAt))}</span></div>`;
+  $('iBody').innerHTML = `<div style="display:grid;gap:16px">
+    <div class="card"><div class="row between"><div><div class="eyebrow">${esc(r.company)}${r.appliedDate ? ' · applied ' + esc(shortDate(r.appliedDate)) : ''}</div><h2>${esc(r.role)}</h2><div class="muted small">${esc(place(r))}${r.salary ? ' · ' + salaryText(r) : ''}</div></div><div class="row">${statusPill(r.status)}${r.link ? `<a class="btn sm" href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">Job ad ↗</a>` : ''}</div></div></div>
+    ${insightBoard(r)}
+    <div class="board">
+      <div class="card"><h3>Interview details</h3>
+        <div class="grid2"><label class="f" for="iv-st">Status<select id="iv-st" data-field="status" data-id="${id}">${STATUS.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label class="f" for="iv-date">Interview date<input type="date" id="iv-date" value="${esc(r.interviewDate || '')}" data-field="interviewDate" data-id="${id}"></label></div>
+        <label class="f" for="iv-notes">Notes<textarea id="iv-notes" rows="5" data-field="notes" data-id="${id}" placeholder="Interviewer, format, what to bring, questions they asked…">${esc(r.notes || '')}</textarea></label>
+      </div>
+      <div class="card"><h3>Interview prep · Step 4</h3>${prep}</div>
+    </div>
+    ${p?.en ? `<details class="fold"><summary>Read the prep · ${(p.en.questions || []).length} questions</summary><div class="in"><h3>Tell me about yourself</h3><ul>${li(p.en.pitch)}</ul>${(p.en.questions || []).map((q, i) => `<div><div class="eyebrow">${i + 1} · ${esc(q.category)}</div><p style="margin:4px 0"><b>${esc(q.question)}</b></p><ul><li><b>Situation:</b> ${esc(q.structure?.situation)}</li><li><b>Action:</b> ${esc(q.structure?.action)}</li><li><b>Result:</b> ${esc(q.structure?.result)}</li><li><b>Prepare:</b> ${esc(q.evidence_to_prepare)}</li></ul></div>`).join('')}<h3>Practise</h3><ol>${(p.en.practice_areas || []).map(a => `<li><b>${esc(a.area)}.</b> ${esc(a.how)}</li>`).join('')}</ol></div></details>` : ''}
+    <div class="card"><h3>Documents</h3>${filesRow(r)}${Array.isArray(r.files) && r.files.length ? `<div class="row"><span class="muted small" style="min-width:110px">Earlier files</span>${r.files.filter(f => /PDF/.test(f.label)).map(f => `<a class="btn sm" href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">${esc(f.label)}</a>`).join('')}</div>` : ''}</div>
+    ${analysisFolds(r)}
+    ${r.jd ? `<details class="fold"><summary>Job description</summary><div class="in"><div class="jd">${esc(r.jd)}</div></div></details>` : `<div class="card"><h3>Job description</h3><label class="f" for="jd-${id}">Paste it to unlock the fit analysis and a precise interview prep<textarea id="jd-${id}" rows="6"></textarea></label><div class="row"><button class="btn solid sm" type="button" data-act="save-jd" data-id="${id}">Save job description</button></div></div>`}
+  </div>`;
+}
+$('iPick').addEventListener('change', e => { pickId = e.target.value; renderInterview(); });
+
+/* ---------- BASE CV ---------- */
+let baseLang = 'en', baseSig = null;
+function cvEditor(lang) {
+  const cv = profile()['cv_' + lang];
+  const ta = (path, v, n = 3) => `<textarea data-cv="${lang}" data-path="${path}" rows="${n}">${esc(v)}</textarea>`;
+  return `<label class="f">Target role${ta('target', cv.target, 1)}</label>
+    <label class="f">Summary${ta('summary', cv.summary, 4)}</label>
+    <div class="grid2"><label class="f">Hard skills${ta('skills.hard', cv.skills.hard, 5)}</label><label class="f">Soft skills${ta('skills.soft', cv.skills.soft, 5)}</label></div>
+    <label class="f">Tools${ta('skills.tools', cv.skills.tools, 2)}</label>
+    ${cv.experience.map((e, i) => `<div class="card" style="background:var(--bg)"><h3>Experience ${i + 1}</h3><label class="f">Title${ta(`experience.${i}.title`, e.title, 1)}</label><label class="f">Company · place · dates${ta(`experience.${i}.company_line`, e.company_line, 1)}</label>${e.description != null ? `<label class="f">Company description${ta(`experience.${i}.description`, e.description, 2)}</label>` : ''}<label class="f">Bullets (one per line)${ta(`experience.${i}.bullets`, e.bullets.join('\n'), Math.max(3, e.bullets.length + 1))}</label></div>`).join('')}
+    ${cv.education.map((e, i) => `<div class="card" style="background:var(--bg)"><h3>Education ${i + 1}</h3><label class="f">Programme${ta(`education.${i}.title`, e.title, 1)}</label><label class="f">School · place · dates${ta(`education.${i}.school_line`, e.school_line, 1)}</label><label class="f">Details${ta(`education.${i}.details`, e.details, 2)}</label></div>`).join('')}
+    <label class="f">Languages (one per line)${ta('languages', cv.languages.join('\n'), 3)}</label>
+    <div class="row"><button class="btn solid sm" type="button" data-act="save-cv" data-lang="${lang}">Save ${lang === 'en' ? 'English' : 'French'} base CV</button><button class="btn ghost sm" type="button" data-act="reset-cv" data-lang="${lang}">Restore original</button></div>`;
+}
+function readEditor(lang) {
+  const cv = clone(profile()['cv_' + lang]);
+  document.querySelectorAll(`[data-cv="${lang}"]`).forEach(el => {
+    const path = el.dataset.path.split('.'), v = el.value.trim(), last = path[path.length - 1];
+    let o = cv; for (let i = 0; i < path.length - 1; i++) o = o[path[i]];
+    o[last] = (last === 'bullets' || path[0] === 'languages') ? v.split('\n').map(s => s.trim()).filter(Boolean) : v;
+  });
+  return lang === 'fr' ? K.deepMap(cv, K.frTypo) : cv;
+}
+function renderBase() {
+  const p = profile();
+  $('photoThumb').src = photoSrc();
+  document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
+  $('basePaper').innerHTML = cvPaper(p['cv_' + baseLang], baseLang, photoSrc());
+  $('suppCount').textContent = p.supplements.length ? `· ${p.supplements.length} item${p.supplements.length > 1 ? 's' : ''}` : '';
+  $('suppList').innerHTML = p.supplements.length ? p.supplements.map(s => `<div class="it"><div>${esc(s.text)}<small>Added ${esc(shortDate(s.addedAt))}</small></div><button class="btn ghost sm" type="button" data-act="supp-del" data-id="${esc(s.id)}">Remove</button></div>`).join('') : '<div class="muted small">Nothing added yet.</div>';
+  // Rebuild the editors only when the stored profile changed, so typing is never interrupted.
+  const sig = JSON.stringify([p.cv_en, p.cv_fr, p.facts, p.steps]);
+  if (sig !== baseSig) {
+    baseSig = sig;
+    $('edit-en').innerHTML = cvEditor('en'); $('edit-fr').innerHTML = cvEditor('fr');
+    $('factsBox').value = p.facts.join('\n');
+    $('stepFolds').innerHTML = Object.keys(STEP_NAMES).map(k => `<details class="fold"><summary>${STEP_NAMES[k]}${p.steps[k] !== DEFAULT_STEPS[k] ? ' <span class="muted small">· edited</span>' : ''}</summary><div class="in"><p class="muted small">Claude follows this text when it runs this step. The page fixes the format of the answer, so you only change the instructions.</p><textarea id="step-${k}" rows="12" aria-label="${STEP_NAMES[k]}">${esc(p.steps[k])}</textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-step" data-k="${k}">Save</button><button class="btn ghost sm" type="button" data-act="reset-step" data-k="${k}">Restore original</button></div></div></details>`).join('')
+      + `<details class="fold"><summary>CV rules</summary><div class="in"><ol>${li(K.RULES)}</ol></div></details>`;
+  }
+}
+$('baseLang').addEventListener('click', e => { const b = e.target.closest('button[data-l]'); if (b) { baseLang = b.dataset.l; renderBase(); } });
+$('photoFile').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  if (!assets) assets = await window.claude?.use?.('assets');
+  if (!assets) { toast('Photo upload is not available in this view.'); return; }
+  try {
+    const img = await createImageBitmap(f), W = 520, H = 650, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+    cv.getContext('2d').drawImage(img, (W - w) / 2, (H - h) / 3, w, h);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.9));
+    const up = await assets.upload(blob);
+    await saveProfile({ photo: up.url }); toast('Photo updated on every CV');
+  } catch (err) { toast('Could not upload the photo: ' + (err?.message || err?.code || err)); }
+  e.target.value = '';
+});
+$('photoReset').addEventListener('click', async () => { try { await saveProfile({ photo: '' }); toast('Original photo restored'); } catch (err) { toast(err.message || String(err)); } });
+$('suppAdd').addEventListener('click', async () => {
+  const t = $('suppNew').value.trim(); if (!t) return;
+  const list = [...profile().supplements, { id: 's' + Date.now().toString(36), text: t, addedAt: new Date().toISOString() }];
+  try { await saveProfile({ supplements: list }); $('suppNew').value = ''; toast('Added. Every new CV will consider it.'); } catch (err) { toast(err.message || String(err)); }
+});
+
+/* ---------- actions ---------- */
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+  const id = el.dataset.id, act = el.dataset.act;
+  try {
+    if (act === 'dl') { el.disabled = true; await download(id, el.dataset.what); el.disabled = false; }
+    else if (act === 'run') runPart(id, el.dataset.part);
+    else if (act === 'del') { pendingDelete = id; renderAll(); }
+    else if (act === 'del-no') { pendingDelete = null; renderAll(); }
+    else if (act === 'del-yes') { await col.doc(id).delete(); if (newId === id) newId = null; pendingDelete = null; toast('Deleted'); renderAll(); }
+    else if (act === 'later') { newId = null; toast('Kept in your tracker as “Not applied”'); go('tracker'); }
+    else if (act === 'applied') { const date = $('ad-' + id)?.value || today(); await patch(id, { status: 'sent', appliedDate: date }); newId = null; pickId = id; go('interview'); toast('Moved to Applied. Writing your interview prep…'); runPart(id, 'prep'); }
+    else if (act === 'open-iv') { pickId = id; go('interview'); }
+    else if (act === 'save-jd') { const v = $('jd-' + id)?.value.trim(); if (v) { await patch(id, { jd: v }); toast('Job description saved'); } }
+    else if (act === 'job-dismiss') { await jobsCol.doc(id).update({ status: 'dismissed' }); toast('Hidden'); }
+    else if (act === 'job-tailor') { const j = jobs.find(x => x.id === id); go('tailor'); $('jobLink').value = j?.link || ''; $('jd').focus(); toast('Open the job ad, copy the full description, and paste it here.'); jobsCol.doc(id).update({ status: 'used' }).catch(() => {}); }
+    else if (act === 'supp-del') { await saveProfile({ supplements: profile().supplements.filter(s => s.id !== id) }); toast('Removed'); }
+    else if (act === 'save-cv') { await saveProfile({ ['cv_' + el.dataset.lang]: readEditor(el.dataset.lang) }); toast('Base CV saved'); }
+    else if (act === 'reset-cv') { await saveProfile({ ['cv_' + el.dataset.lang]: el.dataset.lang === 'en' ? K.BASE_EN : K.BASE_FR }); toast('Original restored'); }
+    else if (act === 'save-facts') { await saveProfile({ facts: $('factsBox').value.split('\n').map(s => s.trim()).filter(Boolean) }); toast('Facts saved'); }
+    else if (act === 'reset-facts') { await saveProfile({ facts: K.FACTS }); toast('Original facts restored'); }
+    else if (act === 'save-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: $('step-' + k).value.trim() || DEFAULT_STEPS[k] } }); toast(STEP_NAMES[k] + ' saved'); }
+    else if (act === 'reset-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: DEFAULT_STEPS[k] } }); toast('Original restored'); }
+    else if (act === 'base-dl') { el.disabled = true; await cvFile(profile()['cv_' + baseLang], baseLang, el.dataset.what, `CV_Yu_Chiao_Lin_Base_${baseLang.toUpperCase()}`); el.disabled = false; }
+  } catch (err) { toast(err.message || String(err)); el.disabled = false; }
+});
+
+function renderAll() {
+  $('n-tracker').textContent = rows.filter(r => r.status !== 'prep').length || '';
+  $('n-discover').textContent = jobsCol ? (live().length || '') : '';
+  if (page === 'discover') renderDiscover();
+  if (page === 'tailor') renderTailor();
+  if (page === 'tracker') renderTracker();
+  if (page === 'interview') renderInterview();
+  if (page === 'base') renderBase();
 }
 
 (async () => {
-  const start = (location.hash || '').slice(1);
-  setTab(['new', 'applied', 'saved'].includes(start) ? start : 'new');
-  const db = await window.claude?.use?.('db');
-  if (!db) { loadState = 'Sign in to claude.ai and open this page there to see your applications.'; $('jobList').innerHTML = '<div class="msg">Sign in to claude.ai to see your recommended jobs.</div>'; render(); return; }
+  go((location.hash || '').slice(1));
+  db = await window.claude?.use?.('db');
+  if (!db) { $('jobList').innerHTML = '<div class="empty" style="grid-column:1/-1">Sign in to claude.ai and open this page there to see your data.</div>'; return; }
   col = db.collection('applications');
-  startJobs(db);
-  col.orderBy('createdAt', 'desc').onSnapshot(snap => { rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
-    err => { loadState = `Could not load your applications (${err.code}). Reload the page.`; col = null; render(); });
+  col.orderBy('createdAt', 'desc').onSnapshot(snap => { rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }, err => toast('Could not load applications (' + err.code + ')'));
+  jobsCol = db.collection('jobs');
+  jobsCol.onSnapshot(snap => { jobs = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }, () => {});
+  db.doc('meta/jobs').onSnapshot(s => { jobsMeta = s.exists ? s.data() : null; if (jobsMeta?.triggerId) TRIGGER_ID = jobsMeta.triggerId; renderAll(); }, () => {});
+  db.doc('profile/main').onSnapshot(s => { saved = s.exists ? s.data() : null; renderAll(); }, () => {});
+  mcp = await window.claude?.use?.('mcp');
+  if (mcp) $('refreshJobs').hidden = false;
 })();
 </script>

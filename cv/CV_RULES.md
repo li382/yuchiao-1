@@ -38,16 +38,17 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - Monitors the in-office stock of BAT samples.
 - 1,900+ historical order records cleaned. Tracks 100+ GWP/VIP orders. Ships by sea, air and road under FCA Incoterms.
 
-## Job Search page
-- Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm (source: `cv/tracker.html` and `cv/tracker-render.js`; the libraries and fonts are published files of the artifact; the data lives in its database collection `applications`).
-- **New application tab:** paste a job description, and Claude runs Steps 1–3 from the base CV (`BASE_EN` / `BASE_FR` in `tracker-render.js`) plus the confirmed facts and rules. It writes the EN and FR CVs (Word and PDF, in the same layout as the base CV, fitted to one page) and an English motivation letter when the job asks for one. Then choose **I applied** / **Not applied yet** / **Discard**.
-- **Applied tab:** status, CV files, job description, and Step 4 interview prep as PDFs in English, French and Chinese.
-- **Saved tab:** tailored CVs that have not been sent yet.
-- When the base CV or the confirmed facts change, update `BASE_EN`, `BASE_FR` and `FACTS` in `tracker-render.js` and republish the page.
-- Each row records company, role, country, city, industry, contract, salary (and whether it is an estimate, posted in the job ad, or a real offer), status, date applied, match score before and after tailoring, the CV in English and French, the motivation letter, the Step 1–3 analysis and the interview prep.
+## Job Search page (Career studio)
+- Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm. Source: `cv/tracker.html` and `cv/tracker-render.js`; the libraries and fonts are published files of the artifact.
+- Black, fashion-style design, with a left menu (a drawer on phones) and five pages:
+  1. **Discover:** recommended jobs (collection `jobs`), shown as a short summary plus a link. Dropdown filters for country, level, required languages and start date, plus sorting.
+  2. **Tailor a CV:** paste a job description. Steps 1–3 run on the base CV, confirmed facts and all supplementary information, and produce EN and FR CVs (Word and PDF), an optional English letter and a fit/risk insight. Then choose **I applied**, **Not yet, keep it** or **Discard**.
+  3. **Tracker:** Excel-style table with status, date applied, interview date and notes editable in each row. Counts for total applied and for each status. Export to CSV (opens in Excel). Statuses: Not applied, Applied, HR screen, Interview, Final round, Offer, Rejected, Withdrawn.
+  4. **Interview:** per application, a fit score gauge, a risk level with reasons, strengths, gaps with how to answer them, interview date and notes, Step 4 prep PDFs (EN / FR / 中文), documents and the Step 1–3 analysis.
+  5. **Base CV & steps:** photo (can be replaced), base CV preview and editor (EN and FR), supplementary information, confirmed facts, and the Step 1–4 instruction texts. Each section is collapsible and editable, with "restore original".
+- The base CV, facts, steps, supplements and photo live in the database doc `profile/main`; the defaults are in `tracker-render.js`.
+- **Supplementary information:** every new CV reads all items, works in the ones that answer the job's requirements or close its gaps, and leaves out the rest. The analysis lists which items were used and where.
 
 ## Recommended jobs
-- Section at the bottom of the "New application" tab. It reads the artifact database collection `jobs`; the date of the last search is stored in `meta/jobs`.
-- Four filters: country, level (internship, junior, senior, not stated), required languages (EN+FR, EN+ZH, FR, ZH, EN+ZH+FR, ZH+FR, EN) and start-date range. Filters are remembered in the browser.
-- Filled automatically by the routine "Yu Chiao job recommendations" (trigger `trig_01PxYDcde3UJrHVrMazYDgKE`), every Monday and Thursday at 08:47 Paris time. Each run starts a fresh session that web-searches for real openings and adds 8–15 jobs. The page's "Search for new jobs now" button fires the same routine.
-- Rules for each run: only real postings from search results (never invent a job or a link), no duplicates, and estimated salaries are marked as estimates. Closed jobs and jobs whose start date has passed are set to `expired`; jobs marked `dismissed` or `used` are left alone.
+- Routine "Yu Chiao job recommendations (hourly)" (trigger `trig_01VMzruXt77Q1wroKgvEMrPP`) runs every hour at minute 11, with notifications off. Each run takes one of six focus areas based on the hour, runs 3–5 web searches, adds at most 5 new real jobs, expires closed ones, keeps about 150 active, and writes `meta/jobs`.
+- Never invent a job or a link. Estimated salaries are marked as estimates.
