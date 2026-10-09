@@ -37,3 +37,8 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - Builds palletization plans in Cape Pack (Esko), following each brand's maximum pallet height and weight.
 - Monitors the in-office stock of BAT samples.
 - 1,900+ historical order records cleaned. Tracks 100+ GWP/VIP orders. Ships by sea, air and road under FCA Incoterms.
+
+## Application tracker
+- Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm (source: `cv/tracker.html`; the data lives in its database collection `applications`).
+- Every time you generate a new CV: upload the EN and FR PDFs as assets of the tracker, then add or update one row per job. Each row records company, role, country, city, industry, contract, salary (and whether it is an estimate, posted in the job ad, or a real offer), status, date applied, ATS match score, CV version, file links, next step and notes.
+- Statuses: prep (CV ready), sent (applied), int (interviewing), offer, no (rejected), drop (dropped).

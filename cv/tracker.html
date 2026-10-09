@@ -1,0 +1,241 @@
+<title>Yu Chiao 求職追蹤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column of application "dockets" (like shipment cards), status pipeline on top */
+:root {
+  --bg: #f4f5f7; --surface: #ffffff; --fg: #1c2230; --muted: #5d6578; --line: #dde1e8;
+  --accent: #23407a; --accent-soft: #e5ebf6;
+  --s-prep: #8a6d1d; --s-prep-bg: #f6efd9;
+  --s-sent: #23407a; --s-sent-bg: #e5ebf6;
+  --s-int: #6b3fa0; --s-int-bg: #efe7f8;
+  --s-offer: #1f7a4d; --s-offer-bg: #dff3e8;
+  --s-no: #9a3b3b; --s-no-bg: #f7e3e3;
+  --s-drop: #5d6578; --s-drop-bg: #eceef2;
+  --f-display: "Noto Serif TC", Georgia, serif;
+  --f-body: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12151c; --surface: #1a1f29; --fg: #e8ebf1; --muted: #9aa2b4; --line: #2c3342;
+  --accent: #8fb0ef; --accent-soft: #233150;
+  --s-prep: #e0c375; --s-prep-bg: #3a3220; --s-sent: #8fb0ef; --s-sent-bg: #233150;
+  --s-int: #c3a3ec; --s-int-bg: #352a48; --s-offer: #7fd3a6; --s-offer-bg: #1f3a2d;
+  --s-no: #ec9a9a; --s-no-bg: #432626; --s-drop: #9aa2b4; --s-drop-bg: #2a2f3b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1f29; --fg: #e8ebf1; --muted: #9aa2b4; --line: #2c3342;
+  --accent: #8fb0ef; --accent-soft: #233150;
+  --s-prep: #e0c375; --s-prep-bg: #3a3220; --s-sent: #8fb0ef; --s-sent-bg: #233150;
+  --s-int: #c3a3ec; --s-int-bg: #352a48; --s-offer: #7fd3a6; --s-offer-bg: #1f3a2d;
+  --s-no: #ec9a9a; --s-no-bg: #432626; --s-drop: #9aa2b4; --s-drop-bg: #2a2f3b; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.6 }
+.wrap { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 22px }
+header { display: grid; gap: 4px }
+h1 { font-family: var(--f-display); font-size: 1.75rem; line-height: 1.25; margin: 0; text-wrap: balance }
+.sub { color: var(--muted); margin: 0 }
+.pipeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 8px; cursor: pointer; text-align: left; font: inherit; color: inherit; display: grid; gap: 2px }
+.stage[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+.stage .n { font-family: var(--f-mono); font-size: 1.4rem; font-variant-numeric: tabular-nums; line-height: 1.1 }
+.stage .l { font-size: .78rem; color: var(--muted) }
+@media (max-width: 620px) { .pipeline { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between }
+.toolbar .hint { color: var(--muted); font-size: .85rem }
+button, .btn { font: inherit; font-size: .9rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 7px 14px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface) }
+button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button.danger { color: var(--s-no); border-color: var(--s-no) }
+.list { display: grid; gap: 14px }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 12px; min-width: 0 }
+.card-top { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between }
+.card h2 { font-family: var(--f-display); font-size: 1.2rem; margin: 0; line-height: 1.3 }
+.card .role { color: var(--muted); margin: 0 }
+.pill { font-size: .78rem; font-weight: 500; padding: 2px 10px; border-radius: 999px; white-space: nowrap }
+.st-prep { color: var(--s-prep); background: var(--s-prep-bg) } .st-sent { color: var(--s-sent); background: var(--s-sent-bg) }
+.st-int { color: var(--s-int); background: var(--s-int-bg) } .st-offer { color: var(--s-offer); background: var(--s-offer-bg) }
+.st-no { color: var(--s-no); background: var(--s-no-bg) } .st-drop { color: var(--s-drop); background: var(--s-drop-bg) }
+dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px; margin: 0 }
+dl div { min-width: 0 }
+dt { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+dd { margin: 0; overflow-wrap: anywhere }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: .92em }
+.est { font-size: .75rem; color: var(--muted) }
+.files { display: flex; flex-wrap: wrap; gap: 8px }
+.files a { font-size: .85rem; border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; color: var(--accent); text-decoration: none; font-family: var(--f-mono) }
+.files a:hover { background: var(--accent-soft) }
+.notes { font-size: .9rem; color: var(--muted); margin: 0; white-space: pre-wrap }
+.actions { display: flex; gap: 8px; flex-wrap: wrap }
+.empty, .msg { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 24px; color: var(--muted); text-align: center }
+form.editor { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 18px; display: grid; gap: 14px }
+form.editor h2 { margin: 0; font-family: var(--f-display); font-size: 1.15rem }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
+label { display: grid; gap: 4px; font-size: .82rem; color: var(--muted) }
+input, select, textarea { font: inherit; font-size: .95rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0 }
+textarea { min-height: 70px; resize: vertical }
+.row-end { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap }
+@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s } .card:hover { border-color: var(--muted) } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Yu Chiao 求職追蹤</h1>
+    <p class="sub">每一個投遞過的職缺、使用的履歷版本、國家、職位與薪資，都記在這裡。</p>
+  </header>
+
+  <div class="pipeline" id="pipeline" role="group" aria-label="依狀態篩選"></div>
+
+  <div class="toolbar">
+    <span class="hint" id="hint">點上方狀態可篩選，再點一次取消。</span>
+    <button class="primary" id="addBtn" type="button" hidden>＋ 新增職缺</button>
+  </div>
+
+  <form class="editor" id="editor" hidden>
+    <h2 id="editorTitle">新增職缺</h2>
+    <div class="grid2">
+      <label>公司 Company<input id="f-company" required></label>
+      <label>職位 Position<input id="f-role" required></label>
+      <label>國家 Country<input id="f-country" placeholder="法國"></label>
+      <label>城市 City<input id="f-city" placeholder="巴黎"></label>
+      <label>產業 Industry<input id="f-industry" placeholder="精品 / 美妝"></label>
+      <label>合約 Contract<input id="f-contract" placeholder="CDI / CDD / VIE"></label>
+      <label>薪資 Salary<input id="f-salary" placeholder="35–40k € brut/an"></label>
+      <label>薪資來源<select id="f-salaryType"><option value="estimate">估計</option><option value="posted">職缺公布</option><option value="offer">實際 Offer</option></select></label>
+      <label>狀態 Status<select id="f-status"></select></label>
+      <label>投遞日期<input id="f-applied" type="date"></label>
+      <label>ATS 匹配度 (%)<input id="f-match" inputmode="numeric" placeholder="例如 80"></label>
+      <label>下一步<input id="f-next" placeholder="例如 10/20 追蹤 HR"></label>
+    </div>
+    <label>職缺連結 Job link<input id="f-link" type="url" placeholder="https://"></label>
+    <label>履歷版本名稱<input id="f-cv" placeholder="Supply Planner – Sisley v2"></label>
+    <label>檔案連結（一行一個：名稱 | 網址）<textarea id="f-files" placeholder="CV EN (PDF) | https://..."></textarea></label>
+    <label>備註 Notes<textarea id="f-notes"></textarea></label>
+    <div class="row-end">
+      <button type="button" id="cancelBtn">取消</button>
+      <button type="submit" class="primary" id="saveBtn">儲存</button>
+    </div>
+  </form>
+
+  <div class="list" id="list"><div class="msg">正在載入你的求職紀錄…</div></div>
+</div>
+
+<script>
+const STATUSES = [
+  { key: 'prep', label: '履歷已備妥' },
+  { key: 'sent', label: '已投遞' },
+  { key: 'int', label: '面試中' },
+  { key: 'offer', label: '錄取 Offer' },
+  { key: 'no', label: '未錄取' },
+  { key: 'drop', label: '已放棄' },
+];
+const SALARY_TYPE = { estimate: '估計', posted: '職缺公布', offer: '實際 Offer' };
+const $ = id => document.getElementById(id);
+let rows = [], filter = null, editingId = null, col = null, canWrite = false, pendingDelete = null;
+
+$('f-status').innerHTML = STATUSES.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function safeUrl(u) { try { const x = new URL(u, location.href); return /^https?:$/.test(x.protocol) || u.startsWith('/_blob/') ? u : '#'; } catch { return '#'; } }
+
+function renderPipeline() {
+  $('pipeline').innerHTML = STATUSES.map(s => {
+    const n = rows.filter(r => r.status === s.key).length;
+    return `<button type="button" class="stage" data-k="${s.key}" aria-pressed="${filter === s.key}"><span class="n">${n}</span><span class="l">${s.label}</span></button>`;
+  }).join('');
+}
+$('pipeline').addEventListener('click', e => {
+  const b = e.target.closest('.stage'); if (!b) return;
+  filter = filter === b.dataset.k ? null : b.dataset.k; render();
+});
+
+function card(r) {
+  const st = STATUSES.find(s => s.key === r.status) || STATUSES[0];
+  const files = Array.isArray(r.files) ? r.files : [];
+  const place = [r.city, r.country].filter(Boolean).join('，');
+  const del = pendingDelete === r.id;
+  return `<article class="card">
+    <div class="card-top">
+      <div><h2>${esc(r.company)}</h2><p class="role">${esc(r.role)}</p></div>
+      <span class="pill st-${st.key}">${st.label}</span>
+    </div>
+    <dl>
+      <div><dt>國家 / 城市</dt><dd>${esc(place) || '—'}</dd></div>
+      <div><dt>產業</dt><dd>${esc(r.industry) || '—'}</dd></div>
+      <div><dt>薪資</dt><dd class="mono">${esc(r.salary) || '—'}</dd>${r.salary ? `<div class="est">${SALARY_TYPE[r.salaryType] || ''}</div>` : ''}</div>
+      <div><dt>合約</dt><dd>${esc(r.contract) || '—'}</dd></div>
+      <div><dt>投遞日期</dt><dd class="mono">${esc(r.appliedDate) || '尚未投遞'}</dd></div>
+      <div><dt>ATS 匹配度</dt><dd class="mono">${r.match ? esc(r.match) + '%' : '—'}</dd></div>
+      <div><dt>履歷版本</dt><dd>${esc(r.cvVersion) || '—'}</dd></div>
+      <div><dt>下一步</dt><dd>${esc(r.nextStep) || '—'}</dd></div>
+    </dl>
+    ${files.length || r.link ? `<div class="files">${r.link ? `<a href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">職缺頁面 ↗</a>` : ''}${files.map(f => `<a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">${esc(f.label)}</a>`).join('')}</div>` : ''}
+    ${r.notes ? `<p class="notes">${esc(r.notes)}</p>` : ''}
+    ${canWrite ? `<div class="actions">
+      <button type="button" data-edit="${esc(r.id)}">編輯</button>
+      ${del ? `<button type="button" class="danger" data-confirm="${esc(r.id)}">確定刪除</button><button type="button" data-cancel-del>保留</button>`
+            : `<button type="button" data-del="${esc(r.id)}">刪除</button>`}
+    </div>` : ''}
+  </article>`;
+}
+
+function render() {
+  renderPipeline();
+  const shown = filter ? rows.filter(r => r.status === filter) : rows;
+  $('list').innerHTML = shown.length ? shown.map(card).join('')
+    : `<div class="empty">${filter ? '這個狀態目前沒有職缺。' : '還沒有紀錄。點「新增職缺」，或把職缺描述貼給 Claude，它會幫你產生履歷並記錄在這裡。'}</div>`;
+}
+
+$('list').addEventListener('click', async e => {
+  const t = e.target;
+  if (t.dataset.edit) openEditor(rows.find(r => r.id === t.dataset.edit));
+  else if (t.dataset.del) { pendingDelete = t.dataset.del; render(); }
+  else if ('cancelDel' in t.dataset) { pendingDelete = null; render(); }
+  else if (t.dataset.confirm) {
+    try { await col.doc(t.dataset.confirm).delete(); } catch (err) { alertMsg('刪除失敗：' + (err.message || err.code)); }
+    pendingDelete = null;
+  }
+});
+
+const F = ['company', 'role', 'country', 'city', 'industry', 'contract', 'salary', 'salaryType', 'status', 'applied', 'match', 'next', 'link', 'cv', 'notes'];
+const MAP = { applied: 'appliedDate', next: 'nextStep', cv: 'cvVersion' };
+function openEditor(r) {
+  editingId = r ? r.id : null;
+  $('editorTitle').textContent = r ? '編輯職缺' : '新增職缺';
+  F.forEach(k => { $('f-' + k).value = r ? (r[MAP[k] || k] ?? '') : (k === 'status' ? 'prep' : k === 'salaryType' ? 'estimate' : ''); });
+  $('f-files').value = r && Array.isArray(r.files) ? r.files.map(f => `${f.label} | ${f.url}`).join('\n') : '';
+  $('editor').hidden = false; $('f-company').focus();
+  $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('addBtn').addEventListener('click', () => openEditor(null));
+$('cancelBtn').addEventListener('click', () => { $('editor').hidden = true; });
+$('editor').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = {};
+  F.forEach(k => { data[MAP[k] || k] = $('f-' + k).value.trim(); });
+  data.files = $('f-files').value.split('\n').map(l => l.split('|')).filter(p => p.length >= 2)
+    .map(p => ({ label: p[0].trim(), url: p.slice(1).join('|').trim() })).filter(f => f.label && f.url);
+  const old = editingId ? rows.find(r => r.id === editingId) : null;
+  data.createdAt = old?.createdAt || new Date().toISOString();
+  $('saveBtn').disabled = true;
+  try {
+    if (editingId) await col.doc(editingId).set(data); else await col.add(data);
+    $('editor').hidden = true;
+  } catch (err) { alertMsg('儲存失敗：' + (err.message || err.code)); }
+  $('saveBtn').disabled = false;
+});
+function alertMsg(m) { $('hint').textContent = m; }
+
+(async () => {
+  const db = await window.claude?.use?.('db');
+  if (!db) { $('list').innerHTML = '<div class="msg">請登入 claude.ai 後開啟這個頁面，才能看到你的求職紀錄。</div>'; renderPipeline(); return; }
+  const user = await window.claude.use('user');
+  canWrite = user ? (await user.can('data.write')) !== false : false;
+  $('addBtn').hidden = !canWrite;
+  col = db.collection('applications');
+  col.orderBy('createdAt', 'desc').onSnapshot(snap => {
+    rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
+  }, err => { $('list').innerHTML = `<div class="msg">無法載入紀錄（${esc(err.code)}）。請重新整理頁面。</div>`; });
+})();
+renderPipeline();
+</script>
