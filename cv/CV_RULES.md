@@ -23,3 +23,17 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 2. **Rewrite.** Rewrite each bullet as action + context or method + result, using job description terms only where the experience supports them. Write a 2–3 sentence summary and a cleaned-up skills section. Explain the changes first, then give copy-ready text.
 3. **Review.** Check ATS readability, then give a recruiter's 6-second skim, ending with a prioritised list of edits.
 4. **Mock interview.** Ask one question at a time: background and motivation, 3 role-specific questions, 2 behavioural questions and 1 question about working under pressure. Assess each answer with STAR. End with 3 areas to practise.
+
+## Career targets (October 2026)
+- **Industries:** luxury, cosmetics, food (FMCG), tech.
+- **Roles:** Supply Planner, Production Tracker, Supply Chain Performance Analyst, Distribution Planner, Retail Planner (stretch). Also suggested: Demand Planner, Supply / Launch Coordinator, because they bridge supply chain and marketing.
+- **Positioning:** finds data errors and fixes them (data reliability). Communicates well with people and enjoys brainstorming. Interested in marketing, but has no direct marketing experience.
+
+## Confirmed facts: Pure Trade (July 2026 – January 2027)
+- Leads weekly meetings with 4 suppliers on production plans and milestones, and works with the purchasing team.
+- Processes 10–15 purchase orders and invoices per day in Dynamics 365. The volume depends on whether buyers have uploaded the PO documents. Follows up with buyers when data is missing.
+- Checks KPIs every morning in Power BI and cleans the data in Excel.
+- Measures finished products with their packaging and enters the data in L'Oréal's COSMO system.
+- Builds palletization plans in Cape Pack (Esko), following each brand's maximum pallet height and weight.
+- Monitors the in-office stock of BAT samples.
+- 1,900+ historical order records cleaned. Tracks 100+ GWP/VIP orders. Ships by sea, air and road under FCA Incoterms.
