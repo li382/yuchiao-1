@@ -38,7 +38,10 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - Monitors the in-office stock of BAT samples.
 - 1,900+ historical order records cleaned. Tracks 100+ GWP/VIP orders. Ships by sea, air and road under FCA Incoterms.
 
-## Application tracker
-- Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm (source: `cv/tracker.html`; the data lives in its database collection `applications`).
-- Every time you generate a new CV: upload the EN and FR PDFs as assets of the tracker, then add or update one row per job. Each row records company, role, country, city, industry, contract, salary (and whether it is an estimate, posted in the job ad, or a real offer), status, date applied, ATS match score, CV version, file links, next step and notes.
-- Statuses: prep (CV ready), sent (applied), int (interviewing), offer, no (rejected), drop (dropped).
+## Job Search page
+- Page: https://claude.ai/artifact/SxeioYhuzpPds4VhcYLVfm (source: `cv/tracker.html` and `cv/tracker-render.js`; the libraries and fonts are published files of the artifact; the data lives in its database collection `applications`).
+- **New application tab:** paste a job description, and Claude runs Steps 1–3 from the base CV (`BASE_EN` / `BASE_FR` in `tracker-render.js`) plus the confirmed facts and rules. It writes the EN and FR CVs (Word and PDF, in the same layout as the base CV, fitted to one page) and an English motivation letter when the job asks for one. Then choose **I applied** / **Not applied yet** / **Discard**.
+- **Applied tab:** status, CV files, job description, and Step 4 interview prep as PDFs in English, French and Chinese.
+- **Saved tab:** tailored CVs that have not been sent yet.
+- When the base CV or the confirmed facts change, update `BASE_EN`, `BASE_FR` and `FACTS` in `tracker-render.js` and republish the page.
+- Each row records company, role, country, city, industry, contract, salary (and whether it is an estimate, posted in the job ad, or a real offer), status, date applied, match score before and after tailoring, the CV in English and French, the motivation letter, the Step 1–3 analysis and the interview prep.

@@ -1,241 +1,595 @@
-<title>Yu Chiao 求職追蹤</title>
+<title>Yu Chiao Job Search</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one narrow column of application "dockets" (like shipment cards), status pipeline on top */
+/* Layout: one centred working column; tabs = New application / Applied / Saved; each application is a "file" card */
 :root {
-  --bg: #f4f5f7; --surface: #ffffff; --fg: #1c2230; --muted: #5d6578; --line: #dde1e8;
-  --accent: #23407a; --accent-soft: #e5ebf6;
-  --s-prep: #8a6d1d; --s-prep-bg: #f6efd9;
-  --s-sent: #23407a; --s-sent-bg: #e5ebf6;
-  --s-int: #6b3fa0; --s-int-bg: #efe7f8;
-  --s-offer: #1f7a4d; --s-offer-bg: #dff3e8;
-  --s-no: #9a3b3b; --s-no-bg: #f7e3e3;
-  --s-drop: #5d6578; --s-drop-bg: #eceef2;
-  --f-display: "Noto Serif TC", Georgia, serif;
-  --f-body: "Noto Sans TC", -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --bg: #ffffff; --surface: #f5f7fb; --paper: #ffffff; --fg: #0b0d12; --muted: #4b5366; --line: #d8dde7;
+  --navy: #14306b; --navy-ink: #ffffff; --navy-soft: #e8edf7;
+  --ok: #1f6b45; --ok-bg: #e2f2e9; --warn: #8a5a00; --warn-bg: #f8eed6; --bad: #a12f2f; --bad-bg: #f8e4e4;
+  --f-sans: "IBM Plex Sans", -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #12151c; --surface: #1a1f29; --fg: #e8ebf1; --muted: #9aa2b4; --line: #2c3342;
-  --accent: #8fb0ef; --accent-soft: #233150;
-  --s-prep: #e0c375; --s-prep-bg: #3a3220; --s-sent: #8fb0ef; --s-sent-bg: #233150;
-  --s-int: #c3a3ec; --s-int-bg: #352a48; --s-offer: #7fd3a6; --s-offer-bg: #1f3a2d;
-  --s-no: #ec9a9a; --s-no-bg: #432626; --s-drop: #9aa2b4; --s-drop-bg: #2a2f3b; color-scheme: dark } }
+  --bg: #07090d; --surface: #10141c; --paper: #161b25; --fg: #eef1f6; --muted: #a2aabb; --line: #273042;
+  --navy: #8eaaf0; --navy-ink: #07090d; --navy-soft: #1b2742;
+  --ok: #82d3a8; --ok-bg: #173226; --warn: #e6c27a; --warn-bg: #352a14; --bad: #ef9d9d; --bad-bg: #3b1f1f; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #12151c; --surface: #1a1f29; --fg: #e8ebf1; --muted: #9aa2b4; --line: #2c3342;
-  --accent: #8fb0ef; --accent-soft: #233150;
-  --s-prep: #e0c375; --s-prep-bg: #3a3220; --s-sent: #8fb0ef; --s-sent-bg: #233150;
-  --s-int: #c3a3ec; --s-int-bg: #352a48; --s-offer: #7fd3a6; --s-offer-bg: #1f3a2d;
-  --s-no: #ec9a9a; --s-no-bg: #432626; --s-drop: #9aa2b4; --s-drop-bg: #2a2f3b; color-scheme: dark }
+  --bg: #07090d; --surface: #10141c; --paper: #161b25; --fg: #eef1f6; --muted: #a2aabb; --line: #273042;
+  --navy: #8eaaf0; --navy-ink: #07090d; --navy-soft: #1b2742;
+  --ok: #82d3a8; --ok-bg: #173226; --warn: #e6c27a; --warn-bg: #352a14; --bad: #ef9d9d; --bad-bg: #3b1f1f; color-scheme: dark }
 * { box-sizing: border-box }
-body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.6 }
-.wrap { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 22px }
-header { display: grid; gap: 4px }
-h1 { font-family: var(--f-display); font-size: 1.75rem; line-height: 1.25; margin: 0; text-wrap: balance }
-.sub { color: var(--muted); margin: 0 }
-.pipeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px }
-.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 8px; cursor: pointer; text-align: left; font: inherit; color: inherit; display: grid; gap: 2px }
-.stage[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
-.stage .n { font-family: var(--f-mono); font-size: 1.4rem; font-variant-numeric: tabular-nums; line-height: 1.1 }
-.stage .l { font-size: .78rem; color: var(--muted) }
-@media (max-width: 620px) { .pipeline { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
-.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between }
-.toolbar .hint { color: var(--muted); font-size: .85rem }
-button, .btn { font: inherit; font-size: .9rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 7px 14px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface) }
-button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
-button.danger { color: var(--s-no); border-color: var(--s-no) }
-.list { display: grid; gap: 14px }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 12px; min-width: 0 }
-.card-top { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between }
-.card h2 { font-family: var(--f-display); font-size: 1.2rem; margin: 0; line-height: 1.3 }
-.card .role { color: var(--muted); margin: 0 }
-.pill { font-size: .78rem; font-weight: 500; padding: 2px 10px; border-radius: 999px; white-space: nowrap }
-.st-prep { color: var(--s-prep); background: var(--s-prep-bg) } .st-sent { color: var(--s-sent); background: var(--s-sent-bg) }
-.st-int { color: var(--s-int); background: var(--s-int-bg) } .st-offer { color: var(--s-offer); background: var(--s-offer-bg) }
-.st-no { color: var(--s-no); background: var(--s-no-bg) } .st-drop { color: var(--s-drop); background: var(--s-drop-bg) }
-dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px; margin: 0 }
-dl div { min-width: 0 }
-dt { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
-dd { margin: 0; overflow-wrap: anywhere }
-.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: .92em }
-.est { font-size: .75rem; color: var(--muted) }
-.files { display: flex; flex-wrap: wrap; gap: 8px }
-.files a { font-size: .85rem; border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; color: var(--accent); text-decoration: none; font-family: var(--f-mono) }
-.files a:hover { background: var(--accent-soft) }
-.notes { font-size: .9rem; color: var(--muted); margin: 0; white-space: pre-wrap }
-.actions { display: flex; gap: 8px; flex-wrap: wrap }
-.empty, .msg { background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 24px; color: var(--muted); text-align: center }
-form.editor { background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 18px; display: grid; gap: 14px }
-form.editor h2 { margin: 0; font-family: var(--f-display); font-size: 1.15rem }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-sans); font-size: 15px; line-height: 1.55 }
+.wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 80px; display: grid; gap: 20px }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--fg); padding-bottom: 14px }
+h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; text-wrap: balance }
+h1 span { color: var(--navy) }
+.top p { margin: 2px 0 0; color: var(--muted); font-size: .9rem }
+nav.tabs { display: flex; gap: 4px; flex-wrap: wrap }
+nav.tabs button { font: inherit; font-size: .9rem; font-weight: 500; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 7px 14px; border-radius: 6px; cursor: pointer }
+nav.tabs button[aria-selected="true"] { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
+nav.tabs .count { font-family: var(--f-mono); font-size: .8rem; opacity: .8; margin-left: 4px }
+h2 { font-size: 1.15rem; margin: 0; font-weight: 600 }
+h3 { font-size: .95rem; margin: 0; font-weight: 600 }
+.muted { color: var(--muted) }
+.small { font-size: .85rem }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+label { display: grid; gap: 5px; font-size: .85rem; font-weight: 500 }
+input, select, textarea { font: inherit; font-size: .95rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0 }
+textarea#jd { min-height: 240px; resize: vertical; font-size: .9rem; line-height: 1.5 }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
-label { display: grid; gap: 4px; font-size: .82rem; color: var(--muted) }
-input, select, textarea { font: inherit; font-size: .95rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0 }
-textarea { min-height: 70px; resize: vertical }
-.row-end { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap }
-@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .15s } .card:hover { border-color: var(--muted) } }
+.check { display: flex; gap: 8px; align-items: center; font-weight: 400 }
+.check input { width: auto }
+button.btn, .btn, button.primary, button.dark, button.danger { font: inherit; font-size: .88rem; font-weight: 500; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 7px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none }
+button.primary { background: var(--navy); border-color: var(--navy); color: var(--navy-ink) }
+button.dark { background: var(--fg); border-color: var(--fg); color: var(--bg) }
+button.danger { color: var(--bad); border-color: var(--bad) }
+button:disabled { opacity: .5; cursor: progress }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.steps li { display: flex; gap: 10px; align-items: baseline; font-size: .9rem }
+.steps .dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--line); flex: none; transform: translateY(1px) }
+.steps li.run .dot { border-color: var(--navy); background: var(--navy-soft) }
+.steps li.done .dot { border-color: var(--navy); background: var(--navy) }
+.steps li.fail .dot { border-color: var(--bad); background: var(--bad) }
+.steps .meta { color: var(--muted); font-family: var(--f-mono); font-size: .78rem }
+@media (prefers-reduced-motion: no-preference) { .steps li.run .dot { animation: pulse 1.2s infinite } @keyframes pulse { 50% { opacity: .35 } } }
+.list { display: grid; gap: 14px }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; min-width: 0 }
+.card-head { padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: start; cursor: pointer }
+.card-head .who { min-width: 0 }
+.card-head .co { font-weight: 600; font-size: 1.05rem }
+.card-head .role { color: var(--muted); font-size: .92rem }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .82rem; color: var(--muted) }
+.facts b { color: var(--fg); font-weight: 500 }
+.pill { font-size: .75rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; background: var(--navy-soft); color: var(--navy) }
+.pill.ok { background: var(--ok-bg); color: var(--ok) } .pill.warn { background: var(--warn-bg); color: var(--warn) } .pill.bad { background: var(--bad-bg); color: var(--bad) }
+.card-body { border-top: 1px solid var(--line); padding: 14px 16px 16px; display: grid; gap: 14px; min-width: 0 }
+.dl { display: grid; gap: 8px }
+.dl .row > span { min-width: 120px; font-size: .85rem; font-weight: 500 }
+details { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0 }
+details > summary { cursor: pointer; padding: 9px 12px; font-weight: 600; font-size: .92rem; list-style-position: inside }
+details > .in { padding: 4px 14px 14px; display: grid; gap: 10px; font-size: .9rem; min-width: 0 }
+details ul, details ol { margin: 0; padding-left: 20px; display: grid; gap: 4px }
+.score { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap }
+.score .big { font-family: var(--f-mono); font-size: 1.8rem; font-weight: 500; color: var(--navy); line-height: 1 }
+table.kw { border-collapse: collapse; width: 100%; font-size: .85rem }
+table.kw td, table.kw th { border-bottom: 1px solid var(--line); text-align: left; padding: 6px 8px 6px 0; vertical-align: top }
+.tablewrap { overflow-x: auto }
+.paper { background: #ffffff; color: #111111; border: 1px solid var(--line); border-radius: 4px; padding: 18px 20px; font-family: Calibri, Carlito, "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 4px; min-width: 0 }
+.paper .nm { font-size: 19px; font-weight: 700 }
+.paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
+.paper ul { margin: 0; padding-left: 18px }
+.paper p { margin: 0 }
+.jd { white-space: pre-wrap; font-size: .85rem; max-height: 340px; overflow: auto; background: var(--surface); border-radius: 6px; padding: 10px 12px }
+.decide { border: 2px solid var(--navy); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; background: var(--paper) }
+.decide .row input[type=date] { width: auto }
+.msg { border: 1px dashed var(--line); border-radius: 10px; padding: 22px; color: var(--muted); text-align: center }
+.err { color: var(--bad); font-size: .88rem }
+.note { font-size: .85rem; color: var(--muted) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: .9rem; max-width: calc(100% - 32px) }
 </style>
 
 <div class="wrap">
-  <header>
-    <h1>Yu Chiao 求職追蹤</h1>
-    <p class="sub">每一個投遞過的職缺、使用的履歷版本、國家、職位與薪資，都記在這裡。</p>
+  <header class="top">
+    <div>
+      <h1>Yu Chiao <span>Job Search</span></h1>
+      <p>Paste a job description, get a tailored CV in English and French, track every application.</p>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button type="button" role="tab" data-tab="new">New application</button>
+      <button type="button" role="tab" data-tab="applied">Applied <span class="count" id="c-applied">0</span></button>
+      <button type="button" role="tab" data-tab="saved">Saved <span class="count" id="c-saved">0</span></button>
+    </nav>
   </header>
 
-  <div class="pipeline" id="pipeline" role="group" aria-label="依狀態篩選"></div>
+  <section id="tab-new" hidden>
+    <form class="panel" id="newForm">
+      <div>
+        <h2>1. Paste the job description</h2>
+        <p class="muted small">Claude compares it with your base CV and everything you confirmed about Pure Trade, runs Steps 1–3, and writes the English and French CVs. It never adds experience you don't have.</p>
+      </div>
+      <label for="jd">Full job description
+        <textarea id="jd" placeholder="Paste the complete job ad here: company, job title, missions, profile, location, salary if shown…" required></textarea>
+      </label>
+      <div class="grid2">
+        <label for="jobLink">Job link (optional)<input id="jobLink" type="url" placeholder="https://"></label>
+        <label for="letterMode">Motivation letter (English)
+          <select id="letterMode"><option value="auto">Write one if the job asks for it</option><option value="yes">Always write one</option><option value="no">Don't write one</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <button class="primary" type="submit" id="genBtn">Generate tailored CV</button>
+        <span class="muted small">Takes about 1–2 minutes.</span>
+      </div>
+      <ol class="steps" id="genSteps" hidden></ol>
+      <p class="err" id="genErr" hidden></p>
+    </form>
+    <div id="newResult"></div>
+  </section>
 
-  <div class="toolbar">
-    <span class="hint" id="hint">點上方狀態可篩選，再點一次取消。</span>
-    <button class="primary" id="addBtn" type="button" hidden>＋ 新增職缺</button>
-  </div>
-
-  <form class="editor" id="editor" hidden>
-    <h2 id="editorTitle">新增職缺</h2>
-    <div class="grid2">
-      <label>公司 Company<input id="f-company" required></label>
-      <label>職位 Position<input id="f-role" required></label>
-      <label>國家 Country<input id="f-country" placeholder="法國"></label>
-      <label>城市 City<input id="f-city" placeholder="巴黎"></label>
-      <label>產業 Industry<input id="f-industry" placeholder="精品 / 美妝"></label>
-      <label>合約 Contract<input id="f-contract" placeholder="CDI / CDD / VIE"></label>
-      <label>薪資 Salary<input id="f-salary" placeholder="35–40k € brut/an"></label>
-      <label>薪資來源<select id="f-salaryType"><option value="estimate">估計</option><option value="posted">職缺公布</option><option value="offer">實際 Offer</option></select></label>
-      <label>狀態 Status<select id="f-status"></select></label>
-      <label>投遞日期<input id="f-applied" type="date"></label>
-      <label>ATS 匹配度 (%)<input id="f-match" inputmode="numeric" placeholder="例如 80"></label>
-      <label>下一步<input id="f-next" placeholder="例如 10/20 追蹤 HR"></label>
-    </div>
-    <label>職缺連結 Job link<input id="f-link" type="url" placeholder="https://"></label>
-    <label>履歷版本名稱<input id="f-cv" placeholder="Supply Planner – Sisley v2"></label>
-    <label>檔案連結（一行一個：名稱 | 網址）<textarea id="f-files" placeholder="CV EN (PDF) | https://..."></textarea></label>
-    <label>備註 Notes<textarea id="f-notes"></textarea></label>
-    <div class="row-end">
-      <button type="button" id="cancelBtn">取消</button>
-      <button type="submit" class="primary" id="saveBtn">儲存</button>
-    </div>
-  </form>
-
-  <div class="list" id="list"><div class="msg">正在載入你的求職紀錄…</div></div>
+  <section id="tab-applied" hidden><div class="list" id="appliedList"></div></section>
+  <section id="tab-saved" hidden><div class="list" id="savedList"></div></section>
 </div>
+<div class="toast" id="toast" hidden></div>
 
+<script src="lib/tracker-render.js"></script>
+<script src="lib/cv-images.js" defer></script>
+<script src="lib/docx.iife.js" defer></script>
+<script src="lib/pdfmake.min.js" defer></script>
 <script>
-const STATUSES = [
-  { key: 'prep', label: '履歷已備妥' },
-  { key: 'sent', label: '已投遞' },
-  { key: 'int', label: '面試中' },
-  { key: 'offer', label: '錄取 Offer' },
-  { key: 'no', label: '未錄取' },
-  { key: 'drop', label: '已放棄' },
-];
-const SALARY_TYPE = { estimate: '估計', posted: '職缺公布', offer: '實際 Offer' };
+const K = window.CVKit;
 const $ = id => document.getElementById(id);
-let rows = [], filter = null, editingId = null, col = null, canWrite = false, pendingDelete = null;
-
-$('f-status').innerHTML = STATUSES.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+const APPLIED = ['sent', 'int', 'offer', 'no', 'drop'];
+const STATUS = { prep: ['Not applied yet', 'warn'], sent: ['Applied', ''], int: ['Interviewing', ''], offer: ['Offer', 'ok'], no: ['Rejected', 'bad'], drop: ['Withdrawn', 'bad'] };
+const SALARY_TYPE = { estimate: 'estimate', posted: 'from job ad', offer: 'offer' };
+let rows = [], col = null, sample = null, downloads = null, tab = 'new', openId = null, newId = null, pendingDelete = null;
+const busy = {}; // per-record job flags, e.g. busy[id] = 'prep'
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-function safeUrl(u) { try { const x = new URL(u, location.href); return /^https?:$/.test(x.protocol) || u.startsWith('/_blob/') ? u : '#'; } catch { return '#'; } }
+function safeUrl(u) { const s = String(u || ''); return /^https?:\/\//i.test(s) || s.startsWith('/_blob/') ? s : '#'; }
+function today() { return new Date().toISOString().slice(0, 10); }
+function longDate(d = new Date()) { return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3200); }
+function slug(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'Job'; }
 
-function renderPipeline() {
-  $('pipeline').innerHTML = STATUSES.map(s => {
-    const n = rows.filter(r => r.status === s.key).length;
-    return `<button type="button" class="stage" data-k="${s.key}" aria-pressed="${filter === s.key}"><span class="n">${n}</span><span class="l">${s.label}</span></button>`;
+/* ---------- tabs ---------- */
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  ['new', 'applied', 'saved'].forEach(k => { $('tab-' + k).hidden = k !== t; });
+  try { history.replaceState(null, '', '#' + t); } catch {}
+  render();
+}
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
+
+/* ---------- Claude prompts ---------- */
+function ctx() {
+  return `RULES (follow every one)\n${K.RULES.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nCAREER TARGETS\n${K.TARGETS}\n\nCONFIRMED FACTS (true; may be used; nothing beyond these and the base CV)\n${K.FACTS.map(f => '- ' + f).join('\n')}`;
+}
+const CV_SHAPE = `{"target": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
+
+function promptTailor(jd, link) {
+  return `You are a senior recruiter and CV writer for supply chain jobs in France. You are tailoring the CV of Yu Chiao Lin for one specific job. Her goal: pass the ATS and match the job at least 80%, using only true information.
+
+${ctx()}
+
+BASE CV (JSON, English)
+${JSON.stringify(K.BASE_EN)}
+
+JOB DESCRIPTION
+"""
+${jd}
+"""
+${link ? 'Job link: ' + link : ''}
+
+TASKS
+Step 1 (diagnosis): Compare the base CV with the full job description. Give a candid, evidence-based match score from 0 to 100 for the BASE CV with a short rationale; the 8 to 10 most important requirements or keywords that are missing or under-evidenced, and for each where it could truthfully appear in the CV (or "cannot be added truthfully"); five issues a recruiter may notice in a quick review; a section-by-section review of the summary, experience, skills and education; and every gap that wording alone cannot fix because she has not provided that experience.
+Step 2 (rewrite): Rewrite the CV for this job following every rule. For each bullet use action + context or method + result; include job description terms only where her experience genuinely supports them; when a result cannot be quantified truthfully, make the scope or outcome concrete without inventing a metric. List the main changes.
+Job facts: extract company, job title, country, city, industry, contract type (CDI, CDD, internship, VIE…). If the job description states a salary, copy it and set salary_type "posted". Otherwise estimate the gross annual salary range for this role, seniority and city in local currency (France: like "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter.
+
+Return ONLY one JSON object, no markdown fences, with exactly this shape:
+{"job": {"company": string, "role": string, "country": string, "city": string, "industry": string, "contract": string, "salary": string, "salary_type": "posted"|"estimate", "jd_language": "en"|"fr"|"other", "cover_letter_requested": boolean},
+ "step1": {"match_score": number, "rationale": string, "missing": [{"keyword": string, "where": string}], "recruiter_issues": [string], "section_review": {"summary": string, "experience": string, "skills": string, "education": string}, "cannot_fix": [string]},
+ "step2": {"changes": [string]},
+ "cv_en": ${CV_SHAPE},
+ "match_after": number}`;
+}
+
+function promptReview(jd, cv) {
+  return `You are an ATS specialist and a busy recruiter. Review this tailored CV for the job below.
+
+FORMAT FACTS about the file: single column, A4, one page, no tables, no text boxes, contact details in the body (not in a header), standard section headings (SUMMARY, SKILLS, EXPERIENCE, EDUCATION, LANGUAGES), bullet points, Calibri 9 pt, a photo top right and a QR code bottom right (images).
+
+JOB DESCRIPTION
+"""
+${jd}
+"""
+
+TAILORED CV (JSON)
+${JSON.stringify(cv)}
+
+Step 3: First assess ATS readability: flag tables, columns, unusual symbols, headers or footers, formatting choices and section labels that could make parsing less reliable, and check whether the most relevant job requirements appear naturally. Second, simulate a recruiter who has only a few seconds: what stands out first, what is easy to miss, which bullets feel repetitive, and which detail should move higher. End with a prioritised list of edits. Do not recommend adding experience or metrics she cannot verify.
+
+Return ONLY JSON: {"ats": {"format_flags": [string], "requirements_present": [string], "requirements_missing": [string]}, "recruiter": {"stands_out": string, "easy_to_miss": string, "repetitive": [string], "move_higher": string}, "edits": [string]}`;
+}
+
+function promptFr(cv, jdLang) {
+  return `Translate this tailored CV from English into French for a recruiter in France. Return ONLY JSON with exactly the same shape and the same number of items in every list.
+
+Rules:
+- Bullets as noun phrases ("Suivi de…", "Gestion de…", "Animation de…"), not "je".
+- Gender-neutral job titles.
+- Keep English supply chain terms that French companies use (supply chain, S&OP, KPI, OTD, OTIF, lead time, GWP, Incoterms, ETD/ETA, CAPA, BAT, ERP), and keep brand, company and tool names as they are.
+- Put a normal space before ":" ";" "%" as French typography requires.
+- "target": ${jdLang === 'fr' ? 'the job title exactly as the French job description writes it.' : 'keep the job title as the company writes it.'}
+- Reuse the wording of the base French CV below wherever the content is the same. Keep job titles, company lines, education and languages exactly as in the base French CV.
+- Perfect French grammar.
+
+BASE FRENCH CV (reference)
+${JSON.stringify(K.BASE_FR)}
+
+CV TO TRANSLATE
+${JSON.stringify(cv)}`;
+}
+
+function promptLetter(jd, cv, job) {
+  return `Write a motivation letter in English for Yu Chiao Lin, based only on her tailored CV and confirmed facts below. Do not invent facts about her or about the company beyond what the job description says.
+
+${ctx()}
+
+JOB DESCRIPTION
+"""
+${jd}
+"""
+
+TAILORED CV (JSON)
+${JSON.stringify(cv)}
+
+Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company, using what the job description says; (2) two or three concrete proofs from her experience that match the main requirements; (3) how she works: data reliability, finding and correcting errors, supplier and cross-functional communication; (4) availability (${K.AVAIL.en}) and a polite close. British English, natural tone, perfect grammar, no clichés.
+
+Return ONLY JSON: {"recipient": ${JSON.stringify((job.company || 'Company') + ' – Recruitment team')}, "date": ${JSON.stringify(longDate())}, "subject": string, "greeting": string, "paragraphs": [string], "closing": string}`;
+}
+
+function promptPrep(r) {
+  return `Act as an interviewer for this exact role. You have the candidate's final CV and the job description. Prepare a written interview preparation guide for her (Step 4).
+
+${ctx()}
+
+JOB: ${r.role} at ${r.company} (${[r.city, r.country].filter(Boolean).join(', ')})
+JOB DESCRIPTION
+"""
+${r.jd || '(not provided: base the questions on the job title and the CV)'}
+"""
+
+FINAL CV (JSON)
+${JSON.stringify(r.cv_en || K.BASE_EN)}
+
+Write 7 questions in this order: 1 about her background and motivation, 3 role-specific, 2 behavioural, 1 that tests how she thinks under pressure. For each: what the interviewer assesses; a suggested answer structure with situation, action and result written as short first-person notes built ONLY from her real experience in the CV and facts (no invented accomplishments, numbers or results; where her evidence is thin, write "[prepare: …]" saying exactly what detail she should prepare); the evidence or detail to prepare; what to avoid. Also give a 60-second "tell me about yourself" outline as 4–5 bullet notes, the three areas she should practise before the interview (each with how to practise), and three smart questions she can ask the interviewer.
+
+Return ONLY JSON: {"pitch": [string], "questions": [{"category": string, "question": string, "assesses": string, "structure": {"situation": string, "action": string, "result": string}, "evidence_to_prepare": string, "avoid": string}], "practice_areas": [{"area": string, "how": string}], "ask_them": [string]}`;
+}
+
+function promptTranslate(obj, lang) {
+  const target = lang === 'fr' ? 'French (France). Put a normal space before ":" ";" "%" as French typography requires.' : 'Traditional Chinese as used in Taiwan (繁體中文, 台灣用語). The first time a key supply chain term appears, keep the English term in parentheses, e.g. 交期達成率 (OTD).';
+  return `Translate every string value of this JSON into ${target}
+Keep all keys, the structure and the number of items exactly. Keep company names, brand names, tool names and acronyms (OTD, OTIF, S&OP, ERP, GWP, BAT, KPI, STAR) as they are. Keep "[prepare: …]" markers, translating their content. Return ONLY the JSON.
+
+${JSON.stringify(obj)}`;
+}
+
+/* ---------- Claude calls ---------- */
+async function getSample() {
+  if (!sample) sample = await window.claude?.use?.('sample');
+  if (!sample) throw new Error('Claude is not available in this view. Open this page on claude.ai while signed in.');
+  return sample;
+}
+async function askJSON(prompt, opts, onLen) {
+  const s = await getSample();
+  try {
+    return await s.json(prompt, { ...opts, onText: onLen ? ({ text }) => onLen(text.length) : undefined });
+  } catch (e) {
+    if (e && e.code === 'invalid_json' && e.text) {
+      const t = e.text, a = t.indexOf('{'), b = t.lastIndexOf('}');
+      if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
+    }
+    const m = { rate_limited: 'You have reached a usage limit. Wait a little, then try again.', not_granted: 'Claude access was declined for this page. Allow it from the page’s Permissions menu, then try again.', invalid_json: 'Claude’s answer was cut off. Try again.' }[e?.code];
+    throw new Error(m || e?.message || String(e));
+  }
+}
+
+// Keep facts that must never change (titles, companies, dates, education, languages) from the base CV.
+function guardCv(cv, base) {
+  const out = JSON.parse(JSON.stringify(base));
+  if (!cv || typeof cv !== 'object') return out;
+  if (typeof cv.target === 'string' && cv.target.trim()) out.target = cv.target.trim();
+  if (typeof cv.summary === 'string' && cv.summary.trim()) out.summary = cv.summary.trim();
+  ['hard', 'soft', 'tools'].forEach(k => { if (typeof cv.skills?.[k] === 'string' && cv.skills[k].trim()) out.skills[k] = cv.skills[k].trim(); });
+  out.experience.forEach((e, i) => {
+    const g = Array.isArray(cv.experience) ? cv.experience[i] : null;
+    if (!g) return;
+    if (Array.isArray(g.bullets) && g.bullets.filter(b => typeof b === 'string' && b.trim()).length) e.bullets = g.bullets.filter(b => typeof b === 'string' && b.trim()).map(b => b.trim());
+    if (e.description && typeof g.description === 'string' && g.description.trim()) e.description = g.description.trim();
+  });
+  out.education.forEach((e, i) => { const g = cv.education?.[i]; if (typeof g?.details === 'string' && g.details.trim()) e.details = g.details.trim(); });
+  return out;
+}
+
+/* ---------- generation flow ---------- */
+const GEN_STEPS = [['tailor', 'Steps 1–2: diagnosis and English CV'], ['review', 'Step 3: ATS and recruiter review'], ['fr', 'French CV'], ['letter', 'Motivation letter (English)'], ['save', 'Save to your applications']];
+function stepsUI(state) {
+  $('genSteps').hidden = false;
+  $('genSteps').innerHTML = GEN_STEPS.filter(([k]) => state[k] !== 'skip').map(([k, l]) => {
+    const s = state[k] || '';
+    const meta = typeof state[k + 'Len'] === 'number' && s === 'run' ? ` · ${state[k + 'Len'].toLocaleString()} characters written` : s === 'fail' ? ' · failed' : '';
+    return `<li class="${s}"><span class="dot"></span><span>${l}<span class="meta">${meta}</span></span></li>`;
   }).join('');
 }
-$('pipeline').addEventListener('click', e => {
-  const b = e.target.closest('.stage'); if (!b) return;
-  filter = filter === b.dataset.k ? null : b.dataset.k; render();
+
+$('newForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const jd = $('jd').value.trim(), link = $('jobLink').value.trim(), mode = $('letterMode').value;
+  $('genErr').hidden = true;
+  if (jd.length < 150) { $('genErr').textContent = 'Paste the full job description (it looks too short).'; $('genErr').hidden = false; return; }
+  if (!col) { $('genErr').textContent = 'Your applications are not loaded yet. Sign in to claude.ai and reload the page.'; $('genErr').hidden = false; return; }
+  $('genBtn').disabled = true; newId = null; $('newResult').innerHTML = '';
+  const st = { tailor: 'run' }; stepsUI(st);
+  try {
+    const t = await askJSON(promptTailor(jd, link), { modelTier: 'complex' }, n => { st.tailorLen = n; stepsUI(st); });
+    const cv_en = guardCv(t.cv_en, K.BASE_EN), job = t.job || {};
+    st.tailor = 'done';
+    const wantLetter = mode === 'yes' || (mode === 'auto' && job.cover_letter_requested === true);
+    Object.assign(st, { review: 'run', fr: 'run', letter: wantLetter ? 'run' : 'skip' }); stepsUI(st);
+    const [rev, fr, letter] = await Promise.allSettled([
+      askJSON(promptReview(jd, cv_en), { modelTier: 'default' }).then(v => { st.review = 'done'; stepsUI(st); return v; }, err => { st.review = 'fail'; stepsUI(st); throw err; }),
+      askJSON(promptFr(cv_en, job.jd_language), { modelTier: 'default' }).then(v => { st.fr = 'done'; stepsUI(st); return v; }, err => { st.fr = 'fail'; stepsUI(st); throw err; }),
+      wantLetter ? askJSON(promptLetter(jd, cv_en, job), { modelTier: 'complex' }).then(v => { st.letter = 'done'; stepsUI(st); return v; }, err => { st.letter = 'fail'; stepsUI(st); throw err; }) : Promise.resolve(null),
+    ]);
+    st.save = 'run'; stepsUI(st);
+    const now = new Date().toISOString();
+    const data = {
+      company: job.company || 'Unknown company', role: job.role || cv_en.target, country: job.country || '', city: job.city || '',
+      industry: job.industry || '', contract: job.contract || '', salary: job.salary || '', salaryType: job.salary_type === 'posted' ? 'posted' : 'estimate',
+      status: 'prep', appliedDate: '', jd, link, jdLanguage: job.jd_language || '',
+      matchBefore: Number(t.step1?.match_score) || null, match: Number(t.match_after) || null,
+      cvVersion: `${job.role || cv_en.target} – ${job.company || ''} (${today()})`,
+      cv_en, cv_fr: fr.status === 'fulfilled' ? K.deepMap(guardCv(fr.value, K.BASE_FR), K.frTypo) : null,
+      coverLetter: letter.status === 'fulfilled' ? letter.value : null, wantLetter,
+      analysis: { step1: t.step1 || null, step2: t.step2 || null, step3: rev.status === 'fulfilled' ? rev.value : null },
+      createdAt: now, updatedAt: now,
+    };
+    const ref = await col.add(data);
+    st.save = 'done'; stepsUI(st);
+    newId = ref.id; openId = ref.id;
+    $('jd').value = ''; $('jobLink').value = '';
+    render();
+    $('newResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    Object.keys(st).forEach(k => { if (st[k] === 'run') st[k] = 'fail'; }); stepsUI(st);
+    $('genErr').textContent = err.message || String(err); $('genErr').hidden = false;
+  }
+  $('genBtn').disabled = false;
 });
 
-function card(r) {
-  const st = STATUSES.find(s => s.key === r.status) || STATUSES[0];
-  const files = Array.isArray(r.files) ? r.files : [];
-  const place = [r.city, r.country].filter(Boolean).join('，');
-  const del = pendingDelete === r.id;
-  return `<article class="card">
-    <div class="card-top">
-      <div><h2>${esc(r.company)}</h2><p class="role">${esc(r.role)}</p></div>
-      <span class="pill st-${st.key}">${st.label}</span>
+async function patch(id, data) { await col.doc(id).update({ ...data, updatedAt: new Date().toISOString() }); }
+function rowById(id) { return rows.find(r => r.id === id); }
+
+async function retryPart(id, part) {
+  const r = rowById(id); if (!r || busy[id]) return;
+  busy[id] = part; render();
+  try {
+    if (part === 'fr') { const fr = await askJSON(promptFr(r.cv_en, r.jdLanguage), { modelTier: 'default' }); await patch(id, { cv_fr: K.deepMap(guardCv(fr, K.BASE_FR), K.frTypo) }); }
+    if (part === 'review') { const v = await askJSON(promptReview(r.jd, r.cv_en), { modelTier: 'default' }); await patch(id, { analysis: { ...(r.analysis || {}), step3: v } }); }
+    if (part === 'letter') { const v = await askJSON(promptLetter(r.jd, r.cv_en || K.BASE_EN, r), { modelTier: 'complex' }); await patch(id, { coverLetter: v }); }
+    if (part === 'prep') await genPrep(id);
+    toast('Done');
+  } catch (err) { toast(err.message || String(err)); }
+  delete busy[id]; render();
+}
+
+async function genPrep(id) {
+  const r = rowById(id);
+  const en = await askJSON(promptPrep(r), { modelTier: 'complex' });
+  await patch(id, { prep: { en, generatedAt: new Date().toISOString() } });
+  const [fr, zh] = await Promise.allSettled([askJSON(promptTranslate(en, 'fr'), { modelTier: 'default' }), askJSON(promptTranslate(en, 'zh'), { modelTier: 'default' })]);
+  await patch(id, { prep: { en, fr: fr.status === 'fulfilled' ? K.deepMap(fr.value, K.frTypo) : null, zh: zh.status === 'fulfilled' ? zh.value : null, generatedAt: new Date().toISOString() } });
+}
+
+/* ---------- files ---------- */
+let fontCache = null, zhLoaded = false;
+async function b64(url) {
+  const buf = await (await fetch(url)).arrayBuffer(), bytes = new Uint8Array(buf);
+  let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+async function pdfFonts(zh) {
+  if (!fontCache) {
+    fontCache = {};
+    for (const f of ['Carlito-Regular', 'Carlito-Bold', 'Carlito-Italic', 'Carlito-BoldItalic']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf');
+  }
+  if (zh && !zhLoaded) {
+    for (const f of ['NotoSansTC-Regular', 'NotoSansTC-Bold']) fontCache[f + '.ttf'] = await b64('fonts/' + f + '.ttf');
+    zhLoaded = true;
+  }
+  const fonts = { Carlito: { normal: 'Carlito-Regular.ttf', bold: 'Carlito-Bold.ttf', italics: 'Carlito-Italic.ttf', bolditalics: 'Carlito-BoldItalic.ttf' } };
+  if (zhLoaded) fonts.NotoTC = { normal: 'NotoSansTC-Regular.ttf', bold: 'NotoSansTC-Bold.ttf', italics: 'NotoSansTC-Regular.ttf', bolditalics: 'NotoSansTC-Bold.ttf' };
+  return fonts;
+}
+function makePdf(dd, fonts) {
+  return new Promise(res => { let pages = 0; const f0 = dd.footer; dd.footer = (c, t) => { pages = t; return f0 ? f0(c, t) : null; }; window.pdfMake.createPdf(dd, null, fonts, fontCache).getBlob(blob => res({ blob, pages })); });
+}
+async function cvPdfFit(cv, lang) {
+  const fonts = await pdfFonts(false); let last;
+  for (const s of [1, 0.96, 0.92, 0.88, 0.84]) { last = await makePdf(K.cvPdf(cv, lang, s, window.CV_IMAGES), fonts); last.scale = s; if (last.pages <= 1) break; }
+  return last;
+}
+async function save(filename, blob) {
+  if (!downloads) downloads = await window.claude?.use?.('downloads');
+  if (!downloads) { toast('Downloads are not available in this view.'); return; }
+  try { const r = await downloads.save({ filename, data: blob }); if (r?.status === 'saved') toast('Saved ' + filename); }
+  catch (e) { if (e?.code !== 'cancelled' && e?.code !== 'declined') toast('Could not save: ' + (e?.message || e?.code)); }
+}
+async function download(id, what) {
+  const r = rowById(id); if (!r) return;
+  const base = `${slug(r.role)}_${slug(r.company)}`;
+  try {
+    if (what === 'cv-en-pdf' || what === 'cv-fr-pdf') {
+      const lang = what.includes('-fr-') ? 'fr' : 'en', cv = lang === 'fr' ? r.cv_fr : (r.cv_en || K.BASE_EN);
+      const { blob, pages } = await cvPdfFit(cv, lang);
+      if (pages > 1) toast('Note: this CV runs to 2 pages. Shorten a bullet in the Word version.');
+      await save(`CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}.pdf`, blob);
+    } else if (what === 'cv-en-docx' || what === 'cv-fr-docx') {
+      const lang = what.includes('-fr-') ? 'fr' : 'en', cv = lang === 'fr' ? r.cv_fr : (r.cv_en || K.BASE_EN);
+      const { scale } = await cvPdfFit(cv, lang);
+      await save(`CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}.docx`, await window.docx.Packer.toBlob(K.cvDocx(cv, lang, scale, window.CV_IMAGES, window.docx)));
+    } else if (what === 'letter-pdf') {
+      const { blob } = await makePdf(K.letterPdf(r.coverLetter), await pdfFonts(false));
+      await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob);
+    } else if (what === 'letter-docx') {
+      await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx)));
+    } else if (what.startsWith('prep-')) {
+      const lang = what.slice(5);
+      if (lang === 'zh') toast('Loading the Chinese font…');
+      const { blob } = await makePdf(K.prepPdf(r.prep[lang], r, lang), await pdfFonts(lang === 'zh'));
+      await save(`Interview_Prep_${base}_${lang.toUpperCase()}.pdf`, blob);
+    }
+  } catch (e) { toast('Could not create the file: ' + (e?.message || e)); }
+}
+
+/* ---------- rendering ---------- */
+function pill(r) { const [l, c] = STATUS[r.status] || STATUS.prep; return `<span class="pill ${c}">${l}</span>`; }
+function factsLine(r) {
+  const place = [r.city, r.country].filter(Boolean).join(', ');
+  return `<div class="facts">${place ? `<span>${esc(place)}</span>` : ''}${r.salary ? `<span><b>${esc(r.salary)}</b> (${SALARY_TYPE[r.salaryType] || 'estimate'})</span>` : ''}${r.contract ? `<span>${esc(r.contract)}</span>` : ''}${r.match ? `<span>Match <b class="mono">${esc(r.matchBefore ? r.matchBefore + '→' : '')}${esc(r.match)}%</b></span>` : ''}${r.appliedDate ? `<span>Applied <b class="mono">${esc(r.appliedDate)}</b></span>` : ''}</div>`;
+}
+function li(arr) { return (arr || []).map(x => `<li>${esc(x)}</li>`).join(''); }
+function cvPaper(cv, lang) {
+  if (!cv) return '';
+  const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils'] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools'];
+  return `<div class="paper"><div class="nm">${esc(K.NAME)}</div><p>${esc(K.CONTACT)}</p><p><b>${esc(lang === 'fr' ? 'Poste visé : ' : 'Target: ')}${esc(cv.target)}</b></p>
+    <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
+    <div class="sec">${L[1]}</div><p><b>${L[5]}:</b> ${esc(cv.skills.hard)}</p><p><b>${L[6]}:</b> ${esc(cv.skills.soft)}</p><p><b>${L[7]}:</b> ${esc(cv.skills.tools)}</p>
+    <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}<ul>${li(e.bullets)}</ul>`).join('')}
+    <div class="sec">${L[3]}</div>${cv.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p><p>${esc(e.details)}</p>`).join('')}
+    <div class="sec">${L[4]}</div>${cv.languages.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
+}
+function analysisHTML(r, open) {
+  const a = r.analysis || {}, s1 = a.step1, s2 = a.step2, s3 = a.step3, b = busy[r.id];
+  let h = '';
+  if (s1) h += `<details ${open ? 'open' : ''}><summary>Step 1 · Diagnosis</summary><div class="in">
+    <div class="score"><span class="big">${esc(s1.match_score)}%</span><span class="muted">base CV match${r.match ? ` → <b class="mono">${esc(r.match)}%</b> after tailoring` : ''}</span></div>
+    <p>${esc(s1.rationale)}</p>
+    <h3>Missing or under-evidenced</h3><div class="tablewrap"><table class="kw"><tr><th>Keyword / requirement</th><th>Where it can truthfully go</th></tr>${(s1.missing || []).map(m => `<tr><td>${esc(m.keyword)}</td><td>${esc(m.where)}</td></tr>`).join('')}</table></div>
+    <h3>What a recruiter may notice</h3><ol>${li(s1.recruiter_issues)}</ol>
+    <h3>Section by section</h3><ul>${['summary', 'experience', 'skills', 'education'].map(k => s1.section_review?.[k] ? `<li><b>${k[0].toUpperCase() + k.slice(1)}:</b> ${esc(s1.section_review[k])}</li>` : '').join('')}</ul>
+    ${(s1.cannot_fix || []).length ? `<h3>Can't be fixed with wording alone</h3><ul>${li(s1.cannot_fix)}</ul>` : ''}
+  </div></details>`;
+  if (s2) h += `<details><summary>Step 2 · Main changes</summary><div class="in"><ul>${li(s2.changes)}</ul></div></details>`;
+  if (r.cv_en || r.cv_fr) h += `<details><summary>CV preview</summary><div class="in">${cvPaper(r.cv_en || K.BASE_EN, 'en')}${r.cv_fr ? `<p class="muted small">French version</p>${cvPaper(r.cv_fr, 'fr')}` : ''}</div></details>`;
+  if (s3) h += `<details><summary>Step 3 · ATS and recruiter review</summary><div class="in">
+    <h3>ATS readability</h3><ul>${li(s3.ats?.format_flags)}</ul>
+    ${(s3.ats?.requirements_present || []).length ? `<p><b>Requirements that appear:</b> ${esc((s3.ats.requirements_present).join(', '))}</p>` : ''}
+    ${(s3.ats?.requirements_missing || []).length ? `<p><b>Still missing:</b> ${esc((s3.ats.requirements_missing).join(', '))}</p>` : ''}
+    <h3>6-second recruiter skim</h3><ul><li><b>Stands out:</b> ${esc(s3.recruiter?.stands_out)}</li><li><b>Easy to miss:</b> ${esc(s3.recruiter?.easy_to_miss)}</li><li><b>Repetitive:</b> ${esc((s3.recruiter?.repetitive || []).join(' · '))}</li><li><b>Move higher:</b> ${esc(s3.recruiter?.move_higher)}</li></ul>
+    <h3>Prioritised edits</h3><ol>${li(s3.edits)}</ol></div></details>`;
+  else if (r.cv_en && r.jd) h += `<div class="row"><button class="btn" data-act="retry-review" data-id="${esc(r.id)}" ${b ? 'disabled' : ''}>${b === 'review' ? 'Reviewing…' : 'Run Step 3 review'}</button></div>`;
+  return h;
+}
+function filesHTML(r) {
+  const b = busy[r.id], id = esc(r.id);
+  const btn = (act, label) => `<button class="btn" data-act="dl" data-what="${act}" data-id="${id}">${label}</button>`;
+  let h = `<div class="dl">
+    <div class="row"><span>CV · English</span>${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
+    <div class="row"><span>CV · Français</span>${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn" data-act="retry-fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
+    <div class="row"><span>Motivation letter</span>${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') : `<button class="btn" data-act="retry-letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one (English)'}</button>`}</div>`;
+  if (Array.isArray(r.files) && r.files.length) h += `<div class="row"><span>Earlier files</span>${r.files.map(f => `<a class="btn" href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">${esc(f.label)}</a>`).join('')}</div>`;
+  return h + '</div>';
+}
+function jdHTML(r) {
+  if (r.jd) return `<details><summary>Job description</summary><div class="in">${r.link ? `<a href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">Open the job ad ↗</a>` : ''}<div class="jd">${esc(r.jd)}</div></div></details>`;
+  return `<div class="panel"><label for="jd-${esc(r.id)}">Add the job description (needed for a precise interview prep)<textarea id="jd-${esc(r.id)}" rows="6"></textarea></label><div class="row"><button class="btn" data-act="save-jd" data-id="${esc(r.id)}">Save job description</button></div></div>`;
+}
+function prepHTML(r) {
+  const b = busy[r.id], id = esc(r.id), p = r.prep;
+  if (b === 'prep') return `<div class="panel"><h3>Interview prep (Step 4)</h3><p class="muted small">Writing your interview prep in English, then French and Chinese… about 1–2 minutes.</p></div>`;
+  if (!p?.en) return `<div class="panel"><h3>Interview prep (Step 4)</h3><p class="muted small">7 likely questions (motivation, 3 role-specific, 2 behavioural, 1 under pressure) with answer structures built from your real experience, plus 3 areas to practise. PDF in English, French and Chinese.</p><div class="row"><button class="primary btn" data-act="retry-prep" data-id="${id}" ${b ? 'disabled' : ''}>Generate interview prep</button></div></div>`;
+  const btn = (l, label) => p[l] ? `<button class="btn" data-act="dl" data-what="prep-${l}" data-id="${id}">${label}</button>` : '';
+  return `<div class="panel"><h3>Interview prep (Step 4)</h3>
+    <div class="row">${btn('en', 'English PDF')}${btn('fr', 'Français PDF')}${btn('zh', '中文 PDF')}${!p.fr || !p.zh ? '<span class="muted small">Missing translations: regenerate to retry.</span>' : ''}</div>
+    <details><summary>Preview (English)</summary><div class="in"><h3>Tell me about yourself</h3><ul>${li(p.en.pitch)}</ul>${(p.en.questions || []).map((q, i) => `<div><p class="small muted">${i + 1}. ${esc(q.category)}</p><p><b>${esc(q.question)}</b></p><ul><li><b>Assesses:</b> ${esc(q.assesses)}</li><li><b>Situation:</b> ${esc(q.structure?.situation)}</li><li><b>Action:</b> ${esc(q.structure?.action)}</li><li><b>Result:</b> ${esc(q.structure?.result)}</li><li><b>Prepare:</b> ${esc(q.evidence_to_prepare)}</li><li><b>Avoid:</b> ${esc(q.avoid)}</li></ul></div>`).join('')}<h3>Practise</h3><ol>${(p.en.practice_areas || []).map(a => `<li><b>${esc(a.area)}.</b> ${esc(a.how)}</li>`).join('')}</ol></div></details>
+    <div class="row"><button class="btn" data-act="retry-prep" data-id="${id}" ${b ? 'disabled' : ''}>Regenerate</button><span class="muted small">Generated ${esc((p.generatedAt || '').slice(0, 10))}</span></div></div>`;
+}
+function decideHTML(r, inNew) {
+  const id = esc(r.id), del = pendingDelete === r.id;
+  return `<div class="decide"><h3>Did you send this application?</h3>
+    <div class="row"><label class="check" for="ad-${id}">Date <input type="date" id="ad-${id}" value="${today()}"></label>
+      <button class="primary" data-act="applied" data-id="${id}">I applied</button>
+      ${inNew ? `<button class="dark" data-act="later" data-id="${id}">Not applied yet</button>` : ''}
+      ${del ? `<button class="danger" data-act="del-yes" data-id="${id}">Delete for good</button><button class="btn" data-act="del-no">Keep</button>` : `<button class="btn danger" data-act="del" data-id="${id}">Discard</button>`}
     </div>
-    <dl>
-      <div><dt>國家 / 城市</dt><dd>${esc(place) || '—'}</dd></div>
-      <div><dt>產業</dt><dd>${esc(r.industry) || '—'}</dd></div>
-      <div><dt>薪資</dt><dd class="mono">${esc(r.salary) || '—'}</dd>${r.salary ? `<div class="est">${SALARY_TYPE[r.salaryType] || ''}</div>` : ''}</div>
-      <div><dt>合約</dt><dd>${esc(r.contract) || '—'}</dd></div>
-      <div><dt>投遞日期</dt><dd class="mono">${esc(r.appliedDate) || '尚未投遞'}</dd></div>
-      <div><dt>ATS 匹配度</dt><dd class="mono">${r.match ? esc(r.match) + '%' : '—'}</dd></div>
-      <div><dt>履歷版本</dt><dd>${esc(r.cvVersion) || '—'}</dd></div>
-      <div><dt>下一步</dt><dd>${esc(r.nextStep) || '—'}</dd></div>
-    </dl>
-    ${files.length || r.link ? `<div class="files">${r.link ? `<a href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">職缺頁面 ↗</a>` : ''}${files.map(f => `<a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener">${esc(f.label)}</a>`).join('')}</div>` : ''}
-    ${r.notes ? `<p class="notes">${esc(r.notes)}</p>` : ''}
-    ${canWrite ? `<div class="actions">
-      <button type="button" data-edit="${esc(r.id)}">編輯</button>
-      ${del ? `<button type="button" class="danger" data-confirm="${esc(r.id)}">確定刪除</button><button type="button" data-cancel-del>保留</button>`
-            : `<button type="button" data-del="${esc(r.id)}">刪除</button>`}
-    </div>` : ''}
-  </article>`;
+    <p class="note">“I applied” moves it to Applied and writes your interview prep. “Not applied yet” keeps it in Saved.</p></div>`;
 }
-
+function statusSelect(r) {
+  const id = esc(r.id);
+  return `<label class="check" for="st-${id}">Status <select id="st-${id}" data-act="status" data-id="${id}">${APPLIED.map(k => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${STATUS[k][0]}</option>`).join('')}</select></label>`;
+}
+function cardHTML(r, mode) {
+  const open = openId === r.id || mode === 'new';
+  let body = '';
+  if (open) {
+    body = `<div class="card-body">${mode === 'applied' ? `<div class="row">${statusSelect(r)}${pendingDelete === r.id ? `<button class="danger btn" data-act="del-yes" data-id="${esc(r.id)}">Delete for good</button><button class="btn" data-act="del-no">Keep</button>` : `<button class="btn" data-act="del" data-id="${esc(r.id)}">Delete</button>`}</div>` : ''}
+      ${filesHTML(r)}${analysisHTML(r, mode === 'new')}${jdHTML(r)}${mode === 'applied' ? prepHTML(r) : decideHTML(r, mode === 'new')}</div>`;
+  }
+  return `<article class="card"><div class="card-head" ${mode === 'new' ? '' : `data-act="toggle" data-id="${esc(r.id)}" role="button" tabindex="0" aria-expanded="${open}"`}>
+    <div class="who"><div class="co">${esc(r.company)}</div><div class="role">${esc(r.role)}</div>${factsLine(r)}</div>${pill(r)}</div>${body}</article>`;
+}
 function render() {
-  renderPipeline();
-  const shown = filter ? rows.filter(r => r.status === filter) : rows;
-  $('list').innerHTML = shown.length ? shown.map(card).join('')
-    : `<div class="empty">${filter ? '這個狀態目前沒有職缺。' : '還沒有紀錄。點「新增職缺」，或把職缺描述貼給 Claude，它會幫你產生履歷並記錄在這裡。'}</div>`;
+  const applied = rows.filter(r => APPLIED.includes(r.status)), saved = rows.filter(r => r.status === 'prep');
+  $('c-applied').textContent = applied.length; $('c-saved').textContent = saved.length;
+  if (tab === 'new') { const r = newId && rowById(newId); $('newResult').innerHTML = r ? `<div class="list"><h2>2. Your tailored application</h2>${cardHTML(r, r.status === 'prep' ? 'new' : 'applied')}</div>` : ''; }
+  if (tab === 'applied') $('appliedList').innerHTML = !col ? loadingMsg() : applied.length ? applied.map(r => cardHTML(r, 'applied')).join('') : '<div class="msg">No applications marked as applied yet. Generate a CV in “New application”, then press “I applied”.</div>';
+  if (tab === 'saved') $('savedList').innerHTML = !col ? loadingMsg() : saved.length ? saved.map(r => cardHTML(r, 'saved')).join('') : '<div class="msg">Nothing saved. Tailored CVs you have not sent yet appear here.</div>';
 }
+let loadState = 'Loading your applications…';
+function loadingMsg() { return `<div class="msg">${esc(loadState)}</div>`; }
 
-$('list').addEventListener('click', async e => {
-  const t = e.target;
-  if (t.dataset.edit) openEditor(rows.find(r => r.id === t.dataset.edit));
-  else if (t.dataset.del) { pendingDelete = t.dataset.del; render(); }
-  else if ('cancelDel' in t.dataset) { pendingDelete = null; render(); }
-  else if (t.dataset.confirm) {
-    try { await col.doc(t.dataset.confirm).delete(); } catch (err) { alertMsg('刪除失敗：' + (err.message || err.code)); }
-    pendingDelete = null;
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT') return;
+  const id = el.dataset.id, act = el.dataset.act;
+  if (act === 'toggle') { openId = openId === id ? null : id; pendingDelete = null; render(); return; }
+  if (act === 'dl') { el.disabled = true; await download(id, el.dataset.what); el.disabled = false; return; }
+  if (act === 'retry-fr') return retryPart(id, 'fr');
+  if (act === 'retry-review') return retryPart(id, 'review');
+  if (act === 'retry-letter') return retryPart(id, 'letter');
+  if (act === 'retry-prep') return retryPart(id, 'prep');
+  if (act === 'del') { pendingDelete = id; render(); return; }
+  if (act === 'del-no') { pendingDelete = null; render(); return; }
+  if (act === 'del-yes') { try { await col.doc(id).delete(); if (newId === id) newId = null; toast('Deleted'); } catch (err) { toast('Could not delete: ' + (err.message || err.code)); } pendingDelete = null; render(); return; }
+  if (act === 'later') { newId = null; toast('Saved for later'); setTab('saved'); openId = id; render(); return; }
+  if (act === 'save-jd') { const v = $('jd-' + id)?.value.trim(); if (!v) return; try { await patch(id, { jd: v }); toast('Job description saved'); } catch (err) { toast(err.message || String(err)); } return; }
+  if (act === 'applied') {
+    const date = $('ad-' + id)?.value || today();
+    try { await patch(id, { status: 'sent', appliedDate: date }); } catch (err) { toast('Could not update: ' + (err.message || err.code)); return; }
+    newId = null; openId = id; setTab('applied'); toast('Moved to Applied. Writing your interview prep…');
+    retryPart(id, 'prep');
   }
 });
-
-const F = ['company', 'role', 'country', 'city', 'industry', 'contract', 'salary', 'salaryType', 'status', 'applied', 'match', 'next', 'link', 'cv', 'notes'];
-const MAP = { applied: 'appliedDate', next: 'nextStep', cv: 'cvVersion' };
-function openEditor(r) {
-  editingId = r ? r.id : null;
-  $('editorTitle').textContent = r ? '編輯職缺' : '新增職缺';
-  F.forEach(k => { $('f-' + k).value = r ? (r[MAP[k] || k] ?? '') : (k === 'status' ? 'prep' : k === 'salaryType' ? 'estimate' : ''); });
-  $('f-files').value = r && Array.isArray(r.files) ? r.files.map(f => `${f.label} | ${f.url}`).join('\n') : '';
-  $('editor').hidden = false; $('f-company').focus();
-  $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-$('addBtn').addEventListener('click', () => openEditor(null));
-$('cancelBtn').addEventListener('click', () => { $('editor').hidden = true; });
-$('editor').addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = {};
-  F.forEach(k => { data[MAP[k] || k] = $('f-' + k).value.trim(); });
-  data.files = $('f-files').value.split('\n').map(l => l.split('|')).filter(p => p.length >= 2)
-    .map(p => ({ label: p[0].trim(), url: p.slice(1).join('|').trim() })).filter(f => f.label && f.url);
-  const old = editingId ? rows.find(r => r.id === editingId) : null;
-  data.createdAt = old?.createdAt || new Date().toISOString();
-  $('saveBtn').disabled = true;
-  try {
-    if (editingId) await col.doc(editingId).set(data); else await col.add(data);
-    $('editor').hidden = true;
-  } catch (err) { alertMsg('儲存失敗：' + (err.message || err.code)); }
-  $('saveBtn').disabled = false;
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.card-head[data-act="toggle"]')) { e.preventDefault(); e.target.click(); } });
+document.addEventListener('change', async e => {
+  const el = e.target; if (el.dataset.act !== 'status') return;
+  try { await patch(el.dataset.id, { status: el.value }); toast('Status updated'); } catch (err) { toast(err.message || String(err)); }
 });
-function alertMsg(m) { $('hint').textContent = m; }
 
 (async () => {
+  const start = (location.hash || '').slice(1);
+  setTab(['new', 'applied', 'saved'].includes(start) ? start : 'new');
   const db = await window.claude?.use?.('db');
-  if (!db) { $('list').innerHTML = '<div class="msg">請登入 claude.ai 後開啟這個頁面，才能看到你的求職紀錄。</div>'; renderPipeline(); return; }
-  const user = await window.claude.use('user');
-  canWrite = user ? (await user.can('data.write')) !== false : false;
-  $('addBtn').hidden = !canWrite;
+  if (!db) { loadState = 'Sign in to claude.ai and open this page there to see your applications.'; render(); return; }
   col = db.collection('applications');
-  col.orderBy('createdAt', 'desc').onSnapshot(snap => {
-    rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
-  }, err => { $('list').innerHTML = `<div class="msg">無法載入紀錄（${esc(err.code)}）。請重新整理頁面。</div>`; });
+  col.orderBy('createdAt', 'desc').onSnapshot(snap => { rows = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
+    err => { loadState = `Could not load your applications (${err.code}). Reload the page.`; col = null; render(); });
 })();
-renderPipeline();
 </script>
