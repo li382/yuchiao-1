@@ -168,8 +168,8 @@
   }
 
   const LABELS = {
-    en: { summary: 'SUMMARY', skills: 'SKILLS', exp: 'EXPERIENCE', edu: 'EDUCATION', lang: 'LANGUAGES', hard: 'Hard Skills: ', soft: 'Soft Skills: ', tools: 'Tools: ', target: t => `Target: ${t} | Available: ${AVAIL.en}` },
-    fr: { summary: 'PROFIL', skills: 'COMPÉTENCES', exp: 'EXPÉRIENCES PROFESSIONNELLES', edu: 'FORMATION', lang: 'LANGUES', hard: 'Compétences techniques' + NB + ': ', soft: 'Savoir-être' + NB + ': ', tools: 'Outils' + NB + ': ', target: t => `Poste visé${NB}: ${t} | Disponibilité${NB}: ${AVAIL.fr}` },
+    en: { summary: 'SUMMARY', skills: 'SKILLS', exp: 'EXPERIENCE', edu: 'EDUCATION', lang: 'LANGUAGES', hard: 'Hard Skills: ', soft: 'Soft Skills: ', tools: 'Tools: ', target: (t, a) => `Target: ${t}` + (a ? ` | Available: ${a}` : '') },
+    fr: { summary: 'PROFIL', skills: 'COMPÉTENCES', exp: 'EXPÉRIENCES PROFESSIONNELLES', edu: 'FORMATION', lang: 'LANGUES', hard: 'Compétences techniques' + NB + ': ', soft: 'Savoir-être' + NB + ': ', tools: 'Outils' + NB + ': ', target: (t, a) => `Poste visé${NB}: ${t}` + (a ? ` | Disponibilité${NB}: ${a}` : '') },
   };
 
   // Template geometry (from the original Word file): A4, margins 26/24/36/36 pt, Calibri 9 pt.
@@ -188,7 +188,7 @@
     const content = [
       { text: NAME, bold: true, fontSize: f(15), margin: [0, 0, 0, 1] },
       { text: CONTACT, fontSize: body, margin: [0, 0, 0, 1] },
-      { text: L.target(cv.target), bold: true, fontSize: body, margin: [0, 0, 0, f(3)] },
+      { text: L.target(cv.target, cv.available ?? AVAIL[lang]), bold: true, fontSize: body, margin: [0, 0, 0, f(3)] },
       heading(L.summary),
       { text: cv.summary, fontSize: body, margin: [0, 0, 0, 1] },
       heading(L.skills),
@@ -238,7 +238,7 @@
     const children = [
       p([...(images ? [float(images.photo, 6296025, 177800, 73, 90, 'Photo')] : []), run(NAME, { bold: true, size: 15 })]),
       p([run(CONTACT)]),
-      p([run(L.target(cv.target), { bold: true })], { after: 80 }),
+      p([run(L.target(cv.target, cv.available ?? AVAIL[lang]), { bold: true })], { after: 80 }),
       heading(L.summary),
       p([run(cv.summary)]),
       heading(L.skills),

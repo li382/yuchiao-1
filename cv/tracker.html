@@ -175,17 +175,40 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .photo-wrap img { width: 64px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-2) }
 .drop { border: 2px dashed var(--line-2); border-radius: 14px; padding: 22px; text-align: center; display: grid; gap: 10px; justify-items: center }
 .drop.over { border-color: var(--accent-text); background: var(--accent-soft) }
+.cvlayout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start }
+@media (max-width: 1000px) { .cvlayout { grid-template-columns: 1fr } }
+.chatcol { display: grid; gap: 16px; position: sticky; top: 16px }
+@media (max-width: 1000px) { .chatcol { position: static } }
+.chatlog { display: grid; gap: 8px; max-height: 300px; overflow-y: auto }
+.chatlog:empty { display: none }
+.bubble { padding: 10px 12px; border-radius: 12px; font-size: .93rem; max-width: 92%; white-space: pre-wrap }
+.bubble.me { background: var(--accent); color: #fff; justify-self: end; border-bottom-right-radius: 4px }
+.bubble.ai { background: var(--panel-2); justify-self: start; border-bottom-left-radius: 4px }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { background: transparent; border: 1px solid var(--line-2); border-radius: 999px; padding: 5px 11px; font-size: .85rem; color: var(--muted); cursor: pointer }
+.chip:hover { color: var(--fg); border-color: var(--muted) }
+.roles { display: grid; gap: 8px }
+.roles .r { display: grid; grid-template-columns: 1fr 44px; gap: 4px 10px; align-items: center; font-size: .92rem }
+.roles .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden }
+.roles .bar span { display: block; height: 100%; background: var(--accent) }
+.roles .sc { text-align: right; font-weight: 700 }
+.jdbox { background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px }
+.jdbox .jdtext { white-space: pre-wrap; font-size: .9rem; color: var(--muted); line-height: 1.5 }
+.jdbox .jdtext.clamp { display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden }
+.jdbox .lbl { font-size: .82rem; font-weight: 700; color: var(--fg) }
+.fitline { font-size: .88rem; display: grid; gap: 3px }
+.fitline .s { color: var(--ok) } .fitline .g { color: var(--warn) }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #000; font-weight: 700; padding: 11px 18px; border-radius: 12px; font-size: .95rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
 </style>
 
 <aside class="side" id="side" aria-label="Menu">
   <div class="brand"><span class="mark">HL</span><div><b>Hardcore Life</b><small>Yu Chiao Lin</small></div></div>
   <nav class="menu" id="menu">
+    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>My CV</button>
     <button type="button" data-page="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover<span class="n" id="n-discover"></span></button>
     <button type="button" data-page="tailor"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Tailor a CV</button>
     <button type="button" data-page="tracker"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>Tracker<span class="n" id="n-tracker"></span></button>
     <button type="button" data-page="interview"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Interview</button>
-    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>My base CV</button>
   </nav>
   <div class="side-foot">Supply chain career studio</div>
 </aside>
@@ -224,7 +247,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
       <label class="f" for="fStart">Start date<select id="fStart"></select></label>
       <label class="f" for="fSort">Sort by<select id="fSort"><option value="fit">Best fit</option><option value="new">Newest</option></select></label>
     </div>
-    <div class="row between small"><span class="muted" id="jobCount"></span><button class="btn ghost sm" type="button" id="fReset">Clear filters</button></div>
+    <div class="row between small"><span class="muted" id="jobCount"></span><div class="row"><button class="btn sm" type="button" data-act="job-rate-top">Rate my fit for the top 10</button><button class="btn ghost sm" type="button" id="fReset">Clear filters</button></div></div>
     <div class="jobs" id="jobList"><div class="empty" style="grid-column:1/-1">Loading recommended roles…</div></div>
   </section>
 
@@ -276,22 +299,39 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
   </section>
 
   <section class="page" id="p-base" hidden>
-    <header><div class="eyebrow">Source of every CV</div><h1>My base CV</h1><p class="lede">Every tailored CV starts from this version. View it, edit it, or replace it with a new CV.</p></header>
-    <nav class="subtabs" id="baseTabs" role="tablist" aria-label="Base CV sections">
-      <button type="button" role="tab" data-t="view">Preview</button>
-      <button type="button" role="tab" data-t="edit">Edit</button>
+    <header><div class="eyebrow">Your CV</div><h1>My <em>CV</em></h1><p class="lede">Tell Claude what to change and it edits your CV right away, in English and French. Every tailored CV starts from this version.</p></header>
+    <div class="cvlayout">
+      <div class="card">
+        <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>CV photo</h3><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div></div>
+          <div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
+        <div id="basePaper"></div>
+        <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
+      </div>
+      <div class="chatcol">
+        <div class="card">
+          <h3>Edit with Claude</h3>
+          <div class="chatlog" id="chatLog"></div>
+          <div class="chips" id="chatChips">
+            <button type="button" class="chip" data-say="Remove the availability line next to my target role.">Remove the availability line</button>
+            <button type="button" class="chip" data-say="Make the summary shorter: two sentences.">Shorter summary</button>
+            <button type="button" class="chip" data-say="Make the Pure Trade bullets more results-focused, without inventing numbers.">More results-focused bullets</button>
+          </div>
+          <label class="f" for="chatIn">What should change?<textarea id="chatIn" rows="4" placeholder="Examples: Add that I post purchase invoices in Dynamics 365. / Change my target role to Demand Planner. / 把摘要縮短成兩句"></textarea></label>
+          <div class="row"><button class="btn solid" type="button" id="chatSend">Apply to my CV</button><button class="btn ghost sm" type="button" data-act="import-undo" id="undoBtn" hidden>Undo last change</button></div>
+          <p class="muted small" id="chatState" style="margin:0"></p>
+        </div>
+        <div class="card" id="rateCard"></div>
+      </div>
+    </div>
+
+    <details class="fold" id="moreFold"><summary>More options: edit line by line, replace with a new CV, supplementary info, facts and steps</summary><div class="in">
+    <nav class="subtabs" id="baseTabs" role="tablist" aria-label="More CV options">
+      <button type="button" role="tab" data-t="edit">Edit line by line</button>
       <button type="button" role="tab" data-t="replace">Replace with a new CV</button>
       <button type="button" role="tab" data-t="supp">Supplementary info <span id="suppCount"></span></button>
       <button type="button" role="tab" data-t="steps">Facts &amp; steps</button>
     </nav>
 
-    <div id="bt-view" class="card">
-      <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>CV photo</h3><div class="muted small">Shown top right on every CV.</div></div></div>
-        <div class="row"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div>
-      <div class="row between"><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div>
-        <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div></div>
-      <div id="basePaper"></div>
-    </div>
 
     <div id="bt-edit" class="card" hidden>
       <div class="row between"><h3>Edit your base CV</h3><div class="seg" id="editLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
@@ -322,6 +362,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
       <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line. Claude may use these even when they are not on the base CV.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
       <div id="stepFolds" style="display:grid;gap:12px"></div>
     </div>
+    </div></details>
   </section>
 </main>
 <div class="toast" id="toast" hidden></div>
@@ -333,7 +374,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 <script>
 const K = window.CVKit;
 const $ = id => document.getElementById(id);
-const PAGES = ['discover', 'tailor', 'tracker', 'interview', 'base'];
+const PAGES = ['base', 'discover', 'tailor', 'tracker', 'interview'];
 const STATUS = [['prep', 'Not applied', '#9a9aa6'], ['sent', 'Applied', '#5a82ff'], ['screen', 'HR screen', '#3ccfe0'], ['int', 'Interview', '#b98bff'], ['final', 'Final round', '#ffbe5c'], ['offer', 'Offer', '#5fd39a'], ['no', 'Rejected', '#ff7b7b'], ['drop', 'Withdrawn', '#6f6f7a']];
 const ST = Object.fromEntries(STATUS.map(([k, l, c]) => [k, { l, c }]));
 const SALARY_TYPE = { estimate: 'est.', posted: 'posted', offer: 'offer' };
@@ -384,7 +425,7 @@ function photoSrc() { return profile().photo || window.CV_IMAGES?.photo || ''; }
 
 /* ---------- navigation ---------- */
 function go(p) {
-  page = PAGES.includes(p) ? p : 'discover';
+  page = PAGES.includes(p) ? p : 'base';
   PAGES.forEach(k => { $('p-' + k).hidden = k !== page; });
   document.querySelectorAll('#menu button').forEach(b => { if (b.dataset.page === page) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   document.body.classList.remove('menu-open'); $('menuBtn').setAttribute('aria-expanded', 'false');
@@ -485,7 +526,7 @@ ${jd || '(not provided: base it on the job title ' + (job.role || '') + ' at ' +
 TAILORED CV (JSON)
 ${JSON.stringify(cv)}
 
-Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company, using what the job description says; (2) two or three concrete proofs from her experience that match the main requirements; (3) how she works: data reliability, finding and correcting errors, supplier and cross-functional communication; (4) availability (${K.AVAIL.en}) and a polite close. British English, natural tone, perfect grammar, no clichés.
+Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company, using what the job description says; (2) two or three concrete proofs from her experience that match the main requirements; (3) how she works: data reliability, finding and correcting errors, supplier and cross-functional communication; (4) ${profile().cv_en.available ? 'availability (' + profile().cv_en.available + ') and ' : ''}a polite close. British English, natural tone, perfect grammar, no clichés.
 
 Return ONLY JSON: {"recipient": ${JSON.stringify((job.company || 'Company') + ' – Recruitment team')}, "date": ${JSON.stringify(longDate())}, "subject": string, "greeting": string, "paragraphs": [string], "closing": string}`;
 }
@@ -688,8 +729,9 @@ function statusPill(s) { const v = ST[s] || ST.prep; return `<span class="pill">
 function salaryText(r) { return r.salary ? `${esc(r.salary)} (${SALARY_TYPE[r.salaryType] || 'est.'})` : ''; }
 function cvPaper(cv, lang, photo) {
   if (!cv) return '';
-  const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : ' + K.AVAIL.fr] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: ' + K.AVAIL.en];
-  return `<div class="paper">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.NAME)}</div><p class="tg">${esc(K.CONTACT)}</p><p class="tg"><b>${esc(L[8])}${esc(cv.target)} | ${esc(L[9])}</b></p>
+  const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : '] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: '];
+  const avail = cv.available ?? K.AVAIL[lang];
+  return `<div class="paper">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.NAME)}</div><p class="tg">${esc(K.CONTACT)}</p><p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
     <div class="sec">${L[1]}</div><p><b>${L[5]}:</b> ${esc(cv.skills.hard)}</p><p><b>${L[6]}:</b> ${esc(cv.skills.soft)}</p><p><b>${L[7]}:</b> ${esc(cv.skills.tools)}</p>
     <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}<ul>${li(e.bullets)}</ul>`).join('')}
@@ -784,14 +826,16 @@ function jobCard(j) {
   return `<article class="job">
     <div class="co">${esc(j.company)}${j.manual ? ' <span class="tag" style="margin-left:6px">Added by you</span>' : ''}</div><div class="tt">${esc(j.title)}</div>
     <div class="tags"><span class="tag hi">${esc(lv)}</span><span class="tag">${esc(place(j))}</span>${lk ? `<span class="tag">${esc(lk.split('+').map(l => LANG_NAME[l]).join(' + '))}</span>` : ''}${start ? `<span class="tag">Start ${esc(start)}</span>` : ''}${j.industry ? `<span class="tag">${esc(j.industry)}</span>` : ''}${j.salary ? `<span class="tag">${esc(j.salary)}${j.salaryType === 'posted' ? '' : ' est.'}</span>` : ''}</div>
-    ${j.summary ? `<p>${esc(j.summary)}</p>` : ''}
-    <div class="foot"><a class="btn solid sm" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">View job ↗</a><button class="btn sm" type="button" data-act="job-tailor" data-id="${esc(j.id)}">Tailor CV</button><button class="btn ghost sm" type="button" data-act="job-dismiss" data-id="${esc(j.id)}">Hide</button>${j.fit ? `<span class="fit">${esc(j.fit)}% fit</span>` : ''}</div>
+    ${j.jd ? `<div class="jdbox"><span class="lbl">Job description</span><div class="jdtext clamp">${esc(j.jd)}</div><button class="btn ghost sm" type="button" data-act="jd-more" style="justify-self:start;padding-left:0">Show full description</button></div>` : `${j.summary ? `<p>${esc(j.summary)}</p>` : ''}<p class="muted small" style="margin:0">Full description on the job ad. The hourly search is adding it.</p>`}
+    ${j.fitCv ? `<div class="fitline"><b>Your fit ${esc(j.fitCv.score)} / 100 · ${esc(j.fitCv.verdict || '')}</b>${(j.fitCv.strengths || []).map(x => `<span class="s">✓ ${esc(x)}</span>`).join('')}${(j.fitCv.gaps || []).map(x => `<span class="g">◇ ${esc(x)}</span>`).join('')}</div>` : ''}
+    <div class="foot"><a class="btn solid sm" href="${esc(safeUrl(j.link))}" target="_blank" rel="noopener">View job ↗</a><button class="btn sm" type="button" data-act="job-tailor" data-id="${esc(j.id)}">Tailor CV</button><button class="btn ghost sm" type="button" data-act="job-dismiss" data-id="${esc(j.id)}">Hide</button>${j.fitCv ? `<span class="fit">${esc(j.fitCv.score)}% fit</span>` : `<button class="btn sm" type="button" data-act="job-rate" data-id="${esc(j.id)}" ${jobBusy[j.id] ? 'disabled' : ''}>${jobBusy[j.id] ? 'Rating…' : 'Rate my fit'}</button>${j.fit ? `<span class="fit" style="color:var(--muted)">est. ${esc(j.fit)}%</span>` : ''}`}</div>
   </article>`;
 }
 function renderDiscover() {
   if (!jobsCol) return;
   renderFilters();
-  const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || (b.fit || 0) - (a.fit || 0) : (b.fit || 0) - (a.fit || 0));
+  const fitOf = j => j.fitCv?.score ?? j.fit ?? 0;
+  const list = jobs.filter(passes).sort((a, b) => F.sort === 'new' ? String(b.foundAt || '').localeCompare(String(a.foundAt || '')) || fitOf(b) - fitOf(a) : fitOf(b) - fitOf(a));
   $('jobCount').textContent = `${list.length} of ${live().length} roles`;
   $('jobList').innerHTML = list.length ? list.map(jobCard).join('') : `<div class="empty" style="grid-column:1/-1">${jobs.length ? 'No roles match these filters.' : 'No recommendations yet. The hourly search adds them here.'}</div>`;
   if (jobsMeta?.lastRun) $('discMeta').textContent = `Real supply chain openings for your profile, worldwide, in every industry. Refreshed every hour · last search ${new Date(jobsMeta.lastRun).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.`;
@@ -891,7 +935,7 @@ let baseLang = 'en', baseSig = null;
 function cvEditor(lang) {
   const cv = profile()['cv_' + lang];
   const ta = (path, v, n = 3) => `<textarea data-cv="${lang}" data-path="${path}" rows="${n}">${esc(v)}</textarea>`;
-  return `<label class="f">Target role${ta('target', cv.target, 1)}</label>
+  return `<div class="grid2"><label class="f">Target role${ta('target', cv.target, 1)}</label><label class="f">Availability (leave empty to hide the line)${ta('available', cv.available ?? K.AVAIL[lang], 1)}</label></div>
     <label class="f">Summary${ta('summary', cv.summary, 4)}</label>
     <div class="grid2"><label class="f">Hard skills${ta('skills.hard', cv.skills.hard, 5)}</label><label class="f">Soft skills${ta('skills.soft', cv.skills.soft, 5)}</label></div>
     <label class="f">Tools${ta('skills.tools', cv.skills.tools, 2)}</label>
@@ -909,11 +953,12 @@ function readEditor(lang) {
   });
   return lang === 'fr' ? K.deepMap(cv, K.frTypo) : cv;
 }
-let baseTab = 'view', editLang = 'en', pendingImport = null, importLang = 'en';
+let baseTab = 'edit', editLang = 'en', pendingImport = null, importLang = 'en';
 function renderBase() {
   const p = profile();
   document.querySelectorAll('#baseTabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === baseTab));
-  ['view', 'edit', 'replace', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
+  ['edit', 'replace', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
+  renderChat(); renderRate();
   $('photoThumb').src = photoSrc();
   document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
   document.querySelectorAll('#editLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === editLang));
@@ -1049,9 +1094,13 @@ document.addEventListener('click', async e => {
     else if (act === 'reset-facts') { await saveProfile({ facts: K.FACTS }); toast('Original facts restored'); }
     else if (act === 'save-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: $('step-' + k).value.trim() || DEFAULT_STEPS[k] } }); toast(STEP_NAMES[k] + ' saved'); }
     else if (act === 'reset-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: DEFAULT_STEPS[k] } }); toast('Original restored'); }
-    else if (act === 'import-save') { const cur = profile(); await saveProfile({ cv_en: pendingImport.cv_en, cv_fr: pendingImport.cv_fr || cur.cv_fr, prevBase: { cv_en: cur.cv_en, cv_fr: cur.cv_fr, savedAt: new Date().toISOString() } }); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; baseTab = 'view'; toast('Your new base CV is saved'); renderBase(); }
+    else if (act === 'import-save') { const cur = profile(); pendingImport.cv_en.available = cur.cv_en.available ?? K.AVAIL.en; if (pendingImport.cv_fr) pendingImport.cv_fr.available = cur.cv_fr.available ?? K.AVAIL.fr; await saveProfile({ cv_en: pendingImport.cv_en, cv_fr: pendingImport.cv_fr || cur.cv_fr, prevBase: { cv_en: cur.cv_en, cv_fr: cur.cv_fr, savedAt: new Date().toISOString() } }); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; baseTab = 'edit'; toast('Your new base CV is saved'); renderBase(); runRate(); }
     else if (act === 'import-cancel') { pendingImport = null; renderBase(); }
     else if (act === 'import-undo') { const pb = saved.prevBase; await saveProfile({ cv_en: pb.cv_en, cv_fr: pb.cv_fr, prevBase: null }); toast('Previous base CV restored'); }
+    else if (act === 'rate') runRate();
+    else if (act === 'job-rate') rateJob(id);
+    else if (act === 'job-rate-top') { const list = jobs.filter(passes).filter(j => !j.fitCv).sort((a, b) => (b.fit || 0) - (a.fit || 0)).slice(0, 10); toast(`Rating ${list.length} jobs…`); for (const j of list) await rateJob(j.id); toast('Done'); }
+    else if (act === 'jd-more') { const t = el.parentElement.querySelector('.jdtext'); t.classList.toggle('clamp'); el.textContent = t.classList.contains('clamp') ? 'Show full description' : 'Show less'; }
     else if (act === 'base-dl') { el.disabled = true; await cvFile(profile()['cv_' + baseLang], baseLang, el.dataset.what, `CV_Yu_Chiao_Lin_Base_${baseLang.toUpperCase()}`); el.disabled = false; }
   } catch (err) { toast(err.message || String(err)); el.disabled = false; }
 });
@@ -1064,6 +1113,135 @@ function renderAll() {
   if (page === 'tracker') renderTracker();
   if (page === 'interview') renderInterview();
   if (page === 'base') renderBase();
+}
+
+/* ---------- edit the CV by chatting with Claude ---------- */
+function cvSig() { const p = profile(), t = JSON.stringify([p.cv_en, p.facts, p.supplements]); let h = 5381; for (let i = 0; i < t.length; i++) h = (h * 33 + t.charCodeAt(i)) | 0; return String(h >>> 0); }
+function promptChat(instruction) {
+  const p = profile(), hist = (saved?.chat || []).slice(-6).map(m => `${m.role === 'me' ? 'Yu Chiao' : 'You'}: ${m.text}`).join('\n');
+  return `You edit Yu Chiao Lin's base CV exactly as she asks. She is the source of truth about her own experience: when she states a new fact about her work, you may add it to the CV. Never invent anything she did not state.
+
+Rules:
+- Apply the instruction to BOTH the English CV and the French CV, so they stay equivalent. Change nothing else: every other field stays word for word.
+- Keep these CV rules unless her instruction explicitly says otherwise: ${K.RULES.slice(1, 6).join(' ')}
+- The field "available" is the availability shown after the target role ("" hides it).
+- French: bullets as noun phrases, gender-neutral titles, a space before ":" ";" "%".
+- If the instruction is unclear, change nothing and ask one short question in "needs_clarification".
+- "reply": 1–3 short sentences, in the same language as her instruction, saying exactly what you changed.
+- "new_facts": facts about her work stated in the instruction that are not in the facts list below (in English), else [].
+
+CONFIRMED FACTS
+${p.facts.map(f => '- ' + f).join('\n')}
+${hist ? '\nRECENT CONVERSATION\n' + hist : ''}
+
+CURRENT CV, ENGLISH (JSON)
+${JSON.stringify(p.cv_en)}
+
+CURRENT CV, FRENCH (JSON)
+${JSON.stringify(p.cv_fr)}
+
+HER INSTRUCTION
+"""
+${instruction}
+"""
+
+Return ONLY JSON: {"reply": string, "needs_clarification": string|null, "new_facts": [string], "cv_en": ${CV_SHAPE.replace('{"target": string,', '{"target": string, "available": string,')}, "cv_fr": (same shape)}`;
+}
+function renderChat() {
+  const log = (saved?.chat || []).slice(-20);
+  $('chatLog').innerHTML = log.map(m => `<div class="bubble ${m.role === 'me' ? 'me' : 'ai'}">${esc(m.text)}</div>`).join('');
+  $('chatLog').scrollTop = $('chatLog').scrollHeight;
+  $('undoBtn').hidden = !saved?.prevBase;
+}
+$('chatChips').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').focus(); } });
+$('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('chatSend').click(); });
+$('chatSend').addEventListener('click', async () => {
+  const text = $('chatIn').value.trim(); if (!text) return;
+  if (!db) { toast('Sign in to claude.ai to edit your CV.'); return; }
+  $('chatSend').disabled = true; $('chatState').textContent = 'Updating your CV…';
+  const chat = [...(saved?.chat || []), { role: 'me', text, at: new Date().toISOString() }];
+  try {
+    const r = await askJSON(promptChat(text), { modelTier: 'complex' }, n => { $('chatState').textContent = `Updating your CV… ${n.toLocaleString()} characters`; });
+    if (r.needs_clarification) {
+      await saveProfile({ chat: [...chat, { role: 'ai', text: r.needs_clarification, at: new Date().toISOString() }].slice(-40) });
+      $('chatState').textContent = '';
+    } else {
+      const cur = profile(), en = normCv(r.cv_en), fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
+      if (!en.experience.length || !en.summary || !fr.experience.length) throw new Error('Claude returned an incomplete CV, so nothing was changed. Try again or rephrase.');
+      en.available = typeof r.cv_en?.available === 'string' ? r.cv_en.available.trim() : (cur.cv_en.available ?? K.AVAIL.en);
+      fr.available = typeof r.cv_fr?.available === 'string' ? K.frTypo(r.cv_fr.available.trim()) : (cur.cv_fr.available ?? K.AVAIL.fr);
+      const nf = (Array.isArray(r.new_facts) ? r.new_facts : []).filter(f => typeof f === 'string' && f.trim()).map(f => f.trim());
+      await saveProfile({ cv_en: en, cv_fr: fr, facts: [...cur.facts, ...nf], prevBase: { cv_en: cur.cv_en, cv_fr: cur.cv_fr, savedAt: new Date().toISOString() },
+        chat: [...chat, { role: 'ai', text: r.reply || 'Done.', at: new Date().toISOString() }].slice(-40) });
+      $('chatState').textContent = 'Saved. Re-rating your fit…';
+      runRate();
+    }
+    $('chatIn').value = '';
+  } catch (err) { $('chatState').textContent = ''; toast(err.message || String(err)); }
+  $('chatSend').disabled = false;
+});
+
+/* ---------- how fit am I ---------- */
+let rating = false;
+function promptRate() {
+  const p = profile();
+  return `You are a senior supply chain recruiter. Rate honestly how well Yu Chiao Lin's CV fits the roles she targets, for entry-level hiring (internships, graduate programmes, junior roles) in Europe and Asia.
+
+TARGET ROLES: Supply Planner, Demand Planner, Supply Chain Analyst / Performance Analyst, Procurement / Purchasing, Logistics / Distribution coordinator.
+
+CONFIRMED FACTS
+${p.facts.map(f => '- ' + f).join('\n')}
+
+SUPPLEMENTARY INFORMATION
+${p.supplements.map(x => '- ' + x.text).join('\n') || '(none)'}
+
+CV (JSON)
+${JSON.stringify(p.cv_en)}
+
+Return ONLY JSON: {"overall": number 0-100, "verdict": string (one sentence), "roles": [{"role": string, "score": number 0-100, "why": string (short)}] (the 5 target roles), "strengths": [string] (3-4, short), "gaps": [{"gap": string, "fix": string}] (3-4; a fix must be honest: better wording of true experience, highlighting something real, or something she can learn or do; never invent), "quick_wins": [string] (3 concrete CV edits she could ask for in the chat box)}`;
+}
+async function runRate() {
+  if (rating || !db) return;
+  rating = true; renderRate();
+  try { const r = await askJSON(promptRate(), { modelTier: 'complex' }); await saveProfile({ rating: { ...r, at: new Date().toISOString(), sig: cvSig() } }); $('chatState').textContent = ''; }
+  catch (err) { toast(err.message || String(err)); }
+  rating = false; renderRate();
+}
+function renderRate() {
+  const r = saved?.rating, stale = r && r.sig !== cvSig();
+  if (rating) { $('rateCard').innerHTML = `<h3>How fit am I?</h3><p class="muted" style="margin:0">Rating your CV against your target roles… about 30 seconds.</p>`; return; }
+  if (!r) { $('rateCard').innerHTML = `<h3>How fit am I?</h3><p class="muted small" style="margin:0">Claude rates your CV against the roles you target (supply and demand planning, analyst, procurement, logistics), with strengths, gaps and quick wins.</p><div class="row"><button class="btn solid" type="button" data-act="rate">Rate my CV</button></div>`; return; }
+  $('rateCard').innerHTML = `<div class="row between"><h3>How fit am I?</h3><button class="btn ghost sm" type="button" data-act="rate">${stale ? 'CV changed: rate again' : 'Rate again'}</button></div>
+    <div class="gauge">${gauge(r.overall)}<div><b>${esc(r.verdict)}</b><div class="muted small" style="margin-top:6px">Rated ${esc(shortDate(r.at))}${stale ? ' · your CV changed since' : ''}</div></div></div>
+    <div class="roles">${(r.roles || []).map(x => `<div class="r"><span>${esc(x.role)}</span><span class="sc">${esc(x.score)}</span><div class="bar"><span style="width:${Math.max(0, Math.min(100, +x.score || 0))}%"></span></div></div>`).join('')}</div>
+    <ul class="clean">${(r.strengths || []).map(x => `<li><span class="ic s">✓</span><span>${esc(x)}</span></li>`).join('')}${(r.gaps || []).map(g => `<li><span class="ic g">◇</span><span>${esc(g.gap)}<small>${esc(g.fix || '')}</small></span></li>`).join('')}</ul>
+    ${(r.quick_wins || []).length ? `<div class="chips">${r.quick_wins.map(q => `<button type="button" class="chip" data-say="${esc(q)}">${esc(q)}</button>`).join('')}</div><p class="muted small" style="margin:0">Tap a quick win to put it in the chat box.</p>` : ''}`;
+}
+$('rateCard').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+
+/* ---------- rate my fit for one job ---------- */
+function promptJobFit(j) {
+  const p = profile();
+  return `As a supply chain recruiter, rate honestly how well Yu Chiao Lin fits this job, using only her CV and confirmed facts.
+
+JOB: ${j.title} at ${j.company} (${place(j)}) · level: ${j.level || 'not stated'} · languages: ${(j.languages || []).join(', ') || 'not stated'}
+${j.jd ? 'JOB DESCRIPTION\n"""\n' + j.jd + '\n"""' : 'SUMMARY: ' + (j.summary || '')}
+
+HER LANGUAGES: Mandarin native, English fluent, French intermediate.
+CONFIRMED FACTS
+${p.facts.map(f => '- ' + f).join('\n')}
+CV (JSON)
+${JSON.stringify(p.cv_en)}
+
+Return ONLY JSON: {"score": number 0-100, "verdict": string (one short sentence), "strengths": [string] (2-3, short), "gaps": [string] (1-3, short)}`;
+}
+const jobBusy = {};
+async function rateJob(id) {
+  const j = jobs.find(x => x.id === id); if (!j || jobBusy[id]) return;
+  jobBusy[id] = true; renderDiscover();
+  try { const r = await askJSON(promptJobFit(j), { modelTier: 'default' }); await jobsCol.doc(id).update({ fitCv: { ...r, at: new Date().toISOString() } }); }
+  catch (err) { toast(err.message || String(err)); }
+  delete jobBusy[id]; renderDiscover();
 }
 
 /* ---------- add jobs and applications by hand ---------- */
