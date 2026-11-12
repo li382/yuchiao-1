@@ -206,6 +206,17 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .jdbox .lbl { font-size: .82rem; font-weight: 700; color: var(--fg) }
 .fitline { font-size: .88rem; display: grid; gap: 3px }
 .fitline .s { color: var(--ok) } .fitline .g { color: var(--warn) }
+.atsbar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap }
+.atsbar > div { display: grid } .atsbar .big { font-size: 2rem; font-weight: 700; line-height: 1 } .atsbar .arrow { font-size: 1.4rem; color: var(--muted) }
+.meter { height: 10px; border-radius: 5px; background: var(--line); display: flex; overflow: hidden }
+.meter span { background: var(--accent-text) } .meter span.add { background: var(--ok) }
+.kwh { font-size: .9rem; font-weight: 700; margin-bottom: 6px }
+.kws { display: flex; flex-wrap: wrap; gap: 6px }
+.kw { font-size: .85rem; padding: 4px 10px; border-radius: 999px; background: var(--panel-2) }
+.kw.ok { background: rgba(95,211,154,.15); color: var(--ok) } .kw.add { background: var(--accent-soft); color: var(--accent-text) }
+.asklist { display: grid; gap: 8px; margin-bottom: 10px }
+.ask { display: flex; gap: 10px; align-items: flex-start; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .93rem; cursor: pointer }
+.ask input { width: auto; margin-top: 3px } .ask small { display: block; color: var(--muted); margin-top: 3px }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #000; font-weight: 700; padding: 11px 18px; border-radius: 12px; font-size: .95rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
 </style>
 
@@ -488,6 +499,45 @@ Return ONLY one JSON object, no markdown fences, with exactly this shape:
  "match_after": number,
  "insight": ${INSIGHT_SHAPE}}`;
 }
+function promptAts(jd, cv) {
+  return `You are an ATS (applicant tracking system) optimisation specialist. Goal: make this CV match the job description's keywords as closely as possible so it passes ATS screening, while staying 100% truthful.
+
+${ctx()}
+
+JOB DESCRIPTION
+"""
+${jd}
+"""
+
+TAILORED CV (JSON)
+${JSON.stringify(cv)}
+
+Do this:
+1. Extract the 15 to 25 keywords an ATS would screen for in this job description: the exact job title, hard skills, tools and software, methods (e.g. S&OP, MRP, forecasting), domain terms, qualifications, languages and soft skills. Mark each "must" (clearly required or repeated) or "nice".
+2. For each keyword, check the TAILORED CV: "present" (the exact wording appears), "partial" (the idea is there in other words) or "missing".
+3. For each partial or missing keyword decide "truthful": "yes" if her CV, confirmed facts or supplementary information support it (then the optimised CV will use the job description's exact wording); "ask" if it is plausible for her role but not stated anywhere (do not add it; give in "suggestion" the exact phrase she could add if it is true); "no" if she clearly does not have it (e.g. a degree, years of experience, a certificate, a language level) and give in "suggestion" one short line on how to handle it instead (cover letter or interview). For present keywords use "yes".
+4. Write "cv_ats": start from the tailored CV; use the job description's exact job title as "target"; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged.
+5. "tips": 4 to 6 ATS tips specific to this job and this CV (e.g. which file to send, exact title, which keywords must appear in the summary). No generic advice.
+"where": the CV section where the keyword is or will be (summary, skills, tools, or the company name of the experience).
+
+Return ONLY JSON: {"keywords": [{"term": string, "category": "title"|"hard"|"tool"|"method"|"domain"|"qualification"|"language"|"soft", "importance": "must"|"nice", "before": "present"|"partial"|"missing", "truthful": "yes"|"ask"|"no", "where": string, "suggestion": string}], "cv_ats": ${CV_SHAPE}, "tips": [string]}`;
+}
+function promptAtsConfirm(r, items) {
+  return `Yu Chiao Lin confirms that the following are TRUE about her experience. Add each one to her ATS-optimised CV in the most natural place (summary, skills, tools, or a bullet of the right experience), using the job description's exact wording. Keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar) and keep everything else unchanged.
+
+CONFIRMED BY HER
+${items.map(k => `- ${k.term}: ${k.suggestion}`).join('\n')}
+
+JOB DESCRIPTION
+"""
+${r.jd}
+"""
+
+ATS-OPTIMISED CV (JSON)
+${JSON.stringify(r.cv_ats)}
+
+Return ONLY JSON: {"cv_ats": ${CV_SHAPE}}`;
+}
 function promptReview(jd, cv) {
   return `You are an ATS specialist and a busy recruiter. Review this tailored CV for the job below.
 
@@ -553,7 +603,7 @@ ${r.jd}
 """
 
 HER CV FOR THIS JOB (JSON)
-${JSON.stringify(r.cv_en || profile().cv_en)}
+${JSON.stringify(r.cv_ats || r.cv_en || profile().cv_en)}
 
 Return ONLY JSON: ${INSIGHT_SHAPE}`;
 }
@@ -572,7 +622,7 @@ ${r.jd || '(not provided: base the questions on the job title and the CV)'}
 """
 
 FINAL CV (JSON)
-${JSON.stringify(r.cv_en || profile().cv_en)}
+${JSON.stringify(r.cv_ats || r.cv_en || profile().cv_en)}
 ${r.insight ? 'KNOWN GAPS AND RISKS (prepare her for questions on these)\n' + JSON.stringify({ gaps: r.insight.gaps, risks: r.insight.risks }) : ''}
 
 Write 7 questions in this order: 1 about her background and motivation, 3 role-specific, 2 behavioural, 1 that tests how she thinks under pressure. For each: what the interviewer assesses; a suggested answer structure with situation, action and result written as short first-person notes built ONLY from her real experience (no invented accomplishments, numbers or results; where her evidence is thin, write "[prepare: …]" saying exactly what detail she should prepare); the evidence or detail to prepare; what to avoid. Also give a 60-second "tell me about yourself" outline as 4–5 bullet notes, the three areas she should practise before the interview (each with how to practise), and three smart questions she can ask the interviewer.
@@ -619,7 +669,7 @@ function guardCv(cv, base) {
 }
 
 /* ---------- tailoring flow ---------- */
-const GEN_STEPS = [['tailor', 'Steps 1–2 · diagnosis, fit and English CV'], ['review', 'Step 3 · ATS and recruiter review'], ['fr', 'French CV'], ['letter', 'Motivation letter (English)'], ['save', 'Saved to your tracker']];
+const GEN_STEPS = [['tailor', 'Steps 1–2 · diagnosis, fit and English CV'], ['ats', 'ATS keyword optimisation (second CV)'], ['review', 'Step 3 · ATS and recruiter review'], ['fr', 'French CV'], ['letter', 'Motivation letter (English)'], ['save', 'Saved to your tracker']];
 function stepsUI(st) {
   $('genSteps').hidden = false;
   $('genSteps').innerHTML = GEN_STEPS.filter(([k]) => st[k] !== 'skip').map(([k, l]) => {
@@ -641,9 +691,10 @@ $('newForm').addEventListener('submit', async e => {
     const cv_en = guardCv(t.cv_en, p.cv_en), job = t.job || {};
     st.tailor = 'done';
     const wantLetter = mode === 'yes' || (mode === 'auto' && job.cover_letter_requested === true);
-    Object.assign(st, { review: 'run', fr: 'run', letter: wantLetter ? 'run' : 'skip' }); stepsUI(st);
+    Object.assign(st, { ats: 'run', review: 'run', fr: 'run', letter: wantLetter ? 'run' : 'skip' }); stepsUI(st);
     const track = (k, pr) => pr.then(v => { st[k] = 'done'; stepsUI(st); return v; }, err => { st[k] = 'fail'; stepsUI(st); throw err; });
-    const [rev, fr, letter] = await Promise.allSettled([
+    const [ats, rev, fr, letter] = await Promise.allSettled([
+      track('ats', askJSON(promptAts(jd, cv_en), { modelTier: 'complex' }, n => { st.atsLen = n; stepsUI(st); })),
       track('review', askJSON(promptReview(jd, cv_en), { modelTier: 'default' })),
       track('fr', askJSON(promptFr(cv_en, job.jd_language), { modelTier: 'default' })),
       wantLetter ? track('letter', askJSON(promptLetter(jd, cv_en, job), { modelTier: 'complex' })) : Promise.resolve(null),
@@ -658,12 +709,14 @@ $('newForm').addEventListener('submit', async e => {
       cvVersion: `${job.role || cv_en.target} – ${job.company || ''} (${today()})`,
       cv_en, cv_fr: fr.status === 'fulfilled' ? K.deepMap(guardCv(fr.value, p.cv_fr), K.frTypo) : null,
       coverLetter: letter.status === 'fulfilled' ? letter.value : null,
+      ats: ats.status === 'fulfilled' ? atsFrom(ats.value) : null, cv_ats: ats.status === 'fulfilled' ? guardCv(ats.value.cv_ats, cv_en) : null, cv_ats_fr: null,
       insight: t.insight || null, supplementsUsed: Array.isArray(t.supplements_used) ? t.supplements_used : [],
       analysis: { step1: t.step1 || null, step2: t.step2 || null, step3: rev.status === 'fulfilled' ? rev.value : null },
       createdAt: now, updatedAt: now,
     });
     st.save = 'done'; stepsUI(st);
     newId = ref.id; $('jd').value = ''; $('jobLink').value = '';
+    if (ats.status === 'fulfilled') { pendingAtsCv[ref.id] = guardCv(ats.value.cv_ats, cv_en); setTimeout(() => runPart(ref.id, 'atsfr'), 600); }
     renderAll(); $('newResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     Object.keys(st).forEach(k => { if (st[k] === 'run') st[k] = 'fail'; }); stepsUI(st);
@@ -673,6 +726,8 @@ $('newForm').addEventListener('submit', async e => {
 });
 
 async function patch(id, data) { await col.doc(id).update({ ...data, updatedAt: new Date().toISOString() }); }
+const pendingAtsCv = {}, atsTicks = {}; // atsTicks: keywords she ticked, kept across re-renders
+const pendingAtsCvKeep = null; // the newest ATS CV, before the database snapshot catches up
 async function runPart(id, part) {
   const r = rowById(id); if (!r || busy[id]) return;
   busy[id] = part; renderAll();
@@ -682,8 +737,19 @@ async function runPart(id, part) {
     if (part === 'review') { const v = await askJSON(promptReview(r.jd, r.cv_en), { modelTier: 'default' }); await patch(id, { analysis: { ...(r.analysis || {}), step3: v } }); }
     if (part === 'letter') { const v = await askJSON(promptLetter(r.jd, r.cv_en || p.cv_en, r), { modelTier: 'complex' }); await patch(id, { coverLetter: v }); }
     if (part === 'insight') { const v = await askJSON(promptInsight(r), { modelTier: 'complex' }); await patch(id, { insight: v }); }
+    if (part === 'ats') { const v = await askJSON(promptAts(r.jd, r.cv_en || p.cv_en), { modelTier: 'complex' }); pendingAtsCv[id] = guardCv(v.cv_ats, r.cv_en || p.cv_en); await patch(id, { ats: atsFrom(v), cv_ats: pendingAtsCv[id], cv_ats_fr: null }); delete busy[id]; return runPart(id, 'atsfr'); }
+    if (part === 'atsfr') { const fr = await askJSON(promptFr(pendingAtsCv[id] || rowById(id).cv_ats, r.jdLanguage), { modelTier: 'default' }); await patch(id, { cv_ats_fr: K.deepMap(guardCv(fr, p.cv_fr), K.frTypo) }); }
+    if (part === 'atsconfirm') {
+      const picked = [...(atsTicks[id] || [])].map(i => r.ats.keywords[i]).filter(Boolean);
+      if (!picked.length) { toast('Tick the keywords that are true for you first.'); delete busy[id]; renderAll(); return; }
+      const v = await askJSON(promptAtsConfirm(r, picked), { modelTier: 'complex' });
+      const kw = r.ats.keywords.map(k => picked.includes(k) ? { ...k, truthful: 'yes', confirmed: true } : k);
+      pendingAtsCv[id] = guardCv(v.cv_ats, r.cv_ats); await patch(id, { cv_ats: pendingAtsCv[id], cv_ats_fr: null, ats: { ...r.ats, keywords: kw } });
+      await saveProfile({ facts: [...p.facts, ...picked.map(k => `Confirmed by her (${r.company} application): ${k.suggestion}`)] }); delete atsTicks[id];
+      delete busy[id]; return runPart(id, 'atsfr');
+    }
     if (part === 'prep') await genPrep(id);
-    toast('Done');
+    if (part !== 'atsfr') toast('Done');
   } catch (err) { toast(err.message || String(err)); }
   delete busy[id]; renderAll();
 }
@@ -727,7 +793,8 @@ async function download(id, what) {
   const r = rowById(id); if (!r) return;
   const base = `${slug(r.role)}_${slug(r.company)}`, p = profile();
   try {
-    if (what.startsWith('cv-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_fr : (r.cv_en || p.cv_en), lang, kind, `CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}`); }
+    if (what.startsWith('cvats-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_ats_fr : r.cv_ats, lang, kind, `CV_Yu_Chiao_Lin_${base}_ATS_${lang.toUpperCase()}`); }
+    else if (what.startsWith('cv-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_fr : (r.cv_en || p.cv_en), lang, kind, `CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}`); }
     else if (what === 'letter-pdf') { const { blob } = await makePdf(K.letterPdf(r.coverLetter), await pdfFonts(false)); await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob); }
     else if (what === 'letter-docx') await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx)));
     else if (what.startsWith('prep-')) { const lang = what.slice(5); if (lang === 'zh') toast('Loading the Chinese font…'); const { blob } = await makePdf(K.prepPdf(r.prep[lang], r, lang), await pdfFonts(lang === 'zh')); await save(`Interview_Prep_${base}_${lang.toUpperCase()}.pdf`, blob); }
@@ -749,13 +816,42 @@ function cvPaper(cv, lang, photo) {
     <div class="sec">${L[3]}</div>${cv.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p><p>${esc(e.details)}</p>`).join('')}
     <div class="sec">${L[4]}</div>${cv.languages.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
+function atsFrom(v) {
+  const kw = (Array.isArray(v?.keywords) ? v.keywords : []).filter(k => k && typeof k.term === 'string').map(k => ({ term: k.term, category: k.category || '', importance: k.importance === 'must' ? 'must' : 'nice', before: ['present', 'partial', 'missing'].includes(k.before) ? k.before : 'missing', truthful: ['yes', 'ask', 'no'].includes(k.truthful) ? k.truthful : 'ask', where: k.where || '', suggestion: k.suggestion || '' }));
+  return { keywords: kw, tips: Array.isArray(v?.tips) ? v.tips.filter(t => typeof t === 'string') : [], at: new Date().toISOString() };
+}
+function atsScore(a) {
+  const kw = a?.keywords || [], w = k => (k.importance === 'must' ? 2 : 1), tot = kw.reduce((n, k) => n + w(k), 0) || 1;
+  return { before: Math.round(100 * kw.filter(k => k.before === 'present').reduce((n, k) => n + w(k), 0) / tot), after: Math.round(100 * kw.filter(k => k.before === 'present' || k.truthful === 'yes').reduce((n, k) => n + w(k), 0) / tot) };
+}
+function atsCard(r) {
+  const id = esc(r.id), b = busy[r.id];
+  if (!r.ats) return r.jd ? `<div class="card"><h3>ATS keyword optimiser</h3><p class="muted small" style="margin:0">Finds the keywords an ATS will look for in this job, writes a second CV that uses them where they are true, and tells you what else to add.</p><div class="row"><button class="btn solid" type="button" data-act="run" data-part="ats" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'ats' ? 'Optimising…' : 'Run the ATS optimiser'}</button></div></div>` : '';
+  const a = r.ats, sc = atsScore(a), kw = a.keywords.map((k, i) => ({ ...k, i }));
+  const present = kw.filter(k => k.before === 'present'), added = kw.filter(k => k.before !== 'present' && k.truthful === 'yes'), ask = kw.filter(k => k.before !== 'present' && k.truthful === 'ask'), no = kw.filter(k => k.before !== 'present' && k.truthful === 'no');
+  const chip = (k, cls) => `<span class="kw ${cls}" title="${esc(k.where)}">${esc(k.term)}${k.importance === 'must' ? ' <b>★</b>' : ''}</span>`;
+  const bt = (w, l) => `<button class="btn sm" type="button" data-act="dl" data-what="${w}" data-id="${id}">${l}</button>`;
+  return `<div class="card" style="border-color:var(--accent)">
+    <div class="row between"><h3>ATS keyword optimiser</h3><span class="muted small">★ = required by the job</span></div>
+    <div class="atsbar"><div><span class="big">${sc.before}%</span><span class="muted small">your tailored CV</span></div><span class="arrow">→</span><div><span class="big" style="color:var(--ok)">${sc.after}%</span><span class="muted small">ATS-optimised CV</span></div></div>
+    <div class="meter"><span style="width:${sc.before}%"></span><span class="add" style="width:${Math.max(0, sc.after - sc.before)}%"></span></div>
+    <div class="row"><span class="muted small" style="min-width:150px;font-weight:700">ATS CV · English</span>${bt('cvats-en-docx', 'Word')}${bt('cvats-en-pdf', 'PDF')}<span class="muted small" style="min-width:150px;font-weight:700;margin-left:8px">ATS CV · Français</span>${r.cv_ats_fr ? bt('cvats-fr-docx', 'Word') + bt('cvats-fr-pdf', 'PDF') : `<span class="muted small">${b === 'atsfr' || b === 'ats' || b === 'atsconfirm' ? 'Translating…' : `<button class="btn sm" type="button" data-act="run" data-part="atsfr" data-id="${id}">Create</button>`}</span>`}</div>
+    ${present.length ? `<div><div class="kwh">✓ Already in your CV (${present.length})</div><div class="kws">${present.map(k => chip(k, 'ok')).join('')}</div></div>` : ''}
+    ${added.length ? `<div><div class="kwh">＋ Added in the ATS CV with the job's exact wording (${added.length})</div><div class="kws">${added.map(k => chip(k, 'add')).join('')}</div></div>` : ''}
+    ${ask.length ? `<div><div class="kwh">? Add only if true: tick the ones you really have (${ask.length})</div><div class="asklist">${ask.map(k => `<label class="ask"><input type="checkbox" data-atsask="${id}" value="${k.i}" ${atsTicks[r.id]?.has(k.i) ? 'checked' : ''}><span><b>${esc(k.term)}</b>${k.importance === 'must' ? ' ★' : ''}<small>Would add: “${esc(k.suggestion)}”</small></span></label>`).join('')}</div>
+      <div class="row"><button class="btn solid sm" type="button" data-act="run" data-part="atsconfirm" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'atsconfirm' ? 'Adding…' : 'Add the ones I ticked to the ATS CV'}</button></div></div>` : ''}
+    ${no.length ? `<div><div class="kwh">✗ Can't be added truthfully (${no.length})</div><ul class="clean">${no.map(k => `<li><span class="ic r">✗</span><span>${esc(k.term)}${k.importance === 'must' ? ' ★' : ''}<small>${esc(k.suggestion)}</small></span></li>`).join('')}</ul></div>` : ''}
+    ${a.tips.length ? `<div><div class="kwh">ATS tips for this job</div><ol style="margin:0;padding-left:20px;display:grid;gap:4px;font-size:.93rem">${li(a.tips)}</ol></div>` : ''}
+    <div class="row"><button class="btn ghost sm" type="button" data-act="run" data-part="ats" data-id="${id}" ${b ? 'disabled' : ''}>Run again</button></div>
+  </div>`;
+}
 function filesRow(r) {
   const id = esc(r.id), b = busy[r.id];
   const btn = (w, l) => `<button class="btn sm" type="button" data-act="dl" data-what="${w}" data-id="${id}">${l}</button>`;
   const lab = t => `<span class="muted small" style="min-width:110px">${t}</span>`;
   return `<div class="grid2">
-    <div class="row">${lab('CV · English')}${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
-    <div class="row">${lab('CV · Français')}${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
+    <div class="row">${lab('Tailored CV · EN')}${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
+    <div class="row">${lab('Tailored CV · FR')}${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
     <div class="row">${lab('Letter')}${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one'}</button>`}</div>
   </div>`;
 }
@@ -768,7 +864,8 @@ function analysisFolds(r) {
     <h3>Section by section</h3><ul>${['summary', 'experience', 'skills', 'education'].map(k => s1.section_review?.[k] ? `<li><b>${k[0].toUpperCase() + k.slice(1)}:</b> ${esc(s1.section_review[k])}</li>` : '').join('')}</ul>
     ${(s1.cannot_fix || []).length ? `<h3>Can't be fixed with wording alone</h3><ul>${li(s1.cannot_fix)}</ul>` : ''}</div></details>`;
   if (s2 || (r.supplementsUsed || []).length) h += `<details class="fold"><summary>Step 2 · What changed</summary><div class="in"><ul>${li(s2?.changes)}</ul>${(r.supplementsUsed || []).length ? `<h3>Supplementary information used</h3><ul>${r.supplementsUsed.map(s => `<li>${esc(s.item)} <span class="muted">→ ${esc(s.where)}</span></li>`).join('')}</ul>` : ''}</div></details>`;
-  if (r.cv_en || r.cv_fr) h += `<details class="fold"><summary>CV preview</summary><div class="in">${cvPaper(r.cv_en || profile().cv_en, 'en', photoSrc())}${r.cv_fr ? cvPaper(r.cv_fr, 'fr', photoSrc()) : ''}</div></details>`;
+  if (r.cv_ats) h += `<details class="fold"><summary>ATS-optimised CV preview</summary><div class="in">${cvPaper(r.cv_ats, 'en', photoSrc())}${r.cv_ats_fr ? cvPaper(r.cv_ats_fr, 'fr', photoSrc()) : ''}</div></details>`;
+  if (r.cv_en || r.cv_fr) h += `<details class="fold"><summary>Tailored CV preview</summary><div class="in">${cvPaper(r.cv_en || profile().cv_en, 'en', photoSrc())}${r.cv_fr ? cvPaper(r.cv_fr, 'fr', photoSrc()) : ''}</div></details>`;
   if (s3) h += `<details class="fold"><summary>Step 3 · ATS and recruiter review</summary><div class="in"><h3>ATS readability</h3><ul>${li(s3.ats?.format_flags)}</ul>
     ${(s3.ats?.requirements_missing || []).length ? `<p><b>Still missing:</b> ${esc(s3.ats.requirements_missing.join(', '))}</p>` : ''}
     <h3>6-second skim</h3><ul><li><b>Stands out:</b> ${esc(s3.recruiter?.stands_out)}</li><li><b>Easy to miss:</b> ${esc(s3.recruiter?.easy_to_miss)}</li><li><b>Move higher:</b> ${esc(s3.recruiter?.move_higher)}</li></ul>
@@ -866,6 +963,7 @@ function renderTailor() {
   const del = pendingDelete === r.id, id = esc(r.id);
   $('newResult').innerHTML = `<div style="display:grid;gap:16px">
     <div class="card"><div class="row between"><div><div class="eyebrow">${esc(r.company)}</div><h2>${esc(r.role)}</h2><div class="muted small">${esc(place(r))}${r.salary ? ' · ' + salaryText(r) : ''}</div></div>${statusPill(r.status)}</div>${filesRow(r)}</div>
+    ${atsCard(r)}
     ${insightBoard(r)}
     ${analysisFolds(r)}
     ${r.status === 'prep' ? `<div class="card" style="border-color:var(--fg)"><h2>Did you send it?</h2>
@@ -897,6 +995,7 @@ function renderTracker() {
 }
 $('stats').addEventListener('click', e => { const b = e.target.closest('.stat'); if (!b) return; tFilter = tFilter === b.dataset.st ? '' : b.dataset.st; renderTracker(); });
 $('tSearch').addEventListener('input', e => { tSearch = e.target.value; renderTracker(); });
+document.addEventListener('change', e => { const c = e.target; if (!c.dataset?.atsask) return; const set = atsTicks[c.dataset.atsask] ||= new Set(); if (c.checked) set.add(+c.value); else set.delete(+c.value); });
 document.addEventListener('change', async e => {
   const el = e.target; if (!el.dataset.field || !el.dataset.id) return;
   const data = { [el.dataset.field]: el.value };
@@ -925,6 +1024,7 @@ function renderInterview() {
   $('iBody').innerHTML = `<div style="display:grid;gap:16px">
     <div class="card"><div class="row between"><div><div class="eyebrow">${esc(r.company)}${r.appliedDate ? ' · applied ' + esc(shortDate(r.appliedDate)) : ''}</div><h2>${esc(r.role)}</h2><div class="muted small">${esc(place(r))}${r.salary ? ' · ' + salaryText(r) : ''}</div></div><div class="row">${statusPill(r.status)}${r.link ? `<a class="btn sm" href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">Job ad ↗</a>` : ''}</div></div></div>
     ${insightBoard(r)}
+    ${atsCard(r)}
     <div class="board">
       <div class="card"><h3>Interview details</h3>
         <div class="grid2"><label class="f" for="iv-st">Status<select id="iv-st" data-field="status" data-id="${id}">${STATUS.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
