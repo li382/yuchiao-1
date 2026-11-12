@@ -178,6 +178,14 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .cvlayout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start }
 @media (max-width: 1000px) { .cvlayout { grid-template-columns: 1fr } }
 .chatcol { display: grid; gap: 16px; position: sticky; top: 16px }
+.paperwrap .paper { max-height: 62vh; overflow-y: auto; font-size: 11px; padding: 18px 20px }
+.paperwrap .paper .nm { font-size: 17px } .paperwrap .paper .sec { font-size: 12.5px } .paperwrap .paper .ph { width: 58px; height: 72px; top: 14px; right: 16px }
+.secv { font-size: .93rem; color: var(--muted); display: grid; gap: 4px; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px }
+.secv b { color: var(--fg) } .secv ul { margin: 0; padding-left: 18px; display: grid; gap: 3px } .secv p { margin: 0 }
+.secedit { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end }
+.secedit textarea { min-height: 44px }
+@media (max-width: 600px) { .secedit { grid-template-columns: 1fr } }
+.secreply { font-size: .88rem; color: var(--ok) }
 @media (max-width: 1000px) { .chatcol { position: static } }
 .chatlog { display: grid; gap: 8px; max-height: 300px; overflow-y: auto }
 .chatlog:empty { display: none }
@@ -204,8 +212,8 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 <aside class="side" id="side" aria-label="Menu">
   <div class="brand"><span class="mark">HL</span><div><b>Hardcore Life</b><small>Yu Chiao Lin</small></div></div>
   <nav class="menu" id="menu">
-    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>My CV</button>
     <button type="button" data-page="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover<span class="n" id="n-discover"></span></button>
+    <button type="button" data-page="base"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>My CV</button>
     <button type="button" data-page="tailor"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Tailor a CV</button>
     <button type="button" data-page="tracker"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>Tracker<span class="n" id="n-tracker"></span></button>
     <button type="button" data-page="interview"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Interview</button>
@@ -299,26 +307,29 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
   </section>
 
   <section class="page" id="p-base" hidden>
-    <header><div class="eyebrow">Your CV</div><h1>My <em>CV</em></h1><p class="lede">Tell Claude what to change and it edits your CV right away, in English and French. Every tailored CV starts from this version.</p></header>
+    <header><div class="eyebrow">Your CV</div><h1>My <em>CV</em></h1><p class="lede">Each part of your CV has its own box. Write what you want changed in that part, press Apply, and Claude updates it in English and French. Every tailored CV starts from this version.</p></header>
     <div class="cvlayout">
-      <div class="card">
-        <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>CV photo</h3><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div></div>
-          <div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
-        <div id="basePaper"></div>
-        <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
+      <div class="sections">
+        <div id="sectionCards" style="display:grid;gap:14px"></div>
+        <div class="card">
+          <h3>Anything else</h3>
+          <p class="muted small" style="margin:0">For changes across several sections, like adding a new job or reordering.</p>
+          <div class="chatlog" id="chatLog"></div>
+          <div class="chips" id="chatChips">
+            <button type="button" class="chip" data-say="Add a new experience: ">Add a new experience</button>
+            <button type="button" class="chip" data-say="Check the grammar of the whole CV and fix any mistakes.">Check grammar everywhere</button>
+          </div>
+          <label class="f" for="chatIn">What should change?<textarea id="chatIn" rows="3" placeholder="Example: Add a new experience: …"></textarea></label>
+          <div class="row"><button class="btn solid" type="button" id="chatSend">Apply to my CV</button></div>
+          <p class="muted small" id="chatState" style="margin:0"></p>
+        </div>
       </div>
       <div class="chatcol">
         <div class="card">
-          <h3>Edit with Claude</h3>
-          <div class="chatlog" id="chatLog"></div>
-          <div class="chips" id="chatChips">
-            <button type="button" class="chip" data-say="Remove the availability line next to my target role.">Remove the availability line</button>
-            <button type="button" class="chip" data-say="Make the summary shorter: two sentences.">Shorter summary</button>
-            <button type="button" class="chip" data-say="Make the Pure Trade bullets more results-focused, without inventing numbers.">More results-focused bullets</button>
-          </div>
-          <label class="f" for="chatIn">What should change?<textarea id="chatIn" rows="4" placeholder="Examples: Add that I post purchase invoices in Dynamics 365. / Change my target role to Demand Planner. / 把摘要縮短成兩句"></textarea></label>
-          <div class="row"><button class="btn solid" type="button" id="chatSend">Apply to my CV</button><button class="btn ghost sm" type="button" data-act="import-undo" id="undoBtn" hidden>Undo last change</button></div>
-          <p class="muted small" id="chatState" style="margin:0"></p>
+          <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>Photo</h3><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Original</button></div></div></div></div>
+          <div class="row between"><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div><button class="btn ghost sm" type="button" data-act="import-undo" id="undoBtn" hidden>Undo last change</button></div>
+          <div id="basePaper" class="paperwrap"></div>
+          <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
         </div>
         <div class="card" id="rateCard"></div>
       </div>
@@ -374,7 +385,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 <script>
 const K = window.CVKit;
 const $ = id => document.getElementById(id);
-const PAGES = ['base', 'discover', 'tailor', 'tracker', 'interview'];
+const PAGES = ['discover', 'base', 'tailor', 'tracker', 'interview'];
 const STATUS = [['prep', 'Not applied', '#9a9aa6'], ['sent', 'Applied', '#5a82ff'], ['screen', 'HR screen', '#3ccfe0'], ['int', 'Interview', '#b98bff'], ['final', 'Final round', '#ffbe5c'], ['offer', 'Offer', '#5fd39a'], ['no', 'Rejected', '#ff7b7b'], ['drop', 'Withdrawn', '#6f6f7a']];
 const ST = Object.fromEntries(STATUS.map(([k, l, c]) => [k, { l, c }]));
 const SALARY_TYPE = { estimate: 'est.', posted: 'posted', offer: 'offer' };
@@ -425,7 +436,7 @@ function photoSrc() { return profile().photo || window.CV_IMAGES?.photo || ''; }
 
 /* ---------- navigation ---------- */
 function go(p) {
-  page = PAGES.includes(p) ? p : 'base';
+  page = PAGES.includes(p) ? p : 'discover';
   PAGES.forEach(k => { $('p-' + k).hidden = k !== page; });
   document.querySelectorAll('#menu button').forEach(b => { if (b.dataset.page === page) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   document.body.classList.remove('menu-open'); $('menuBtn').setAttribute('aria-expanded', 'false');
@@ -958,7 +969,7 @@ function renderBase() {
   const p = profile();
   document.querySelectorAll('#baseTabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === baseTab));
   ['edit', 'replace', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
-  renderChat(); renderRate();
+  renderChat(); renderRate(); renderSections();
   $('photoThumb').src = photoSrc();
   document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
   document.querySelectorAll('#editLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === editLang));
@@ -1098,6 +1109,7 @@ document.addEventListener('click', async e => {
     else if (act === 'import-cancel') { pendingImport = null; renderBase(); }
     else if (act === 'import-undo') { const pb = saved.prevBase; await saveProfile({ cv_en: pb.cv_en, cv_fr: pb.cv_fr, prevBase: null }); toast('Previous base CV restored'); }
     else if (act === 'rate') runRate();
+    else if (act === 'sec-apply') applySection(el.dataset.sec);
     else if (act === 'job-rate') rateJob(id);
     else if (act === 'job-rate-top') { const list = jobs.filter(passes).filter(j => !j.fitCv).sort((a, b) => (b.fit || 0) - (a.fit || 0)).slice(0, 10); toast(`Rating ${list.length} jobs…`); for (const j of list) await rateJob(j.id); toast('Done'); }
     else if (act === 'jd-more') { const t = el.parentElement.querySelector('.jdtext'); t.classList.toggle('clamp'); el.textContent = t.classList.contains('clamp') ? 'Show full description' : 'Show less'; }
@@ -1148,12 +1160,13 @@ ${instruction}
 Return ONLY JSON: {"reply": string, "needs_clarification": string|null, "new_facts": [string], "cv_en": ${CV_SHAPE.replace('{"target": string,', '{"target": string, "available": string,')}, "cv_fr": (same shape)}`;
 }
 function renderChat() {
-  const log = (saved?.chat || []).slice(-20);
+  const log = (saved?.chat || []).filter(m => !m.sec).slice(-20);
   $('chatLog').innerHTML = log.map(m => `<div class="bubble ${m.role === 'me' ? 'me' : 'ai'}">${esc(m.text)}</div>`).join('');
   $('chatLog').scrollTop = $('chatLog').scrollHeight;
   $('undoBtn').hidden = !saved?.prevBase;
 }
 $('chatChips').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').focus(); } });
+document.addEventListener('keydown', e => { const t = e.target; if (t.dataset?.secin && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) applySection(t.dataset.secin); });
 $('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('chatSend').click(); });
 $('chatSend').addEventListener('click', async () => {
   const text = $('chatIn').value.trim(); if (!text) return;
@@ -1180,6 +1193,92 @@ $('chatSend').addEventListener('click', async () => {
   } catch (err) { $('chatState').textContent = ''; toast(err.message || String(err)); }
   $('chatSend').disabled = false;
 });
+
+/* ---------- one edit box per CV section ---------- */
+const coName = e => (e.company_line || '').split(/[,|]/)[0].trim() || e.title;
+function sections(cv) {
+  return [
+    { key: 'head', label: 'Target role & summary', shape: '{"target": string, "available": string ("" hides the availability line), "summary": string}', get: c => ({ target: c.target, available: c.available ?? '', summary: c.summary }), set: (c, v) => { if (typeof v.target === 'string' && v.target.trim()) c.target = v.target.trim(); if (typeof v.available === 'string') c.available = v.available.trim(); if (typeof v.summary === 'string' && v.summary.trim()) c.summary = v.summary.trim(); },
+      view: c => `<p><b>${esc(c.target)}</b>${c.available ? ` · ${esc(c.available)}` : ''}</p><p>${esc(c.summary)}</p>` },
+    { key: 'skills', label: 'Skills', shape: '{"hard": string, "soft": string}', get: c => ({ hard: c.skills.hard, soft: c.skills.soft }), set: (c, v) => { ['hard', 'soft'].forEach(k => { if (typeof v[k] === 'string' && v[k].trim()) c.skills[k] = v[k].trim(); }); },
+      view: c => `<p><b>Hard:</b> ${esc(c.skills.hard)}</p><p><b>Soft:</b> ${esc(c.skills.soft)}</p>` },
+    { key: 'tools', label: 'Tools', shape: '{"tools": string}', get: c => ({ tools: c.skills.tools }), set: (c, v) => { if (typeof v.tools === 'string' && v.tools.trim()) c.skills.tools = v.tools.trim(); },
+      view: c => `<p>${esc(c.skills.tools)}</p>` },
+    ...cv.experience.map((e, i) => ({ key: 'exp' + i, label: 'Experience · ' + coName(e), sub: e.title,
+      shape: '{"title": string, "company_line": string, "description": string ("" if none), "bullets": [string]}',
+      get: c => ({ title: c.experience[i].title, company_line: c.experience[i].company_line, description: c.experience[i].description || '', bullets: c.experience[i].bullets }),
+      set: (c, v) => { const x = c.experience[i]; if (typeof v.title === 'string' && v.title.trim()) x.title = v.title.trim(); if (typeof v.company_line === 'string' && v.company_line.trim()) x.company_line = v.company_line.trim();
+        if (typeof v.description === 'string') { if (v.description.trim()) x.description = v.description.trim(); else delete x.description; }
+        const b = Array.isArray(v.bullets) ? v.bullets.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : []; if (b.length) x.bullets = b; },
+      view: c => { const x = c.experience[i]; return `<p><b>${esc(x.title)}</b></p><p>${esc(x.company_line)}</p><ul>${li(x.bullets)}</ul>`; } })),
+    { key: 'edu', label: 'Education', shape: '[{"title": string, "school_line": string, "details": string}]', get: c => c.education, set: (c, v) => { const a = Array.isArray(v) ? v.filter(e => e && typeof e.title === 'string' && e.title.trim()).map(e => ({ title: e.title.trim(), school_line: String(e.school_line || '').trim(), details: String(e.details || '').trim() })) : []; if (a.length) c.education = a; },
+      view: c => c.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p>`).join('') },
+    { key: 'lang', label: 'Languages', shape: '[string]', get: c => c.languages, set: (c, v) => { const a = Array.isArray(v) ? v.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : []; if (a.length) c.languages = a; },
+      view: c => `<p>${c.languages.map(esc).join('<br>')}</p>` },
+  ];
+}
+const secBusy = {};
+function promptSection(sec, instruction) {
+  const p = profile();
+  return `You edit ONE section of Yu Chiao Lin's CV: "${sec.label}". Apply her instruction to this section only, in both English and French, so both versions stay equivalent. She is the source of truth about her own experience: when she states a new fact, you may add it. Never invent anything she did not state. Keep everything in the section that the instruction does not touch word for word.
+
+Rules: British English; present tense for current roles, past tense for finished roles; bullets as action + context + result, at most 220 characters each; summary at most 380 characters. French: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral titles, a space before ":" ";" "%". Perfect grammar in both languages.
+If the instruction is unclear, change nothing and ask one short question in "needs_clarification".
+"reply": 1–2 short sentences in the same language as her instruction, saying exactly what changed.
+"new_facts": facts about her work stated in the instruction that are not in the facts list below (in English), else [].
+
+CONFIRMED FACTS
+${p.facts.map(f => '- ' + f).join('\n')}
+
+WHOLE CV FOR CONTEXT (do not return it)
+${JSON.stringify(p.cv_en)}
+
+THIS SECTION NOW, ENGLISH
+${JSON.stringify(sec.get(p.cv_en))}
+THIS SECTION NOW, FRENCH
+${JSON.stringify(sec.get(p.cv_fr))}
+
+HER INSTRUCTION
+"""
+${instruction}
+"""
+
+Return ONLY JSON: {"reply": string, "needs_clarification": string|null, "new_facts": [string], "en": ${sec.shape}, "fr": ${sec.shape}}`;
+}
+function renderSections() {
+  const p = profile(), kept = {};
+  document.querySelectorAll('[data-secin]').forEach(t => { kept[t.dataset.secin] = t.value; });
+  const log = saved?.chat || [];
+  $('sectionCards').innerHTML = sections(p.cv_en).map(sec => {
+    const last = [...log].reverse().find(m => m.sec === sec.key && m.role === 'ai'), b = secBusy[sec.key];
+    return `<div class="card"><div class="row between"><h3>${esc(sec.label)}</h3>${sec.sub ? `<span class="muted small">${esc(sec.sub)}</span>` : ''}</div>
+      <div class="secv">${sec.view(p.cv_en)}</div>
+      <div class="secedit"><textarea data-secin="${sec.key}" rows="2" aria-label="Change ${esc(sec.label)}" placeholder="What should change in ${esc(sec.label.replace('Experience · ', ''))}?"></textarea>
+        <button class="btn solid" type="button" data-act="sec-apply" data-sec="${sec.key}" ${b ? 'disabled' : ''}>${b ? 'Updating…' : 'Apply'}</button></div>
+      ${last ? `<div class="secreply">✓ ${esc(last.text)}</div>` : ''}</div>`;
+  }).join('');
+  document.querySelectorAll('[data-secin]').forEach(t => { if (kept[t.dataset.secin]) t.value = kept[t.dataset.secin]; });
+}
+async function applySection(key) {
+  const p = profile(), sec = sections(p.cv_en).find(x => x.key === key), box = document.querySelector(`[data-secin="${key}"]`);
+  const text = box?.value.trim(); if (!sec || !text || secBusy[key]) return;
+  if (!db) { toast('Sign in to claude.ai to edit your CV.'); return; }
+  secBusy[key] = true; renderSections();
+  const now = () => new Date().toISOString(), chat = [...(saved?.chat || []), { role: 'me', text, sec: key, at: now() }];
+  try {
+    const r = await askJSON(promptSection(sec, text), { modelTier: 'complex' });
+    if (r.needs_clarification) await saveProfile({ chat: [...chat, { role: 'ai', text: r.needs_clarification, sec: key, at: now() }].slice(-60) });
+    else {
+      const en = clone(p.cv_en), fr = clone(p.cv_fr);
+      sec.set(en, r.en || {}); sec.set(fr, K.deepMap(r.fr || {}, K.frTypo));
+      const nf = (Array.isArray(r.new_facts) ? r.new_facts : []).filter(f => typeof f === 'string' && f.trim()).map(f => f.trim());
+      await saveProfile({ cv_en: en, cv_fr: fr, facts: [...p.facts, ...nf], prevBase: { cv_en: p.cv_en, cv_fr: p.cv_fr, savedAt: now() }, chat: [...chat, { role: 'ai', text: r.reply || 'Done.', sec: key, at: now() }].slice(-60) });
+      runRate();
+    }
+    delete secBusy[key]; const t = document.querySelector(`[data-secin="${key}"]`); if (t) t.value = '';
+  } catch (err) { delete secBusy[key]; toast(err.message || String(err)); }
+  renderSections();
+}
 
 /* ---------- how fit am I ---------- */
 let rating = false;
@@ -1217,7 +1316,7 @@ function renderRate() {
     <ul class="clean">${(r.strengths || []).map(x => `<li><span class="ic s">✓</span><span>${esc(x)}</span></li>`).join('')}${(r.gaps || []).map(g => `<li><span class="ic g">◇</span><span>${esc(g.gap)}<small>${esc(g.fix || '')}</small></span></li>`).join('')}</ul>
     ${(r.quick_wins || []).length ? `<div class="chips">${r.quick_wins.map(q => `<button type="button" class="chip" data-say="${esc(q)}">${esc(q)}</button>`).join('')}</div><p class="muted small" style="margin:0">Tap a quick win to put it in the chat box.</p>` : ''}`;
 }
-$('rateCard').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+$('rateCard').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('chatIn').focus(); } });
 
 /* ---------- rate my fit for one job ---------- */
 function promptJobFit(j) {
