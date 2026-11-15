@@ -158,6 +158,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .paper { background: #ffffff; color: #111; border-radius: 6px; padding: 26px 28px; font-family: Calibri, Carlito, Arial, sans-serif; font-size: 12.5px; line-height: 1.35; display: grid; gap: 3px; position: relative; min-width: 0 }
 .paper .ph { position: absolute; top: 18px; right: 22px; width: 74px; height: 92px; object-fit: cover }
 .paper .nm { font-size: 20px; font-weight: 700; padding-right: 90px }
+.paper.nophoto .nm, .paper.nophoto .tg { padding-right: 0 }
 .paper .tg { padding-right: 90px }
 .paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
 .paper ul { margin: 0; padding-left: 18px } .paper p { margin: 0 }
@@ -217,6 +218,8 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .asklist { display: grid; gap: 8px; margin-bottom: 10px }
 .ask { display: flex; gap: 10px; align-items: flex-start; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .93rem; cursor: pointer }
 .ask input { width: auto; margin-top: 3px } .ask small { display: block; color: var(--muted); margin-top: 3px }
+.photorow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.photorow img { width: 40px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line-2) }
 .vbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end }
 .acc { display: grid; gap: 8px }
 .acc-item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
@@ -363,8 +366,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
             <div class="secedit"><textarea id="chatIn" rows="2" aria-label="Change anything" placeholder="What should change?"></textarea><button class="btn solid" type="button" id="chatSend">Apply</button></div>
             <p class="muted small" id="chatState" style="margin:0"></p>
           </div></details>
-          <details class="acc-item" id="moreFold"><summary><span class="t">Settings</span><span class="pv">Photo, line-by-line editing, supplementary info, facts and steps</span></summary><div class="in">
-            <div class="row"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><b>CV photo</b><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div></div></div>
+          <details class="acc-item" id="moreFold"><summary><span class="t">Settings</span><span class="pv">Line-by-line editing, supplementary info, facts and steps</span></summary><div class="in">
             <nav class="subtabs" id="baseTabs" role="tablist" aria-label="CV settings">
               <button type="button" role="tab" data-t="edit">Edit line by line</button>
               <button type="button" role="tab" data-t="supp">Supplementary info <span id="suppCount"></span></button>
@@ -382,7 +384,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
               <div class="row"><button class="btn solid sm" type="button" id="suppAdd">Add</button></div>
             </div>
             <div id="bt-steps" hidden style="display:grid;gap:12px">
-              <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
+              <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button></div></div></details>
               <div id="stepFolds" style="display:grid;gap:12px"></div>
             </div>
           </div></details>
@@ -392,6 +394,9 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
       <div class="chatcol">
         <div class="card">
           <div class="row between"><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div><button class="btn ghost sm" type="button" data-act="import-undo" id="undoBtn" hidden>Undo last change</button></div>
+          <div class="photorow"><img id="photoThumb" alt="CV photo"><span class="muted small" id="photoNone">No photo on this version</span>
+            <label class="btn sm" for="photoFile">Upload a photo (JPG)</label><input type="file" id="photoFile" accept="image/jpeg,image/png" hidden><button class="btn ghost sm" type="button" id="photoReset">Remove photo</button>
+            <label class="row small muted" for="qrToggle" style="gap:6px"><input type="checkbox" id="qrToggle" style="width:auto"> QR code</label></div>
           <div id="basePaper" class="paperwrap"></div>
           <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
         </div>
@@ -448,7 +453,7 @@ async function saveProfile(patchObj) {
   const next = { ...(saved || {}), ...profile(), ...patchObj, updatedAt: new Date().toISOString() };
   // Keep the active version's copy in step with the CV being edited.
   if ((patchObj.cv_en || patchObj.cv_fr) && Array.isArray(next.versions) && next.activeVersion)
-    next.versions = next.versions.map(v => v.id === next.activeVersion ? { ...v, cv_en: next.cv_en, cv_fr: next.cv_fr, updatedAt: next.updatedAt } : v);
+    next.versions = next.versions.map(v => v.id === next.activeVersion ? { ...v, cv_en: next.cv_en, cv_fr: next.cv_fr, facts: next.facts, updatedAt: next.updatedAt } : v);
   await db.doc('profile/main').set(next);
 }
 function versions() {
@@ -456,19 +461,20 @@ function versions() {
   if (Array.isArray(saved?.versions) && saved.versions.length) return { list: saved.versions, active: saved.activeVersion || saved.versions[0].id };
   return { list: [{ id: 'v1', name: 'My CV', cv_en: p.cv_en, cv_fr: p.cv_fr, createdAt: saved?.updatedAt || new Date().toISOString() }], active: 'v1' };
 }
-async function addVersion(name, cv_en, cv_fr, use) {
+async function addVersion(name, cv_en, cv_fr, use, facts) {
   const p = profile(), { list, active } = versions(), now = new Date().toISOString();
-  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr } : v);
-  const id = 'v' + Date.now().toString(36);
-  const patchObj = { versions: [...synced, { id, name, cv_en, cv_fr, createdAt: now }], activeVersion: use ? id : active };
-  if (use) Object.assign(patchObj, { cv_en, cv_fr, prevBase: { cv_en: p.cv_en, cv_fr: p.cv_fr, savedAt: now } });
+  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr, facts: p.facts } : v);
+  const id = 'v' + Date.now().toString(36), vf = facts && facts.length ? facts : [];
+  const patchObj = { versions: [...synced, { id, name, cv_en, cv_fr, facts: vf, createdAt: now }], activeVersion: use ? id : active };
+  // A newly used CV is the only source of truth: its facts replace the old ones, and old supplementary notes are cleared.
+  if (use) Object.assign(patchObj, { cv_en, cv_fr, facts: vf, supplements: [], rating: null, prevBase: null });
   await saveProfile(patchObj);
 }
 async function switchVersion(id) {
   const p = profile(), { list, active } = versions(); if (id === active) return;
   const target = list.find(v => v.id === id); if (!target) return;
-  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr } : v);
-  await saveProfile({ versions: synced, activeVersion: id, cv_en: target.cv_en, cv_fr: target.cv_fr, prevBase: null });
+  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr, facts: p.facts } : v);
+  await saveProfile({ versions: synced, activeVersion: id, cv_en: target.cv_en, cv_fr: target.cv_fr, ...(Array.isArray(target.facts) ? { facts: target.facts } : {}), prevBase: null, rating: null });
   toast(`Now editing “${target.name}”`); runRate();
 }
 let verDelete = false;
@@ -481,17 +487,22 @@ $('newVerBtn').addEventListener('click', () => { $('uploadPanel').hidden = false
 $('uploadClose').addEventListener('click', () => { $('uploadPanel').hidden = true; });
 
 let photoData = null, photoFor = null;
-async function images() {
-  const p = profile();
-  if (!p.photo) return window.CV_IMAGES;
-  if (photoFor !== p.photo) {
-    const blob = await (await fetch(p.photo)).blob();
+// Photo and QR code belong to each CV version: cv.photo is "" (no photo), an uploaded JPG url, or absent (the original photo);
+// cv.qr === false hides the QR code. A CV imported from a file starts with neither.
+function photoUrl(cv) { cv = cv || profile().cv_en; if (cv.photo === '') return ''; return cv.photo || profile().photo || window.CV_IMAGES?.photo || ''; }
+async function images(cv) {
+  cv = cv || profile().cv_en;
+  const out = { photo: null, qr: cv.qr === false ? null : window.CV_IMAGES?.qr || null }, url = photoUrl(cv);
+  if (!url) return out;
+  if (url.startsWith('data:')) { out.photo = url; return out; }
+  if (photoFor !== url) {
+    const blob = await (await fetch(url)).blob();
     photoData = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
-    photoFor = p.photo;
+    photoFor = url;
   }
-  return { ...window.CV_IMAGES, photo: photoData };
+  out.photo = photoData; return out;
 }
-function photoSrc() { return profile().photo || window.CV_IMAGES?.photo || ''; }
+function photoSrc(cv) { return photoUrl(cv); }
 
 /* ---------- navigation ---------- */
 function go(p) {
@@ -613,7 +624,7 @@ Rules:
 - Keep English supply chain terms that French companies use (supply chain, S&OP, KPI, OTD, OTIF, lead time, GWP, Incoterms, ETD/ETA, CAPA, BAT, ERP), and keep brand, company and tool names as they are.
 - Put a normal space before ":" ";" "%" as French typography requires.
 - "target": ${jdLang === 'fr' ? 'the job title exactly as the French job description writes it.' : 'keep the job title as the company writes it.'}
-- Reuse the wording of the base French CV below wherever the content is the same. Keep job titles, company lines and education titles exactly as in the base French CV.
+- Reuse the wording of the base French CV below only where the content is the same. Translate everything else from the CV to translate; never bring in content that is not in it.
 - Perfect French grammar.
 
 BASE FRENCH CV (reference)
@@ -822,7 +833,7 @@ async function pdfFonts(zh) {
 }
 function makePdf(dd, fonts) { return new Promise(res => { let pages = 0; const f0 = dd.footer; dd.footer = (c, t) => { pages = t; return f0 ? f0(c, t) : null; }; window.pdfMake.createPdf(dd, null, fonts, fontCache).getBlob(blob => res({ blob, pages })); }); }
 async function cvPdfFit(cv, lang) {
-  const fonts = await pdfFonts(false), img = await images(); let last;
+  const fonts = await pdfFonts(false), img = await images(cv); let last;
   for (const s of [1, 0.96, 0.92, 0.88, 0.84]) { last = await makePdf(K.cvPdf(cv, lang, s, img), fonts); last.scale = s; if (last.pages <= 1) break; }
   return last;
 }
@@ -835,7 +846,7 @@ async function save(filename, data) {
 async function cvFile(cv, lang, kind, name) {
   if (kind === 'pdf') { const { blob, pages } = await cvPdfFit(cv, lang); if (pages > 1) toast('This CV runs to 2 pages. Shorten a bullet in the Word version.'); return save(name + '.pdf', blob); }
   const { scale } = await cvPdfFit(cv, lang);
-  return save(name + '.docx', await window.docx.Packer.toBlob(K.cvDocx(cv, lang, scale, await images(), window.docx)));
+  return save(name + '.docx', await window.docx.Packer.toBlob(K.cvDocx(cv, lang, scale, await images(cv), window.docx)));
 }
 async function download(id, what) {
   const r = rowById(id); if (!r) return;
@@ -843,8 +854,8 @@ async function download(id, what) {
   try {
     if (what.startsWith('cvats-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_ats_fr : r.cv_ats, lang, kind, `CV_Yu_Chiao_Lin_${base}_ATS_${lang.toUpperCase()}`); }
     else if (what.startsWith('cv-')) { const [, lang, kind] = what.split('-'); await cvFile(lang === 'fr' ? r.cv_fr : (r.cv_en || p.cv_en), lang, kind, `CV_Yu_Chiao_Lin_${base}_${lang.toUpperCase()}`); }
-    else if (what === 'letter-pdf') { const { blob } = await makePdf(K.letterPdf(r.coverLetter), await pdfFonts(false)); await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob); }
-    else if (what === 'letter-docx') await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx)));
+    else if (what === 'letter-pdf') { const { blob } = await makePdf(K.letterPdf(r.coverLetter, r.cv_en || p.cv_en), await pdfFonts(false)); await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.pdf`, blob); }
+    else if (what === 'letter-docx') await save(`Motivation_Letter_Yu_Chiao_Lin_${base}.docx`, await window.docx.Packer.toBlob(K.letterDocx(r.coverLetter, window.docx, r.cv_en || p.cv_en)));
     else if (what.startsWith('prep-')) { const lang = what.slice(5); if (lang === 'zh') toast('Loading the Chinese font…'); const { blob } = await makePdf(K.prepPdf(r.prep[lang], r, lang), await pdfFonts(lang === 'zh')); await save(`Interview_Prep_${base}_${lang.toUpperCase()}.pdf`, blob); }
   } catch (e) { toast('Could not create the file: ' + (e?.message || e)); }
 }
@@ -855,9 +866,10 @@ function statusPill(s) { const v = ST[s] || ST.prep; return `<span class="pill">
 function salaryText(r) { return r.salary ? `${esc(r.salary)} (${SALARY_TYPE[r.salaryType] || 'est.'})` : ''; }
 function cvPaper(cv, lang, photo) {
   if (!cv) return '';
+  photo = photoUrl(cv);
   const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : '] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: '];
   const avail = cv.available ?? K.AVAIL[lang];
-  return `<div class="paper">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.NAME)}</div><p class="tg">${esc(K.CONTACT)}</p><p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>
+  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
     <div class="sec">${L[1]}</div><p><b>${L[5]}:</b> ${esc(cv.skills.hard)}</p><p><b>${L[6]}:</b> ${esc(cv.skills.soft)}</p><p><b>${L[7]}:</b> ${esc(cv.skills.tools)}</p>
     <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}<ul>${li(e.bullets)}</ul>`).join('')}
@@ -912,7 +924,7 @@ function analysisFolds(r) {
     <h3>Section by section</h3><ul>${['summary', 'experience', 'skills', 'education'].map(k => s1.section_review?.[k] ? `<li><b>${k[0].toUpperCase() + k.slice(1)}:</b> ${esc(s1.section_review[k])}</li>` : '').join('')}</ul>
     ${(s1.cannot_fix || []).length ? `<h3>Can't be fixed with wording alone</h3><ul>${li(s1.cannot_fix)}</ul>` : ''}</div></details>`;
   if (s2 || (r.supplementsUsed || []).length) h += `<details class="fold"><summary>Step 2 · What changed</summary><div class="in"><ul>${li(s2?.changes)}</ul>${(r.supplementsUsed || []).length ? `<h3>Supplementary information used</h3><ul>${r.supplementsUsed.map(s => `<li>${esc(s.item)} <span class="muted">→ ${esc(s.where)}</span></li>`).join('')}</ul>` : ''}</div></details>`;
-  if (r.cv_ats) h += `<details class="fold"><summary>ATS-optimised CV preview</summary><div class="in">${cvPaper(r.cv_ats, 'en', photoSrc())}${r.cv_ats_fr ? cvPaper(r.cv_ats_fr, 'fr', photoSrc()) : ''}</div></details>`;
+  if (r.cv_ats) h += `<details class="fold"><summary>ATS-optimised CV preview</summary><div class="in">${cvPaper(r.cv_ats, 'en')}${r.cv_ats_fr ? cvPaper(r.cv_ats_fr, 'fr') : ''}</div></details>`;
   if (r.cv_en || r.cv_fr) h += `<details class="fold"><summary>Tailored CV preview</summary><div class="in">${cvPaper(r.cv_en || profile().cv_en, 'en', photoSrc())}${r.cv_fr ? cvPaper(r.cv_fr, 'fr', photoSrc()) : ''}</div></details>`;
   if (s3) h += `<details class="fold"><summary>Step 3 · ATS and recruiter review</summary><div class="in"><h3>ATS readability</h3><ul>${li(s3.ats?.format_flags)}</ul>
     ${(s3.ats?.requirements_missing || []).length ? `<p><b>Still missing:</b> ${esc(s3.ats.requirements_missing.join(', '))}</p>` : ''}
@@ -1094,14 +1106,14 @@ let baseLang = 'en', baseSig = null;
 function cvEditor(lang) {
   const cv = profile()['cv_' + lang];
   const ta = (path, v, n = 3) => `<textarea data-cv="${lang}" data-path="${path}" rows="${n}">${esc(v)}</textarea>`;
-  return `<div class="grid2"><label class="f">Target role${ta('target', cv.target, 1)}</label><label class="f">Availability (leave empty to hide the line)${ta('available', cv.available ?? K.AVAIL[lang], 1)}</label></div>
+  return `<div class="grid2"><label class="f">Name${ta('name', K.whoName(cv), 1)}</label><label class="f">Contact line${ta('contact', K.whoContact(cv), 1)}</label></div><div class="grid2"><label class="f">Target role (empty: added from the job when you tailor)${ta('target', cv.target, 1)}</label><label class="f">Availability (leave empty to hide the line)${ta('available', cv.available ?? K.AVAIL[lang], 1)}</label></div>
     <label class="f">Summary${ta('summary', cv.summary, 4)}</label>
     <div class="grid2"><label class="f">Hard skills${ta('skills.hard', cv.skills.hard, 5)}</label><label class="f">Soft skills${ta('skills.soft', cv.skills.soft, 5)}</label></div>
     <label class="f">Tools${ta('skills.tools', cv.skills.tools, 2)}</label>
     ${cv.experience.map((e, i) => `<div class="card" style="background:var(--bg)"><h3>Experience ${i + 1}</h3><label class="f">Title${ta(`experience.${i}.title`, e.title, 1)}</label><label class="f">Company · place · dates${ta(`experience.${i}.company_line`, e.company_line, 1)}</label>${e.description != null ? `<label class="f">Company description${ta(`experience.${i}.description`, e.description, 2)}</label>` : ''}<label class="f">Bullets (one per line)${ta(`experience.${i}.bullets`, e.bullets.join('\n'), Math.max(3, e.bullets.length + 1))}</label></div>`).join('')}
     ${cv.education.map((e, i) => `<div class="card" style="background:var(--bg)"><h3>Education ${i + 1}</h3><label class="f">Programme${ta(`education.${i}.title`, e.title, 1)}</label><label class="f">School · place · dates${ta(`education.${i}.school_line`, e.school_line, 1)}</label><label class="f">Details${ta(`education.${i}.details`, e.details, 2)}</label></div>`).join('')}
     <label class="f">Languages (one per line)${ta('languages', cv.languages.join('\n'), 3)}</label>
-    <div class="row"><button class="btn solid sm" type="button" data-act="save-cv" data-lang="${lang}">Save ${lang === 'en' ? 'English' : 'French'} base CV</button><button class="btn ghost sm" type="button" data-act="reset-cv" data-lang="${lang}">Restore original</button></div>`;
+    <div class="row"><button class="btn solid sm" type="button" data-act="save-cv" data-lang="${lang}">Save ${lang === 'en' ? 'English' : 'French'} base CV</button></div>`;
 }
 function readEditor(lang) {
   const cv = clone(profile()['cv_' + lang]);
@@ -1118,7 +1130,7 @@ function renderBase() {
   document.querySelectorAll('#baseTabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === baseTab));
   ['edit', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
   renderChat(); renderRate(); renderSections(); renderVersions();
-  $('photoThumb').src = photoSrc();
+  { const u = photoUrl(p.cv_en); $('photoThumb').hidden = !u; if (u) $('photoThumb').src = u; $('photoNone').hidden = !!u; $('photoReset').hidden = !u; $('qrToggle').checked = p.cv_en.qr !== false; }
   document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
   document.querySelectorAll('#editLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === editLang));
   $('edit-en').hidden = editLang !== 'en'; $('edit-fr').hidden = editLang !== 'fr';
@@ -1198,6 +1210,7 @@ function normCv(c) {
   const s = v => typeof v === 'string' ? v.trim() : '', arr = v => Array.isArray(v) ? v.map(s).filter(Boolean) : [];
   c = c || {};
   return {
+    name: s(c.name), contact: s(c.contact), photo: '', qr: false, available: s(c.available),
     target: s(c.target), summary: s(c.summary), skills: { hard: s(c.skills?.hard), soft: s(c.skills?.soft), tools: s(c.skills?.tools) },
     experience: (Array.isArray(c.experience) ? c.experience : []).map(e => { const o = { title: s(e?.title), company_line: s(e?.company_line), bullets: arr(e?.bullets) }; if (s(e?.description)) o.description = s(e.description); return o; }).filter(e => e.title || e.bullets.length),
     education: (Array.isArray(c.education) ? c.education : []).map(e => ({ title: s(e?.title), school_line: s(e?.school_line), details: s(e?.details) })).filter(e => e.title),
@@ -1205,13 +1218,15 @@ function normCv(c) {
   };
 }
 function promptImport(text) {
-  return `Convert this CV into structured JSON, in English and in French. Keep the candidate's own content: do not add, remove or invent any experience, skill, number or result. Only reorganise it into the fields below and translate.
+  return `Convert this CV into structured JSON, in English and in French. This CV is now her ONLY source of truth: it fully replaces any earlier CV. Take in ALL of its text: every line, bullet, skill, tool, course, award, language, date and number must appear in the JSON. Do not shorten, merge, drop, add or invent anything; only reorganise it into the fields below and translate. Fix only obvious spelling or grammar mistakes.
 
-Fields: "target" = the target role line if there is one, otherwise the most recent job title; "summary"; "skills" grouped into exactly three strings "hard" (semicolon-separated), "soft" (semicolon-separated) and "tools" (software only, comma-separated); "experience" in the CV's order, each with "title", "company_line" written as "Company, City, Country | Month YYYY to Month YYYY (N months)" using only what the CV states, optional "description" (a line describing the company, if the CV has one) and "bullets"; "education" with "title" (programme, with ranking in brackets if the CV gives one), "school_line" ("School, City, Country | Month YYYY to Month YYYY") and "details"; "languages" as lines like "English: Fluent".
+Fields: "name" = her full name as written; "contact" = one line with the location, phone, email and links as written, separated by " | "; "target" = the target role line ONLY if the CV has one, otherwise "" (the applied job title is added later for each job); "available" = the availability line if the CV has one, otherwise ""; "summary" (the profile or summary paragraph, "" if none); "skills" grouped into exactly three strings "hard" (semicolon-separated), "soft" (semicolon-separated) and "tools" (software only, comma-separated); "experience" in the CV's order, each with "title", "company_line" written as "Company, City, Country | Month YYYY to Month YYYY (N months)" using only what the CV states, optional "description" (a line describing the company, if the CV has one) and "bullets"; "education" with "title" (programme, with ranking in brackets if the CV gives one), "school_line" ("School, City, Country | Month YYYY to Month YYYY") and "details"; "languages" as lines like "English: Fluent".
 
 English version: British English, present tense for current roles, past tense for finished roles. French version: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral job titles, a space before ":" ";" "%", keep supply chain terms used in France (S&OP, KPI, OTD, OTIF, lead time, Incoterms) and all brand and tool names.
 
-Return ONLY JSON: {"cv_en": ${CV_SHAPE}, "cv_fr": ${CV_SHAPE}}
+Also return "facts": one line per concrete fact in the CV (each responsibility, tool, number, result, course, award, language), in English, so nothing from the CV is lost even when a tailored CV leaves it out.
+
+Return ONLY JSON: {"cv_en": ${CV_SHAPE.replace('{"target": string,', '{"name": string, "contact": string, "target": string, "available": string,')}, "cv_fr": (same shape, in French), "facts": [string]}
 
 CV TEXT
 """
@@ -1224,9 +1239,12 @@ $('importBtn').addEventListener('click', async () => {
   $('importBtn').disabled = true; $('importState').textContent = 'Converting… about 1 minute';
   try {
     const r = await askJSON(promptImport(text), { modelTier: 'complex' }, n => { $('importState').textContent = `Converting… ${n.toLocaleString()} characters`; });
-    const en = normCv(r.cv_en), fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
-    if (!en.experience.length || !en.summary) throw new Error('Claude could not read the CV structure. Check the text and try again.');
-    pendingImport = { cv_en: en, cv_fr: fr.experience.length ? fr : null, name: window.__importName || 'Uploaded CV' }; importLang = 'en';
+    const en = normCv(r.cv_en); let fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
+    if (!en.experience.length) throw new Error('Claude could not read the CV structure. Check the text and try again.');
+    if (!fr.experience.length) { $('importState').textContent = 'Writing the French version…'; fr = K.deepMap(normCv(await askJSON(promptFr(en, 'en'), { modelTier: 'default' })), K.frTypo); }
+    fr.name = en.name; fr.contact = en.contact;
+    const facts = (Array.isArray(r.facts) ? r.facts : []).filter(f => typeof f === 'string' && f.trim()).map(f => f.trim());
+    pendingImport = { cv_en: en, cv_fr: fr, facts, name: window.__importName || 'Uploaded CV' }; importLang = 'en';
     $('importState').textContent = 'Done. Check it below.';
   } catch (err) { $('importState').textContent = ''; toast(err.message || String(err)); }
   $('importBtn').disabled = false; renderBase();
@@ -1242,11 +1260,12 @@ $('photoFile').addEventListener('change', async e => {
     cv.getContext('2d').drawImage(img, (W - w) / 2, (H - h) / 3, w, h);
     const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.9));
     const up = await assets.upload(blob);
-    await saveProfile({ photo: up.url }); toast('Photo updated on every CV');
+    const p = profile(); await saveProfile({ cv_en: { ...p.cv_en, photo: up.url }, cv_fr: { ...p.cv_fr, photo: up.url } }); toast('Photo added to this CV version');
   } catch (err) { toast('Could not upload the photo: ' + (err?.message || err?.code || err)); }
   e.target.value = '';
 });
-$('photoReset').addEventListener('click', async () => { try { await saveProfile({ photo: '' }); toast('Original photo restored'); } catch (err) { toast(err.message || String(err)); } });
+$('photoReset').addEventListener('click', async () => { try { const p = profile(); await saveProfile({ cv_en: { ...p.cv_en, photo: '' }, cv_fr: { ...p.cv_fr, photo: '' } }); toast('Photo removed from this CV version'); } catch (err) { toast(err.message || String(err)); } });
+$('qrToggle').addEventListener('change', async e => { try { const p = profile(), qr = e.target.checked; await saveProfile({ cv_en: { ...p.cv_en, qr }, cv_fr: { ...p.cv_fr, qr } }); } catch (err) { toast(err.message || String(err)); } });
 $('suppAdd').addEventListener('click', async () => {
   const t = $('suppNew').value.trim(); if (!t) return;
   const list = [...profile().supplements, { id: 's' + Date.now().toString(36), text: t, addedAt: new Date().toISOString() }];
@@ -1277,8 +1296,7 @@ document.addEventListener('click', async e => {
     else if (act === 'save-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: $('step-' + k).value.trim() || DEFAULT_STEPS[k] } }); toast(STEP_NAMES[k] + ' saved'); }
     else if (act === 'reset-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: DEFAULT_STEPS[k] } }); toast('Original restored'); }
     else if (act === 'import-save') { const cur = profile(), use = el.dataset.use === '1', name = $('importName')?.value.trim() || 'Uploaded CV';
-      if (pendingImport.cv_en.available == null) pendingImport.cv_en.available = ''; const fr = pendingImport.cv_fr || cur.cv_fr; if (fr.available == null) fr.available = '';
-      await addVersion(name, pendingImport.cv_en, fr, use); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; $('uploadPanel').hidden = true;
+      await addVersion(name, pendingImport.cv_en, pendingImport.cv_fr, use, pendingImport.facts); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; $('uploadPanel').hidden = true;
       toast(use ? `Now editing “${name}”` : `“${name}” saved. Pick it in the version menu any time.`); renderBase(); if (use) runRate(); }
     else if (act === 'import-cancel') { pendingImport = null; renderBase(); }
     else if (act === 'import-undo') { const pb = saved.prevBase; await saveProfile({ cv_en: pb.cv_en, cv_fr: pb.cv_fr, prevBase: null }); toast('Previous base CV restored'); }
@@ -1354,6 +1372,8 @@ $('chatSend').addEventListener('click', async () => {
       $('chatState').textContent = '';
     } else {
       const cur = profile(), en = normCv(r.cv_en), fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
+      // Name, contact, photo and QR are not part of what Claude returns here: keep this version's own.
+      for (const [o, c] of [[en, cur.cv_en], [fr, cur.cv_fr]]) for (const k of ['name', 'contact', 'photo', 'qr']) { if (c[k] === undefined) delete o[k]; else if (k === 'photo' || k === 'qr' || !o[k]) o[k] = c[k]; }
       if (!en.experience.length || !en.summary || !fr.experience.length) throw new Error('Claude returned an incomplete CV, so nothing was changed. Try again or rephrase.');
       en.available = typeof r.cv_en?.available === 'string' ? r.cv_en.available.trim() : (cur.cv_en.available ?? K.AVAIL.en);
       fr.available = typeof r.cv_fr?.available === 'string' ? K.frTypo(r.cv_fr.available.trim()) : (cur.cv_fr.available ?? K.AVAIL.fr);
@@ -1372,8 +1392,10 @@ $('chatSend').addEventListener('click', async () => {
 const coName = e => (e.company_line || '').split(/[,|]/)[0].trim() || e.title;
 function sections(cv) {
   return [
-    { key: 'head', label: 'Target role & summary', shape: '{"target": string, "available": string ("" hides the availability line), "summary": string}', get: c => ({ target: c.target, available: c.available ?? '', summary: c.summary }), set: (c, v) => { if (typeof v.target === 'string' && v.target.trim()) c.target = v.target.trim(); if (typeof v.available === 'string') c.available = v.available.trim(); if (typeof v.summary === 'string' && v.summary.trim()) c.summary = v.summary.trim(); },
-      view: c => `<p><b>${esc(c.target)}</b>${c.available ? ` · ${esc(c.available)}` : ''}</p><p>${esc(c.summary)}</p>` },
+    { key: 'who', label: 'Name & contact', shape: '{"name": string, "contact": string}', get: c => ({ name: K.whoName(c), contact: K.whoContact(c) }), set: (c, v) => { if (typeof v.name === 'string' && v.name.trim()) c.name = v.name.trim(); if (typeof v.contact === 'string') c.contact = v.contact.trim(); },
+      view: c => `<p><b>${esc(K.whoName(c))}</b></p><p>${esc(K.whoContact(c))}</p>` },
+    { key: 'head', label: 'Target role & summary', shape: '{"target": string, "available": string ("" hides the availability line), "summary": string}', get: c => ({ target: c.target, available: c.available ?? '', summary: c.summary }), set: (c, v) => { if (typeof v.target === 'string') c.target = v.target.trim(); if (typeof v.available === 'string') c.available = v.available.trim(); if (typeof v.summary === 'string' && v.summary.trim()) c.summary = v.summary.trim(); },
+      view: c => `<p><b>${esc(c.target || 'No target role (added from the job when you tailor)')}</b>${c.available ? ` · ${esc(c.available)}` : ''}</p><p>${esc(c.summary)}</p>` },
     { key: 'skills', label: 'Skills', shape: '{"hard": string, "soft": string}', get: c => ({ hard: c.skills.hard, soft: c.skills.soft }), set: (c, v) => { ['hard', 'soft'].forEach(k => { if (typeof v[k] === 'string' && v[k].trim()) c.skills[k] = v[k].trim(); }); },
       view: c => `<p><b>Hard:</b> ${esc(c.skills.hard)}</p><p><b>Soft:</b> ${esc(c.skills.soft)}</p>` },
     { key: 'tools', label: 'Tools', shape: '{"tools": string}', get: c => ({ tools: c.skills.tools }), set: (c, v) => { if (typeof v.tools === 'string' && v.tools.trim()) c.skills.tools = v.tools.trim(); },
@@ -1451,7 +1473,7 @@ async function applySection(key) {
     if (r.needs_clarification) await saveProfile({ chat: [...chat, { role: 'ai', text: r.needs_clarification, sec: key, at: now() }].slice(-60) });
     else {
       const en = clone(p.cv_en), fr = clone(p.cv_fr);
-      sec.set(en, r.en || {}); sec.set(fr, K.deepMap(r.fr || {}, K.frTypo));
+      sec.set(en, r.en || {}); sec.set(fr, sec.key === 'who' ? (r.en || {}) : K.deepMap(r.fr || {}, K.frTypo));
       const nf = (Array.isArray(r.new_facts) ? r.new_facts : []).filter(f => typeof f === 'string' && f.trim()).map(f => f.trim());
       await saveProfile({ cv_en: en, cv_fr: fr, facts: [...p.facts, ...nf], prevBase: { cv_en: p.cv_en, cv_fr: p.cv_fr, savedAt: now() }, chat: [...chat, { role: 'ai', text: r.reply || 'Done.', sec: key, at: now() }].slice(-60) });
       runRate();

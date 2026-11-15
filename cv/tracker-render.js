@@ -167,6 +167,10 @@
     return Uint8Array.from(Buffer.from(b64, 'base64'));
   }
 
+  // Name, contact line and target come from the CV itself (each version can differ); the constants are only fallbacks.
+  const whoName = cv => (cv && typeof cv.name === 'string' && cv.name.trim()) ? cv.name.trim() : NAME;
+  const whoContact = cv => (cv && typeof cv.contact === 'string') ? cv.contact.trim() : CONTACT;
+  const targetLine = (L, cv, lang) => { const a = cv.available ?? AVAIL[lang]; return (cv.target || '').trim() ? L.target(cv.target.trim(), a) : ''; };
   const LABELS = {
     en: { summary: 'SUMMARY', skills: 'SKILLS', exp: 'EXPERIENCE', edu: 'EDUCATION', lang: 'LANGUAGES', hard: 'Hard Skills: ', soft: 'Soft Skills: ', tools: 'Tools: ', target: (t, a) => `Target: ${t}` + (a ? ` | Available: ${a}` : '') },
     fr: { summary: 'PROFIL', skills: 'COMPÉTENCES', exp: 'EXPÉRIENCES PROFESSIONNELLES', edu: 'FORMATION', lang: 'LANGUES', hard: 'Compétences techniques' + NB + ': ', soft: 'Savoir-être' + NB + ': ', tools: 'Outils' + NB + ': ', target: (t, a) => `Poste visé${NB}: ${t}` + (a ? ` | Disponibilité${NB}: ${a}` : '') },
@@ -186,9 +190,9 @@
     ] });
     const bullet = t => ({ columns: [{ width: 12, text: '•', fontSize: body }, { width: '*', text: t, fontSize: body }], columnGap: 0, margin: [6, 0, 0, f(0.75)] });
     const content = [
-      { text: NAME, bold: true, fontSize: f(15), margin: [0, 0, 0, 1] },
-      { text: CONTACT, fontSize: body, margin: [0, 0, 0, 1] },
-      { text: L.target(cv.target, cv.available ?? AVAIL[lang]), bold: true, fontSize: body, margin: [0, 0, 0, f(3)] },
+      { text: whoName(cv).toUpperCase(), bold: true, fontSize: f(15), margin: [0, 0, 0, 1] },
+      ...(whoContact(cv) ? [{ text: whoContact(cv), fontSize: body, margin: [0, 0, 0, 1] }] : []),
+      ...(targetLine(L, cv, lang) ? [{ text: targetLine(L, cv, lang), bold: true, fontSize: body, margin: [0, 0, 0, f(3)] }] : []),
       heading(L.summary),
       { text: cv.summary, fontSize: body, margin: [0, 0, 0, 1] },
       heading(L.skills),
@@ -211,13 +215,13 @@
     });
     content.push(heading(L.lang));
     cv.languages.forEach(l => content.push({ text: l, fontSize: body, margin: [0, 0, 0, 1] }));
-    const bg = images ? [
-      { image: images.photo, absolutePosition: { x: PHOTO.x, y: PHOTO.y }, width: PHOTO.w, height: PHOTO.h },
-      { image: images.qr, absolutePosition: { x: QR.x, y: QR.y }, width: QR.w, height: QR.h },
-    ] : [];
+    const bg = [
+      ...(images?.photo ? [{ image: images.photo, absolutePosition: { x: PHOTO.x, y: PHOTO.y }, width: PHOTO.w, height: PHOTO.h }] : []),
+      ...(images?.qr ? [{ image: images.qr, absolutePosition: { x: QR.x, y: QR.y }, width: QR.w, height: QR.h }] : []),
+    ];
     return {
       pageSize: 'A4', pageMargins: [MARGIN_X, 26, MARGIN_X, 24],
-      info: { title: `CV ${NAME} – ${cv.target}`, author: 'Yu Chiao Lin' },
+      info: { title: `CV ${whoName(cv)}${cv.target ? ' – ' + cv.target : ''}`, author: whoName(cv) },
       defaultStyle: { font: 'Carlito', fontSize: body, lineHeight: 1 },
       background: (page) => (page === 1 ? bg : null),
       content,
@@ -236,9 +240,9 @@
       altText: { name, description: name, title: name },
     });
     const children = [
-      p([...(images ? [float(images.photo, 6296025, 177800, 73, 90, 'Photo')] : []), run(NAME, { bold: true, size: 15 })]),
-      p([run(CONTACT)]),
-      p([run(L.target(cv.target, cv.available ?? AVAIL[lang]), { bold: true })], { after: 80 }),
+      p([...(images?.photo ? [float(images.photo, 6296025, 177800, 73, 90, 'Photo')] : []), run(whoName(cv).toUpperCase(), { bold: true, size: 15 })]),
+      ...(whoContact(cv) ? [p([run(whoContact(cv))])] : []),
+      ...(targetLine(L, cv, lang) ? [p([run(targetLine(L, cv, lang), { bold: true })], { after: 80 })] : []),
       heading(L.summary),
       p([run(cv.summary)]),
       heading(L.skills),
@@ -260,9 +264,9 @@
       if (e.details) children.push(p([run(e.details)]));
     });
     children.push(heading(L.lang));
-    cv.languages.forEach((l, i) => children.push(p([...(images && i === 0 ? [float(images.qr, 6531300, 9660235, 60, 60, 'QR code')] : []), run(l)])));
+    cv.languages.forEach((l, i) => children.push(p([...(images?.qr && i === 0 ? [float(images.qr, 6531300, 9660235, 60, 60, 'QR code')] : []), run(l)])));
     return new D.Document({
-      creator: 'Yu Chiao Lin', title: `CV ${NAME} – ${cv.target}`,
+      creator: whoName(cv), title: `CV ${whoName(cv)}${cv.target ? ' – ' + cv.target : ''}`,
       styles: { default: { document: { run: { font: 'Calibri', size: hp(9) } } } },
       numbering: { config: [{ reference: 'cv-bullets', levels: [{ level: 0, format: D.LevelFormat.BULLET, text: '•', alignment: D.AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 240 } } } }] }] },
       sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 520, bottom: 480, left: 720, right: 720 } } }, children }],
@@ -271,32 +275,34 @@
 
   // ---------- Cover letter ----------
   const NAVY = '#14306b';
-  function letterPdf(letter) {
+  function letterPdf(letter, cv) {
+    const nm = whoName(cv).replace(/\b\w/g, c => c.toUpperCase()), ct = whoContact(cv);
     return {
       pageSize: 'A4', pageMargins: [60, 56, 60, 56],
       defaultStyle: { font: 'Carlito', fontSize: 11, lineHeight: 1.25 },
       content: [
-        { text: 'Yu Chiao Lin', bold: true, fontSize: 16 },
-        { text: CONTACT, fontSize: 9.5, color: '#444444', margin: [0, 2, 0, 18] },
+        { text: nm, bold: true, fontSize: 16 },
+        { text: ct, fontSize: 9.5, color: '#444444', margin: [0, 2, 0, 18] },
         letter.recipient ? { text: letter.recipient, margin: [0, 0, 0, 10] } : '',
         { text: letter.date || '', margin: [0, 0, 0, 10] },
         { text: letter.subject, bold: true, margin: [0, 0, 0, 14] },
         { text: letter.greeting, margin: [0, 0, 0, 10] },
         ...letter.paragraphs.map(t => ({ text: t, alignment: 'justify', margin: [0, 0, 0, 10] })),
         { text: letter.closing, margin: [0, 6, 0, 2] },
-        { text: 'Yu Chiao Lin' },
+        { text: nm },
       ],
     };
   }
-  function letterDocx(letter, D) {
+  function letterDocx(letter, D, cv) {
+    const nm = whoName(cv).replace(/\b\w/g, c => c.toUpperCase()), ct = whoContact(cv);
     const p = (text, o = {}) => new D.Paragraph({ children: [new D.TextRun({ text, font: 'Calibri', size: o.size || 22, bold: !!o.bold, color: o.color })], spacing: { after: o.after ?? 200, line: 300 }, alignment: o.justify ? D.AlignmentType.JUSTIFIED : undefined });
-    const kids = [p('Yu Chiao Lin', { bold: true, size: 32, after: 40 }), p(CONTACT, { size: 19, color: '444444', after: 360 })];
+    const kids = [p(nm, { bold: true, size: 32, after: 40 }), p(ct, { size: 19, color: '444444', after: 360 })];
     if (letter.recipient) kids.push(p(letter.recipient));
     if (letter.date) kids.push(p(letter.date));
     kids.push(p(letter.subject, { bold: true, after: 280 }), p(letter.greeting));
     letter.paragraphs.forEach(t => kids.push(p(t, { justify: true })));
-    kids.push(p(letter.closing, { after: 40 }), p('Yu Chiao Lin'));
-    return new D.Document({ creator: 'Yu Chiao Lin', sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1120, bottom: 1120, left: 1200, right: 1200 } } }, children: kids }] });
+    kids.push(p(letter.closing, { after: 40 }), p(nm));
+    return new D.Document({ creator: nm, sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1120, bottom: 1120, left: 1200, right: 1200 } } }, children: kids }] });
   }
 
   // ---------- Interview prep (Step 4) PDF ----------
@@ -342,5 +348,5 @@
     };
   }
 
-  root.CVKit = { NB, CONTACT, NAME, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
+  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);
