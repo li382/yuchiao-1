@@ -63,3 +63,8 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 ## Active CV (15 November 2026): "Supply Chain Efficiency"
 - Taken word for word from her PDF `CV_Yu_Chiao_Lin_Supply_Chain_Efficiency.pdf`: headline "Supply Chain Efficiency — Inbound Flow Coordination & Performance", five skill categories (`cv.skillGroups`), Pure Trade bullets under three subheadings (`experience[0].groups`), 30 purchase orders per week, 1,200+ records, Snowflake, "Master's Degree — ISLI". No photo, no QR code. Files: `cv/CV_Yu_Chiao_Lin_Supply_Chain_Efficiency_EN/FR.pdf/.docx`. The October CV is kept as the version "Original CV (Oct 2026)".
 - Base CV edits never shorten her text. A whole CV pasted into any edit box is read as a new CV version instead of being squeezed into one section.
+
+## Tailoring must really rewrite (15 November 2026)
+- A tailored CV is not a copy of the base: rewrite the headline and summary for the job, rebuild the skills with the job's keywords first, reorder bullets by relevance, and rephrase every bullet that can truthfully use the job description's vocabulary, older experiences included. Aim for an 80% keyword match without adding facts.
+- French translation uses the base French CV only as a glossary, never as wording to copy.
+- When the headline already names the applied job, the separate "Target" line is not repeated.

@@ -170,7 +170,7 @@
   // Name, contact line and target come from the CV itself (each version can differ); the constants are only fallbacks.
   const whoName = cv => (cv && typeof cv.name === 'string' && cv.name.trim()) ? cv.name.trim() : NAME;
   const whoContact = cv => (cv && typeof cv.contact === 'string') ? cv.contact.trim() : CONTACT;
-  const targetLine = (L, cv, lang) => { const a = cv.available ?? AVAIL[lang]; return (cv.target || '').trim() ? L.target(cv.target.trim(), a) : ''; };
+  const targetLine = (L, cv, lang) => { const a = cv.available ?? AVAIL[lang], t = (cv.target || '').trim(); if (!t) return ''; if (!a && cv.headline && cv.headline.toLowerCase().includes(t.toLowerCase())) return ''; return L.target(t, a); }; // no repeat when the headline already names the job
   // A CV may carry its own skill categories (cv.skillGroups: [{label, items}]) and bullet subheadings per job
   // (e.groups: [{heading, bullets}]); otherwise the standard Hard / Soft / Tools lines and a flat bullet list are used.
   const skillLines = (cv, L) => Array.isArray(cv.skillGroups) && cv.skillGroups.length
@@ -352,5 +352,5 @@
     };
   }
 
-  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, skillLines, bulletGroups, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
+  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, targetLine, skillLines, bulletGroups, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);

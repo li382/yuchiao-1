@@ -524,7 +524,7 @@ function ctx() {
   const supp = p.supplements.length ? p.supplements.map((s, i) => `${i + 1}. ${s.text}`).join('\n') : '(none)';
   return `CV RULES (follow every one)\n${K.RULES.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nCAREER TARGETS\n${K.TARGETS}\n\nCONFIRMED FACTS (true; may be used)\n${p.facts.map(f => '- ' + f).join('\n')}\n\nSUPPLEMENTARY INFORMATION (true; added by the candidate after the base CV)\n${supp}\nReview every supplementary item. Work an item into the tailored CV (summary, the matching experience bullet, skills or tools) when it is relevant to this job, giving priority to items that close this job's gaps or match its key requirements. Leave out items that do not help this job. Never stretch an item beyond what it says.`;
 }
-const CV_SHAPE = `{"target": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
+const CV_SHAPE = `{"target": string, "headline": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
 const INSIGHT_SHAPE = `{"fit_score": number 0-100, "risk_level": "low"|"medium"|"high", "risks": [string] (2-4 reasons the application could fail, e.g. experience level, language, location, visa), "strengths": [string] (3-5 strongest proofs for this job, from her real experience), "gaps": [{"gap": string, "how_to_address": string}] (3-5; how_to_address must be honest: reframe true experience, prepare an example, or learn; never invent)}`;
 
 function promptTailor(jd, link) {
@@ -547,6 +547,13 @@ ${p.steps.s1}
 
 STEP 2 – her instructions (rewrite the whole CV, not only the experience, following the CV rules):
 ${p.steps.s2}
+
+HOW MUCH TO REWRITE: this is a CV tailored to this job, not a copy of the base CV. A recruiter reading it must see this job's language everywhere.
+- "headline": rewrite the line under her name for this job (e.g. "<job title> — <2-3 of the job's key areas>").
+- "summary": write it fresh for this job, leading with what the job asks for most.
+- "skills": rebuild the three lines so the job's own keywords come first, in the job's wording; drop items this job does not care about.
+- Each job's bullets: reorder so the most relevant come first, and rephrase EVERY bullet that can truthfully be expressed in the job description's vocabulary (e.g. if the job says "coordination des flux", "gestion des aléas", "fiabilisation des données ERP", use those ideas). Keep a bullet word for word only when it already uses the job's words. This applies to every experience, including the older ones.
+- Aim for at least an 80% keyword match. Never add a fact, tool, number or responsibility she does not have: rephrase and reorder only. If 80% is not reachable truthfully, say why in step1 "cannot_fix".
 
 ALSO: extract job facts (company, job title, country, city, industry, contract type). If the job description states a salary, copy it and set salary_type "posted"; otherwise estimate the gross annual range for this role, seniority and city in local currency (France: "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter. Give an honest fit and risk assessment of the TAILORED CV against this job.
 
@@ -576,7 +583,7 @@ Do this:
 1. Extract the 15 to 25 keywords an ATS would screen for in this job description: the exact job title, hard skills, tools and software, methods (e.g. S&OP, MRP, forecasting), domain terms, qualifications, languages and soft skills. Mark each "must" (clearly required or repeated) or "nice".
 2. For each keyword, check the TAILORED CV: "present" (the exact wording appears), "partial" (the idea is there in other words) or "missing".
 3. For each partial or missing keyword decide "truthful": "yes" if her CV, confirmed facts or supplementary information support it (then the optimised CV will use the job description's exact wording); "ask" if it is plausible for her role but not stated anywhere (do not add it; give in "suggestion" the exact phrase she could add if it is true); "no" if she clearly does not have it (e.g. a degree, years of experience, a certificate, a language level) and give in "suggestion" one short line on how to handle it instead (cover letter or interview). For present keywords use "yes".
-4. Write "cv_ats": start from the tailored CV; use the job description's exact job title as "target"; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged.
+4. Write "cv_ats": start from the tailored CV and push it further; use the job description's exact job title as "target" and in "headline"; rephrase bullets with the job's exact keywords wherever true; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged.
 5. "tips": 4 to 6 ATS tips specific to this job and this CV (e.g. which file to send, exact title, which keywords must appear in the summary). No generic advice.
 "where": the CV section where the keyword is or will be (summary, skills, tools, or the company name of the experience).
 
@@ -625,7 +632,7 @@ Rules:
 - Keep English supply chain terms that French companies use (supply chain, S&OP, KPI, OTD, OTIF, lead time, GWP, Incoterms, ETD/ETA, CAPA, BAT, ERP), and keep brand, company and tool names as they are.
 - Put a normal space before ":" ";" "%" as French typography requires.
 - "target": ${jdLang === 'fr' ? 'the job title exactly as the French job description writes it.' : 'keep the job title as the company writes it.'}
-- Reuse the wording of the base French CV below only where the content is the same. Translate everything else from the CV to translate; never bring in content that is not in it.
+- Use the base French CV below only as a glossary for terminology. Translate the CV to translate faithfully, keeping its tailored wording and order; never bring in content or wording from the base that is not in it.
 - Perfect French grammar.
 
 BASE FRENCH CV (reference)
@@ -723,7 +730,7 @@ function guardCv(cv, base) {
   const out = clone(base);
   if (!cv || typeof cv !== 'object') return out;
   const str = v => typeof v === 'string' && v.trim() ? v.trim() : null;
-  out.target = str(cv.target) || out.target; out.summary = str(cv.summary) || out.summary;
+  out.target = str(cv.target) || out.target; out.summary = str(cv.summary) || out.summary; if (str(cv.headline)) out.headline = str(cv.headline);
   { const before = JSON.stringify(out.skills); ['hard', 'soft', 'tools'].forEach(k => { out.skills[k] = str(cv.skills?.[k]) || out.skills[k]; }); if (JSON.stringify(out.skills) !== before) delete out.skillGroups; }
   const exp = Array.isArray(cv.experience) ? cv.experience : [];
   out.experience.forEach((e, i) => {
@@ -880,7 +887,7 @@ function cvPaper(cv, lang, photo) {
   photo = photoUrl(cv);
   const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : '] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: '];
   const avail = cv.available ?? K.AVAIL[lang];
-  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${cv.headline ? `<p class="tg hl">${esc(cv.headline)}</p>` : ''}${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
+  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${cv.headline ? `<p class="tg hl">${esc(cv.headline)}</p>` : ''}${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() && !(!avail && cv.headline && cv.headline.toLowerCase().includes(cv.target.trim().toLowerCase())) ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
     <div class="sec">${L[1]}</div>${(Array.isArray(cv.skillGroups) && cv.skillGroups.length ? cv.skillGroups.map(g => [g.label, g.items]) : [[L[5], cv.skills.hard], [L[6], cv.skills.soft], [L[7], cv.skills.tools]]).map(([l, t]) => `<p><b>${esc(l)}:</b> ${esc(t)}</p>`).join('')}
     <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}${K.bulletGroups(e).map(g => `${g.heading ? `<p class="gh">${esc(g.heading)}</p>` : ''}<ul>${li(g.bullets)}</ul>`).join('')}`).join('')}
