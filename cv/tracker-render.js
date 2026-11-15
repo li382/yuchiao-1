@@ -171,6 +171,12 @@
   const whoName = cv => (cv && typeof cv.name === 'string' && cv.name.trim()) ? cv.name.trim() : NAME;
   const whoContact = cv => (cv && typeof cv.contact === 'string') ? cv.contact.trim() : CONTACT;
   const targetLine = (L, cv, lang) => { const a = cv.available ?? AVAIL[lang]; return (cv.target || '').trim() ? L.target(cv.target.trim(), a) : ''; };
+  // A CV may carry its own skill categories (cv.skillGroups: [{label, items}]) and bullet subheadings per job
+  // (e.groups: [{heading, bullets}]); otherwise the standard Hard / Soft / Tools lines and a flat bullet list are used.
+  const skillLines = (cv, L) => Array.isArray(cv.skillGroups) && cv.skillGroups.length
+    ? cv.skillGroups.map(g => [g.label + (L.hard.includes(NB) ? NB + ': ' : ': '), g.items])
+    : [[L.hard, cv.skills.hard], [L.soft, cv.skills.soft], [L.tools, cv.skills.tools]];
+  const bulletGroups = e => Array.isArray(e.groups) && e.groups.length ? e.groups : [{ heading: '', bullets: e.bullets || [] }];
   const LABELS = {
     en: { summary: 'SUMMARY', skills: 'SKILLS', exp: 'EXPERIENCE', edu: 'EDUCATION', lang: 'LANGUAGES', hard: 'Hard Skills: ', soft: 'Soft Skills: ', tools: 'Tools: ', target: (t, a) => `Target: ${t}` + (a ? ` | Available: ${a}` : '') },
     fr: { summary: 'PROFIL', skills: 'COMPÉTENCES', exp: 'EXPÉRIENCES PROFESSIONNELLES', edu: 'FORMATION', lang: 'LANGUES', hard: 'Compétences techniques' + NB + ': ', soft: 'Savoir-être' + NB + ': ', tools: 'Outils' + NB + ': ', target: (t, a) => `Poste visé${NB}: ${t}` + (a ? ` | Disponibilité${NB}: ${a}` : '') },
@@ -191,21 +197,20 @@
     const bullet = t => ({ columns: [{ width: 12, text: '•', fontSize: body }, { width: '*', text: t, fontSize: body }], columnGap: 0, margin: [6, 0, 0, f(0.75)] });
     const content = [
       { text: whoName(cv).toUpperCase(), bold: true, fontSize: f(15), margin: [0, 0, 0, 1] },
+      ...(cv.headline ? [{ text: cv.headline, bold: true, fontSize: f(10), color: '#1f3a6e', margin: [0, 0, 0, 1] }] : []),
       ...(whoContact(cv) ? [{ text: whoContact(cv), fontSize: body, margin: [0, 0, 0, 1] }] : []),
       ...(targetLine(L, cv, lang) ? [{ text: targetLine(L, cv, lang), bold: true, fontSize: body, margin: [0, 0, 0, f(3)] }] : []),
       heading(L.summary),
       { text: cv.summary, fontSize: body, margin: [0, 0, 0, 1] },
       heading(L.skills),
-      { text: [{ text: L.hard, bold: true }, cv.skills.hard], fontSize: body, margin: [0, 0, 0, f(1.25)] },
-      { text: [{ text: L.soft, bold: true }, cv.skills.soft], fontSize: body, margin: [0, 0, 0, f(1.25)] },
-      { text: [{ text: L.tools, bold: true }, cv.skills.tools], fontSize: body, margin: [0, 0, 0, f(1.25)] },
+      ...skillLines(cv, L).map(([l, t]) => ({ text: [{ text: l, bold: true }, t], fontSize: body, margin: [0, 0, 0, f(1.25)] })),
       heading(L.exp),
     ];
     cv.experience.forEach(e => {
       content.push({ text: e.title, bold: true, fontSize: f(10), margin: [0, f(3.5), 0, 0.5] });
       content.push({ text: e.company_line, fontSize: body, margin: [0, 0, 0, 1] });
       if (e.description) content.push({ text: e.description, italics: true, fontSize: body, margin: [0, 0, 0, 1] });
-      e.bullets.forEach(b => content.push(bullet(b)));
+      bulletGroups(e).forEach(g => { if (g.heading) content.push({ text: g.heading, bold: true, fontSize: body, color: '#1f3a6e', margin: [0, f(1.5), 0, 0.5] }); g.bullets.forEach(b => content.push(bullet(b))); });
     });
     content.push(heading(L.edu));
     cv.education.forEach(e => {
@@ -241,21 +246,20 @@
     });
     const children = [
       p([...(images?.photo ? [float(images.photo, 6296025, 177800, 73, 90, 'Photo')] : []), run(whoName(cv).toUpperCase(), { bold: true, size: 15 })]),
+      ...(cv.headline ? [p([new D.TextRun({ text: cv.headline, font: 'Calibri', size: hp(10), bold: true, color: '1F3A6E' })])] : []),
       ...(whoContact(cv) ? [p([run(whoContact(cv))])] : []),
       ...(targetLine(L, cv, lang) ? [p([run(targetLine(L, cv, lang), { bold: true })], { after: 80 })] : []),
       heading(L.summary),
       p([run(cv.summary)]),
       heading(L.skills),
-      p([run(L.hard, { bold: true }), run(cv.skills.hard)], { after: 25 }),
-      p([run(L.soft, { bold: true }), run(cv.skills.soft)], { after: 25 }),
-      p([run(L.tools, { bold: true }), run(cv.skills.tools)], { after: 25 }),
+      ...skillLines(cv, L).map(([l, t]) => p([run(l, { bold: true }), run(t)], { after: 25 })),
       heading(L.exp),
     ];
     cv.experience.forEach(e => {
       children.push(p([run(e.title, { bold: true, size: 10 })], { before: Math.round(70 * scale), after: 10 }));
       children.push(p([run(e.company_line)]));
       if (e.description) children.push(p([run(e.description, { italics: true })]));
-      e.bullets.forEach(b => children.push(p([run(b)], { after: 15, numbering: { reference: 'cv-bullets', level: 0 } })));
+      bulletGroups(e).forEach(g => { if (g.heading) children.push(p([new D.TextRun({ text: g.heading, font: 'Calibri', size: hp(9), bold: true, color: '1F3A6E' })], { before: 30, after: 10 })); g.bullets.forEach(b => children.push(p([run(b)], { after: 15, numbering: { reference: 'cv-bullets', level: 0 } }))); });
     });
     children.push(heading(L.edu));
     cv.education.forEach(e => {
@@ -348,5 +352,5 @@
     };
   }
 
-  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
+  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, skillLines, bulletGroups, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);

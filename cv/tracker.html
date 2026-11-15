@@ -159,6 +159,7 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .paper .ph { position: absolute; top: 18px; right: 22px; width: 74px; height: 92px; object-fit: cover }
 .paper .nm { font-size: 20px; font-weight: 700; padding-right: 90px }
 .paper.nophoto .nm, .paper.nophoto .tg { padding-right: 0 }
+.paper .hl { color: #1f3a6e; font-weight: 700 } .paper .gh { color: #1f3a6e; font-weight: 700; margin-top: 3px }
 .paper .tg { padding-right: 90px }
 .paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
 .paper ul { margin: 0; padding-left: 18px } .paper p { margin: 0 }
@@ -708,16 +709,26 @@ async function askJSON(prompt, opts, onLen) {
   }
 }
 // Titles, companies and dates of existing roles never change. One extra role and new languages may come only from supplementary information.
+// Her own skill categories (cv.skillGroups) and bullet subheadings (e.groups) are kept in sync with the flat fields used by prompts.
+const flatGroups = e => (Array.isArray(e.groups) && e.groups.length ? e.groups.flatMap(g => g.bullets || []) : e.bullets || []);
+function syncFlat(cv) {
+  cv.experience.forEach(e => { if (Array.isArray(e.groups) && e.groups.length) e.bullets = flatGroups(e); });
+  if (Array.isArray(cv.skillGroups) && cv.skillGroups.length) {
+    const isTool = g => /tool|outil|software|logiciel/i.test(g.label), isSoft = g => /soft|savoir|interpersonal/i.test(g.label);
+    cv.skills = { hard: cv.skillGroups.filter(g => !isTool(g) && !isSoft(g)).map(g => `${g.label}: ${g.items}`).join('; '), soft: cv.skillGroups.filter(isSoft).map(g => g.items).join('; '), tools: cv.skillGroups.filter(isTool).map(g => g.items).join('; ') };
+  }
+  return cv;
+}
 function guardCv(cv, base) {
   const out = clone(base);
   if (!cv || typeof cv !== 'object') return out;
   const str = v => typeof v === 'string' && v.trim() ? v.trim() : null;
   out.target = str(cv.target) || out.target; out.summary = str(cv.summary) || out.summary;
-  ['hard', 'soft', 'tools'].forEach(k => { out.skills[k] = str(cv.skills?.[k]) || out.skills[k]; });
+  { const before = JSON.stringify(out.skills); ['hard', 'soft', 'tools'].forEach(k => { out.skills[k] = str(cv.skills?.[k]) || out.skills[k]; }); if (JSON.stringify(out.skills) !== before) delete out.skillGroups; }
   const exp = Array.isArray(cv.experience) ? cv.experience : [];
   out.experience.forEach((e, i) => {
     const g = exp[i]; if (!g) return;
-    const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean); if (b.length) e.bullets = b;
+    const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean); if (b.length && JSON.stringify(b) !== JSON.stringify(flatGroups(e))) { e.bullets = b; delete e.groups; }
     if (e.description && str(g.description)) e.description = str(g.description);
   });
   exp.slice(out.experience.length, out.experience.length + 1).forEach(g => { if (str(g?.title) && str(g?.company_line) && Array.isArray(g.bullets)) out.experience.push({ title: str(g.title), company_line: str(g.company_line), bullets: g.bullets.map(str).filter(Boolean) }); });
@@ -869,10 +880,10 @@ function cvPaper(cv, lang, photo) {
   photo = photoUrl(cv);
   const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : '] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: '];
   const avail = cv.available ?? K.AVAIL[lang];
-  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
+  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${cv.headline ? `<p class="tg hl">${esc(cv.headline)}</p>` : ''}${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
-    <div class="sec">${L[1]}</div><p><b>${L[5]}:</b> ${esc(cv.skills.hard)}</p><p><b>${L[6]}:</b> ${esc(cv.skills.soft)}</p><p><b>${L[7]}:</b> ${esc(cv.skills.tools)}</p>
-    <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}<ul>${li(e.bullets)}</ul>`).join('')}
+    <div class="sec">${L[1]}</div>${(Array.isArray(cv.skillGroups) && cv.skillGroups.length ? cv.skillGroups.map(g => [g.label, g.items]) : [[L[5], cv.skills.hard], [L[6], cv.skills.soft], [L[7], cv.skills.tools]]).map(([l, t]) => `<p><b>${esc(l)}:</b> ${esc(t)}</p>`).join('')}
+    <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}${K.bulletGroups(e).map(g => `${g.heading ? `<p class="gh">${esc(g.heading)}</p>` : ''}<ul>${li(g.bullets)}</ul>`).join('')}`).join('')}
     <div class="sec">${L[3]}</div>${cv.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p><p>${esc(e.details)}</p>`).join('')}
     <div class="sec">${L[4]}</div>${cv.languages.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
@@ -1121,6 +1132,7 @@ function readEditor(lang) {
     const path = el.dataset.path.split('.'), v = el.value.trim(), last = path[path.length - 1];
     let o = cv; for (let i = 0; i < path.length - 1; i++) o = o[path[i]];
     o[last] = (last === 'bullets' || path[0] === 'languages') ? v.split('\n').map(s => s.trim()).filter(Boolean) : v;
+    if (last === 'bullets' && o.groups && JSON.stringify(o[last]) !== JSON.stringify(flatGroups(o))) delete o.groups;
   });
   return lang === 'fr' ? K.deepMap(cv, K.frTypo) : cv;
 }
@@ -1210,23 +1222,35 @@ function normCv(c) {
   const s = v => typeof v === 'string' ? v.trim() : '', arr = v => Array.isArray(v) ? v.map(s).filter(Boolean) : [];
   c = c || {};
   return {
-    name: s(c.name), contact: s(c.contact), photo: '', qr: false, available: s(c.available),
+    name: s(c.name), headline: s(c.headline), contact: s(c.contact), photo: '', qr: false, available: s(c.available),
+    skillGroups: (Array.isArray(c.skillGroups) ? c.skillGroups : []).map(g => ({ label: s(g?.label), items: s(g?.items) })).filter(g => g.label && g.items),
     target: s(c.target), summary: s(c.summary), skills: { hard: s(c.skills?.hard), soft: s(c.skills?.soft), tools: s(c.skills?.tools) },
-    experience: (Array.isArray(c.experience) ? c.experience : []).map(e => { const o = { title: s(e?.title), company_line: s(e?.company_line), bullets: arr(e?.bullets) }; if (s(e?.description)) o.description = s(e.description); return o; }).filter(e => e.title || e.bullets.length),
+    experience: (Array.isArray(c.experience) ? c.experience : []).map(e => { const o = { title: s(e?.title), company_line: s(e?.company_line), bullets: arr(e?.bullets) }; if (s(e?.description)) o.description = s(e.description);
+      const gr = (Array.isArray(e?.groups) ? e.groups : []).map(g => ({ heading: s(g?.heading), bullets: arr(g?.bullets) })).filter(g => g.bullets.length); if (gr.length) { o.groups = gr; o.bullets = gr.flatMap(g => g.bullets); } return o; }).filter(e => e.title || e.bullets.length),
     education: (Array.isArray(c.education) ? c.education : []).map(e => ({ title: s(e?.title), school_line: s(e?.school_line), details: s(e?.details) })).filter(e => e.title),
     languages: arr(c.languages),
   };
 }
+function looksLikeWholeCv(text) {
+  const heads = ['summary', 'profile', 'profil', 'skills', 'compétences', 'experience', 'expérience', 'education', 'formation', 'languages', 'langues'];
+  const n = heads.filter(h => new RegExp('(^|\\n)\\s*' + h + '\\s*(\\n|:)', 'i').test(text)).length;
+  return text.length > 700 && n >= 3;
+}
+function importFromBox(text) {
+  $('cvText').value = text; $('uploadPanel').hidden = false; window.__importName = 'Pasted CV';
+  toast('This looks like a whole CV, so I am reading it as a new version.');
+  $('uploadPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('importBtn').click();
+}
 function promptImport(text) {
-  return `Convert this CV into structured JSON, in English and in French. This CV is now her ONLY source of truth: it fully replaces any earlier CV. Take in ALL of its text: every line, bullet, skill, tool, course, award, language, date and number must appear in the JSON. Do not shorten, merge, drop, add or invent anything; only reorganise it into the fields below and translate. Fix only obvious spelling or grammar mistakes.
+  return `Convert this CV into structured JSON, in English and in French. This CV is now her ONLY source of truth: it fully replaces any earlier CV. Take in ALL of its text: every line, heading, bullet, skill, tool, course, award, language, date and number must appear in the JSON, in the CV's own words and order. Do not shorten, merge, drop, add or invent anything; only reorganise it into the fields below and translate. Fix only obvious spelling or grammar mistakes.
 
-Fields: "name" = her full name as written; "contact" = one line with the location, phone, email and links as written, separated by " | "; "target" = the target role line ONLY if the CV has one, otherwise "" (the applied job title is added later for each job); "available" = the availability line if the CV has one, otherwise ""; "summary" (the profile or summary paragraph, "" if none); "skills" grouped into exactly three strings "hard" (semicolon-separated), "soft" (semicolon-separated) and "tools" (software only, comma-separated); "experience" in the CV's order, each with "title", "company_line" written as "Company, City, Country | Month YYYY to Month YYYY (N months)" using only what the CV states, optional "description" (a line describing the company, if the CV has one) and "bullets"; "education" with "title" (programme, with ranking in brackets if the CV gives one), "school_line" ("School, City, Country | Month YYYY to Month YYYY") and "details"; "languages" as lines like "English: Fluent".
+Fields: "name" = her full name as written; "headline" = the line under her name if there is one (e.g. "Supply Chain Efficiency — Inbound Flow Coordination & Performance"), otherwise ""; "contact" = one line with the location, phone, email and links as written, separated by " | "; "target" = the target role line ONLY if the CV has one, otherwise "" (the applied job title is added later for each job); "available" = the availability line if the CV has one, otherwise ""; "summary" (the profile or summary paragraph, "" if none); "skillGroups" = her own skill categories exactly as in the CV, each {"label", "items"} with the items written as in the CV; "skills" = the same content also grouped into three strings "hard", "soft" and "tools"; "experience" in the CV's order, each with "title", "company_line" written as "Company, City, Country | Month YYYY to Month YYYY (N months)" using only what the CV states, optional "description" (a line describing the company, if the CV has one), "bullets" (every bullet), and "groups" when the CV puts subheadings over the bullets of that job: [{"heading", "bullets"}] in the CV's order (otherwise []); "education" with "title" (programme, with ranking in brackets if the CV gives one), "school_line" ("School, City, Country | Month YYYY to Month YYYY") and "details"; "languages" as lines like "English: Fluent".
 
 English version: British English, present tense for current roles, past tense for finished roles. French version: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral job titles, a space before ":" ";" "%", keep supply chain terms used in France (S&OP, KPI, OTD, OTIF, lead time, Incoterms) and all brand and tool names.
 
 Also return "facts": one line per concrete fact in the CV (each responsibility, tool, number, result, course, award, language), in English, so nothing from the CV is lost even when a tailored CV leaves it out.
 
-Return ONLY JSON: {"cv_en": ${CV_SHAPE.replace('{"target": string,', '{"name": string, "contact": string, "target": string, "available": string,')}, "cv_fr": (same shape, in French), "facts": [string]}
+Return ONLY JSON: {"cv_en": ${CV_SHAPE.replace('{"target": string,', '{"name": string, "headline": string, "contact": string, "target": string, "available": string, "skillGroups": [{"label": string, "items": string}],').replace('"bullets": [string]}', '"bullets": [string], "groups": [{"heading": string, "bullets": [string]}]}')}, "cv_fr": (same shape, in French), "facts": [string]}
 
 CV TEXT
 """
@@ -1242,7 +1266,7 @@ $('importBtn').addEventListener('click', async () => {
     const en = normCv(r.cv_en); let fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
     if (!en.experience.length) throw new Error('Claude could not read the CV structure. Check the text and try again.');
     if (!fr.experience.length) { $('importState').textContent = 'Writing the French version…'; fr = K.deepMap(normCv(await askJSON(promptFr(en, 'en'), { modelTier: 'default' })), K.frTypo); }
-    fr.name = en.name; fr.contact = en.contact;
+    fr.name = en.name; fr.contact = en.contact; syncFlat(en); syncFlat(fr);
     const facts = (Array.isArray(r.facts) ? r.facts : []).filter(f => typeof f === 'string' && f.trim()).map(f => f.trim());
     pendingImport = { cv_en: en, cv_fr: fr, facts, name: window.__importName || 'Uploaded CV' }; importLang = 'en';
     $('importState').textContent = 'Done. Check it below.';
@@ -1327,7 +1351,7 @@ function promptChat(instruction) {
 
 Rules:
 - Apply the instruction to BOTH the English CV and the French CV, so they stay equivalent. Change nothing else: every other field stays word for word.
-- Keep these CV rules unless her instruction explicitly says otherwise: ${K.RULES.slice(1, 6).join(' ')}
+- This is her base CV: keep her own wording and length; never shorten, condense or drop anything unless she asks. When she gives new text, use it as written (fix only obvious spelling or grammar mistakes).
 - The field "available" is the availability shown after the target role ("" hides it).
 - French: bullets as noun phrases, gender-neutral titles, a space before ":" ";" "%".
 - If the instruction is unclear, change nothing and ask one short question in "needs_clarification".
@@ -1362,6 +1386,7 @@ document.addEventListener('keydown', e => { const t = e.target; if (t.dataset?.s
 $('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('chatSend').click(); });
 $('chatSend').addEventListener('click', async () => {
   const text = $('chatIn').value.trim(); if (!text) return;
+  if (looksLikeWholeCv(text)) { $('chatIn').value = ''; return importFromBox(text); }
   if (!db) { toast('Sign in to claude.ai to edit your CV.'); return; }
   $('chatSend').disabled = true; $('chatState').textContent = 'Updating your CV…';
   const chat = [...(saved?.chat || []), { role: 'me', text, at: new Date().toISOString() }];
@@ -1396,17 +1421,20 @@ function sections(cv) {
       view: c => `<p><b>${esc(K.whoName(c))}</b></p><p>${esc(K.whoContact(c))}</p>` },
     { key: 'head', label: 'Target role & summary', shape: '{"target": string, "available": string ("" hides the availability line), "summary": string}', get: c => ({ target: c.target, available: c.available ?? '', summary: c.summary }), set: (c, v) => { if (typeof v.target === 'string') c.target = v.target.trim(); if (typeof v.available === 'string') c.available = v.available.trim(); if (typeof v.summary === 'string' && v.summary.trim()) c.summary = v.summary.trim(); },
       view: c => `<p><b>${esc(c.target || 'No target role (added from the job when you tailor)')}</b>${c.available ? ` · ${esc(c.available)}` : ''}</p><p>${esc(c.summary)}</p>` },
-    { key: 'skills', label: 'Skills', shape: '{"hard": string, "soft": string}', get: c => ({ hard: c.skills.hard, soft: c.skills.soft }), set: (c, v) => { ['hard', 'soft'].forEach(k => { if (typeof v[k] === 'string' && v[k].trim()) c.skills[k] = v[k].trim(); }); },
+    ...(Array.isArray(cv.skillGroups) && cv.skillGroups.length ? [{ key: 'skills', label: 'Skills', shape: '[{"label": string, "items": string}]', get: c => c.skillGroups || [], set: (c, v) => { const a = Array.isArray(v) ? v.filter(g => g && typeof g.label === 'string' && typeof g.items === 'string' && g.label.trim()).map(g => ({ label: g.label.trim(), items: g.items.trim() })) : []; if (a.length) { c.skillGroups = a; syncFlat(c); } },
+      view: c => (c.skillGroups || []).map(g => `<p><b>${esc(g.label)}:</b> ${esc(g.items)}</p>`).join('') }] : [{ key: 'skills', label: 'Skills', shape: '{"hard": string, "soft": string}', get: c => ({ hard: c.skills.hard, soft: c.skills.soft }), set: (c, v) => { ['hard', 'soft'].forEach(k => { if (typeof v[k] === 'string' && v[k].trim()) c.skills[k] = v[k].trim(); }); },
       view: c => `<p><b>Hard:</b> ${esc(c.skills.hard)}</p><p><b>Soft:</b> ${esc(c.skills.soft)}</p>` },
     { key: 'tools', label: 'Tools', shape: '{"tools": string}', get: c => ({ tools: c.skills.tools }), set: (c, v) => { if (typeof v.tools === 'string' && v.tools.trim()) c.skills.tools = v.tools.trim(); },
-      view: c => `<p>${esc(c.skills.tools)}</p>` },
+      view: c => `<p>${esc(c.skills.tools)}</p>` }]),
     ...cv.experience.map((e, i) => ({ key: 'exp' + i, label: 'Experience · ' + coName(e), sub: e.title,
-      shape: '{"title": string, "company_line": string, "description": string ("" if none), "bullets": [string]}',
-      get: c => ({ title: c.experience[i].title, company_line: c.experience[i].company_line, description: c.experience[i].description || '', bullets: c.experience[i].bullets }),
+      shape: e.groups?.length ? '{"title": string, "company_line": string, "description": string ("" if none), "groups": [{"heading": string, "bullets": [string]}]}' : '{"title": string, "company_line": string, "description": string ("" if none), "bullets": [string]}',
+      get: c => { const x = c.experience[i]; return { title: x.title, company_line: x.company_line, description: x.description || '', ...(x.groups?.length ? { groups: x.groups } : { bullets: x.bullets }) }; },
       set: (c, v) => { const x = c.experience[i]; if (typeof v.title === 'string' && v.title.trim()) x.title = v.title.trim(); if (typeof v.company_line === 'string' && v.company_line.trim()) x.company_line = v.company_line.trim();
         if (typeof v.description === 'string') { if (v.description.trim()) x.description = v.description.trim(); else delete x.description; }
-        const b = Array.isArray(v.bullets) ? v.bullets.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : []; if (b.length) x.bullets = b; },
-      view: c => { const x = c.experience[i]; return `<p><b>${esc(x.title)}</b></p><p>${esc(x.company_line)}</p><ul>${li(x.bullets)}</ul>`; } })),
+        const gr = Array.isArray(v.groups) ? v.groups.map(g => ({ heading: String(g?.heading || '').trim(), bullets: (Array.isArray(g?.bullets) ? g.bullets : []).filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) })).filter(g => g.bullets.length) : [];
+        if (gr.length) { x.groups = gr; x.bullets = gr.flatMap(g => g.bullets); }
+        else { const b = Array.isArray(v.bullets) ? v.bullets.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : []; if (b.length) x.bullets = b; } },
+      view: c => { const x = c.experience[i]; return `<p><b>${esc(x.title)}</b></p><p>${esc(x.company_line)}</p>${K.bulletGroups(x).map(g => `${g.heading ? `<p><b>${esc(g.heading)}</b></p>` : ''}<ul>${li(g.bullets)}</ul>`).join('')}`; } })),
     { key: 'edu', label: 'Education', shape: '[{"title": string, "school_line": string, "details": string}]', get: c => c.education, set: (c, v) => { const a = Array.isArray(v) ? v.filter(e => e && typeof e.title === 'string' && e.title.trim()).map(e => ({ title: e.title.trim(), school_line: String(e.school_line || '').trim(), details: String(e.details || '').trim() })) : []; if (a.length) c.education = a; },
       view: c => c.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p>`).join('') },
     { key: 'lang', label: 'Languages', shape: '[string]', get: c => c.languages, set: (c, v) => { const a = Array.isArray(v) ? v.filter(t => typeof t === 'string' && t.trim()).map(t => t.trim()) : []; if (a.length) c.languages = a; },
@@ -1418,7 +1446,7 @@ function promptSection(sec, instruction) {
   const p = profile();
   return `You edit ONE section of Yu Chiao Lin's CV: "${sec.label}". Apply her instruction to this section only, in both English and French, so both versions stay equivalent. She is the source of truth about her own experience: when she states a new fact, you may add it. Never invent anything she did not state. Keep everything in the section that the instruction does not touch word for word.
 
-Rules: British English; present tense for current roles, past tense for finished roles; bullets as action + context + result, at most 220 characters each; summary at most 380 characters. French: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral titles, a space before ":" ";" "%". Perfect grammar in both languages.
+Rules: this is her base CV, so keep her own wording and length: never shorten, condense or drop anything unless she asks. When she gives new text, use it as written (fix only obvious spelling or grammar mistakes). British English; present tense for current roles, past tense for finished roles. French: bullets as noun phrases ("Suivi de…", "Gestion de…"), gender-neutral titles, a space before ":" ";" "%". Perfect grammar in both languages.
 If the instruction is unclear, change nothing and ask one short question in "needs_clarification".
 "reply": 1–2 short sentences in the same language as her instruction, saying exactly what changed.
 "new_facts": facts about her work stated in the instruction that are not in the facts list below (in English), else [].
@@ -1453,7 +1481,7 @@ function renderSections() {
   const log = saved?.chat || [];
   $('sectionCards').innerHTML = sections(p.cv_en).map(sec => {
     const last = [...log].reverse().find(m => m.sec === sec.key && m.role === 'ai'), b = secBusy[sec.key];
-    const tmp = document.createElement('div'); tmp.innerHTML = sec.view(p.cv_en).replace(/<\/(p|li)>/g, ' '); const pv = tmp.textContent.replace(/\s+/g, ' ').trim();
+    const tmp = document.createElement('div'); tmp.innerHTML = sec.view(p.cv_en).replace(/<\/(p|li)>/g, ' ').replace(/<br>/g, ' · '); const pv = tmp.textContent.replace(/\s+/g, ' ').trim();
     return `<details class="acc-item" data-sec="${sec.key}" ${openSec === sec.key ? 'open' : ''}><summary><span class="t">${esc(sec.label)}${b ? '<span class="ok-dot">updating…</span>' : ''}</span><span class="pv">${esc(pv)}</span></summary><div class="in">
       <div class="secv">${sec.view(p.cv_en)}</div>
       <div class="secedit"><textarea data-secin="${sec.key}" rows="2" aria-label="Change ${esc(sec.label)}" placeholder="What should change in ${esc(sec.label.replace('Experience · ', ''))}?"></textarea>
@@ -1465,6 +1493,7 @@ function renderSections() {
 async function applySection(key) {
   const p = profile(), sec = sections(p.cv_en).find(x => x.key === key), box = document.querySelector(`[data-secin="${key}"]`);
   const text = box?.value.trim(); if (!sec || !text || secBusy[key]) return;
+  if (looksLikeWholeCv(text)) { box.value = ''; return importFromBox(text); }
   if (!db) { toast('Sign in to claude.ai to edit your CV.'); return; }
   secBusy[key] = true; renderSections();
   const now = () => new Date().toISOString(), chat = [...(saved?.chat || []), { role: 'me', text, sec: key, at: now() }];

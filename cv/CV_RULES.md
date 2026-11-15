@@ -59,3 +59,7 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - Name and contact come from the CV itself (`cv.name`, `cv.contact`), not from constants.
 - **Target role:** a base CV has no target line unless the CV itself has one. When she pastes a job description, the tailored and ATS CVs get the applied job title as the target.
 - **Photo:** optional and set per version (`cv.photo`: "" = none, an uploaded JPG url, or absent = the original photo). A CV imported from a file starts with no photo and no QR code (`cv.qr = false`). "Upload a photo (JPG)", "Remove photo" and the QR code checkbox sit above the preview.
+
+## Active CV (15 November 2026): "Supply Chain Efficiency"
+- Taken word for word from her PDF `CV_Yu_Chiao_Lin_Supply_Chain_Efficiency.pdf`: headline "Supply Chain Efficiency — Inbound Flow Coordination & Performance", five skill categories (`cv.skillGroups`), Pure Trade bullets under three subheadings (`experience[0].groups`), 30 purchase orders per week, 1,200+ records, Snowflake, "Master's Degree — ISLI". No photo, no QR code. Files: `cv/CV_Yu_Chiao_Lin_Supply_Chain_Efficiency_EN/FR.pdf/.docx`. The October CV is kept as the version "Original CV (Oct 2026)".
+- Base CV edits never shorten her text. A whole CV pasted into any edit box is read as a new CV version instead of being squeezed into one section.
