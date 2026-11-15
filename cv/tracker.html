@@ -217,6 +217,19 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .asklist { display: grid; gap: 8px; margin-bottom: 10px }
 .ask { display: flex; gap: 10px; align-items: flex-start; background: #0f0f12; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: .93rem; cursor: pointer }
 .ask input { width: auto; margin-top: 3px } .ask small { display: block; color: var(--muted); margin-top: 3px }
+.vbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end }
+.acc { display: grid; gap: 8px }
+.acc-item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
+.acc-item[open] { border-color: var(--line-2) }
+.acc-item > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center }
+.acc-item > summary::-webkit-details-marker { display: none }
+.acc-item > summary::after { content: ""; width: 9px; height: 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); grid-column: 2; grid-row: 1 / span 2; transition: transform .15s }
+.acc-item[open] > summary::after { transform: rotate(-135deg) }
+.acc-item > summary .t { font-weight: 700 }
+.acc-item > summary .pv { grid-column: 1; color: var(--muted); font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.acc-item[open] > summary .pv { display: none }
+.acc-item > .in { padding: 0 16px 16px; display: grid; gap: 12px; min-width: 0 }
+.acc-item .ok-dot { color: var(--ok); font-size: .8rem; margin-left: 6px }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: #000; font-weight: 700; padding: 11px 18px; border-radius: 12px; font-size: .95rem; z-index: 40; max-width: calc(100% - 32px); box-shadow: 0 10px 40px rgba(0,0,0,.6) }
 </style>
 
@@ -318,73 +331,73 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
   </section>
 
   <section class="page" id="p-base" hidden>
-    <header><div class="eyebrow">Your CV</div><h1>My <em>CV</em></h1><p class="lede">Each part of your CV has its own box. Write what you want changed in that part, press Apply, and Claude updates it in English and French. Every tailored CV starts from this version.</p></header>
+    <header class="row between" style="align-items:end">
+      <div><div class="eyebrow">Your CV</div><h1>My <em>CV</em></h1></div>
+      <div class="vbar">
+        <label class="f" for="verPick" style="min-width:230px">CV version<select id="verPick"></select></label>
+        <button class="btn solid" type="button" id="newVerBtn">+ New version from a file</button>
+      </div>
+    </header>
+
+    <div class="card" id="uploadPanel" hidden>
+      <div class="row between"><h3>New CV version from a file</h3><button class="btn ghost sm" type="button" id="uploadClose">Close</button></div>
+      <div id="bt-replace" style="display:grid;gap:12px">
+        <div class="drop" id="drop"><b>Drop your CV here (PDF or Word)</b><span class="muted small">or</span><label class="btn" for="cvFile">Choose a file</label><input type="file" id="cvFile" accept=".pdf,.docx,.txt" hidden><span class="muted small" id="cvFileName"></span></div>
+        <details class="fold"><summary>Or paste the text</summary><div class="in"><textarea id="cvText" rows="10" aria-label="CV text" placeholder="Paste the full text of your CV…"></textarea></div></details>
+        <div class="row"><button class="btn solid" type="button" id="importBtn">Read it and make it editable</button><span class="muted small" id="importState"></span></div>
+        <div id="importResult"></div>
+      </div>
+    </div>
+
     <div class="cvlayout">
       <div class="sections">
-        <div id="sectionCards" style="display:grid;gap:14px"></div>
-        <div class="card">
-          <h3>Anything else</h3>
-          <p class="muted small" style="margin:0">For changes across several sections, like adding a new job or reordering.</p>
-          <div class="chatlog" id="chatLog"></div>
-          <div class="chips" id="chatChips">
-            <button type="button" class="chip" data-say="Add a new experience: ">Add a new experience</button>
-            <button type="button" class="chip" data-say="Check the grammar of the whole CV and fix any mistakes.">Check grammar everywhere</button>
-          </div>
-          <label class="f" for="chatIn">What should change?<textarea id="chatIn" rows="3" placeholder="Example: Add a new experience: …"></textarea></label>
-          <div class="row"><button class="btn solid" type="button" id="chatSend">Apply to my CV</button></div>
-          <p class="muted small" id="chatState" style="margin:0"></p>
+        <p class="muted small" style="margin:0 0 4px">Open a section, write what should change, press Apply. Claude updates it in English and French.</p>
+        <div id="sectionCards" class="acc"></div>
+        <div class="acc">
+          <details class="acc-item" id="accElse"><summary><span class="t">Anything else</span><span class="pv">Add a new job, reorder, check grammar…</span></summary><div class="in">
+            <div class="chatlog" id="chatLog"></div>
+            <div class="chips" id="chatChips">
+              <button type="button" class="chip" data-say="Add a new experience: ">Add a new experience</button>
+              <button type="button" class="chip" data-say="Check the grammar of the whole CV and fix any mistakes.">Check grammar everywhere</button>
+            </div>
+            <div class="secedit"><textarea id="chatIn" rows="2" aria-label="Change anything" placeholder="What should change?"></textarea><button class="btn solid" type="button" id="chatSend">Apply</button></div>
+            <p class="muted small" id="chatState" style="margin:0"></p>
+          </div></details>
+          <details class="acc-item" id="moreFold"><summary><span class="t">Settings</span><span class="pv">Photo, line-by-line editing, supplementary info, facts and steps</span></summary><div class="in">
+            <div class="row"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><b>CV photo</b><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change photo</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Use original</button></div></div></div></div>
+            <nav class="subtabs" id="baseTabs" role="tablist" aria-label="CV settings">
+              <button type="button" role="tab" data-t="edit">Edit line by line</button>
+              <button type="button" role="tab" data-t="supp">Supplementary info <span id="suppCount"></span></button>
+              <button type="button" role="tab" data-t="steps">Facts &amp; steps</button>
+            </nav>
+            <div id="bt-edit" hidden style="display:grid;gap:12px">
+              <div class="row between"><span class="muted small">Change any line, then press Save at the bottom.</span><div class="seg" id="editLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
+              <div id="edit-en" style="display:grid;gap:14px"></div>
+              <div id="edit-fr" style="display:grid;gap:14px" hidden></div>
+            </div>
+            <div id="bt-supp" hidden style="display:grid;gap:12px">
+              <p class="muted small" style="margin:0">True facts not yet in the CV. Every tailored CV reads all of them and uses the ones that help that job.</p>
+              <div class="supp" id="suppList"></div>
+              <label class="f" for="suppNew">New item<textarea id="suppNew" rows="3"></textarea></label>
+              <div class="row"><button class="btn solid sm" type="button" id="suppAdd">Add</button></div>
+            </div>
+            <div id="bt-steps" hidden style="display:grid;gap:12px">
+              <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
+              <div id="stepFolds" style="display:grid;gap:12px"></div>
+            </div>
+          </div></details>
         </div>
+        <div id="undoBox"></div>
       </div>
       <div class="chatcol">
         <div class="card">
-          <div class="row between"><div class="photo-wrap"><img id="photoThumb" alt="Your CV photo"><div><h3>Photo</h3><div class="row" style="margin-top:6px"><label class="btn sm" for="photoFile">Change</label><input type="file" id="photoFile" accept="image/*" hidden><button class="btn ghost sm" type="button" id="photoReset">Original</button></div></div></div></div>
           <div class="row between"><div class="seg" id="baseLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div><button class="btn ghost sm" type="button" data-act="import-undo" id="undoBtn" hidden>Undo last change</button></div>
           <div id="basePaper" class="paperwrap"></div>
           <div class="row"><button class="btn sm" type="button" data-act="base-dl" data-what="pdf">Download PDF</button><button class="btn sm" type="button" data-act="base-dl" data-what="docx">Download Word</button></div>
         </div>
-        <div class="card" id="rateCard"></div>
+        <details class="acc-item" id="rateCard"></details>
       </div>
     </div>
-
-    <details class="fold" id="moreFold"><summary>More options: edit line by line, replace with a new CV, supplementary info, facts and steps</summary><div class="in">
-    <nav class="subtabs" id="baseTabs" role="tablist" aria-label="More CV options">
-      <button type="button" role="tab" data-t="edit">Edit line by line</button>
-      <button type="button" role="tab" data-t="replace">Replace with a new CV</button>
-      <button type="button" role="tab" data-t="supp">Supplementary info <span id="suppCount"></span></button>
-      <button type="button" role="tab" data-t="steps">Facts &amp; steps</button>
-    </nav>
-
-
-    <div id="bt-edit" class="card" hidden>
-      <div class="row between"><h3>Edit your base CV</h3><div class="seg" id="editLang"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="fr" aria-pressed="false">Français</button></div></div>
-      <p class="muted small" style="margin:0">Change any line, then press Save at the bottom. Each new tailored CV starts from what you save here.</p>
-      <div id="edit-en" style="display:grid;gap:14px"></div>
-      <div id="edit-fr" style="display:grid;gap:14px" hidden></div>
-    </div>
-
-    <div id="bt-replace" class="card" hidden>
-      <h3>Replace your base CV with a new one</h3>
-      <p class="muted small" style="margin:0">Upload your new CV as a Word file, or paste its text. Claude turns it into your base CV in English and French without adding anything. You check it before it replaces the current one.</p>
-      <div class="drop" id="drop"><b>Drop your Word CV here</b><span class="muted small">or</span><label class="btn" for="cvFile">Choose a .docx file</label><input type="file" id="cvFile" accept=".docx,.txt" hidden><span class="muted small" id="cvFileName"></span></div>
-      <label class="f" for="cvText">CV text (you can also paste it here)<textarea id="cvText" rows="12" placeholder="Paste the full text of your new CV…"></textarea></label>
-      <div class="row"><button class="btn solid" type="button" id="importBtn">Convert to my base CV</button><span class="muted small" id="importState"></span></div>
-      <div id="importResult"></div>
-      <div id="undoBox"></div>
-    </div>
-
-    <div id="bt-supp" class="card" hidden>
-      <h3>Supplementary information</h3>
-      <p class="muted small" style="margin:0">Add anything new that is true: a project, a tool, a result, a certificate, a responsibility. Every new CV reads all of it and works in the items that answer that job's requirements or close its gaps. Items that don't help a job are left out of that CV.</p>
-      <div class="supp" id="suppList"></div>
-      <label class="f" for="suppNew">New item<textarea id="suppNew" rows="3" placeholder="Example: Since November 2026 I also build the weekly stock forecast for 3 brands in Excel."></textarea></label>
-      <div class="row"><button class="btn solid" type="button" id="suppAdd">Add</button></div>
-    </div>
-
-    <div id="bt-steps" hidden style="display:grid;gap:12px">
-      <details class="fold"><summary>Confirmed facts</summary><div class="in"><p class="muted small" style="margin:0">One fact per line. Claude may use these even when they are not on the base CV.</p><textarea id="factsBox" rows="10" aria-label="Confirmed facts"></textarea><div class="row"><button class="btn solid sm" type="button" data-act="save-facts">Save facts</button><button class="btn ghost sm" type="button" data-act="reset-facts">Restore original</button></div></div></details>
-      <div id="stepFolds" style="display:grid;gap:12px"></div>
-    </div>
-    </div></details>
   </section>
 </main>
 <div class="toast" id="toast" hidden></div>
@@ -431,7 +444,42 @@ function profile() {
     steps: { ...DEFAULT_STEPS, ...(p.steps || {}) }, supplements: Array.isArray(p.supplements) ? p.supplements : [], photo: p.photo || '',
   };
 }
-async function saveProfile(patchObj) { await db.doc('profile/main').set({ ...(saved || {}), ...profile(), ...patchObj, updatedAt: new Date().toISOString() }); }
+async function saveProfile(patchObj) {
+  const next = { ...(saved || {}), ...profile(), ...patchObj, updatedAt: new Date().toISOString() };
+  // Keep the active version's copy in step with the CV being edited.
+  if ((patchObj.cv_en || patchObj.cv_fr) && Array.isArray(next.versions) && next.activeVersion)
+    next.versions = next.versions.map(v => v.id === next.activeVersion ? { ...v, cv_en: next.cv_en, cv_fr: next.cv_fr, updatedAt: next.updatedAt } : v);
+  await db.doc('profile/main').set(next);
+}
+function versions() {
+  const p = profile();
+  if (Array.isArray(saved?.versions) && saved.versions.length) return { list: saved.versions, active: saved.activeVersion || saved.versions[0].id };
+  return { list: [{ id: 'v1', name: 'My CV', cv_en: p.cv_en, cv_fr: p.cv_fr, createdAt: saved?.updatedAt || new Date().toISOString() }], active: 'v1' };
+}
+async function addVersion(name, cv_en, cv_fr, use) {
+  const p = profile(), { list, active } = versions(), now = new Date().toISOString();
+  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr } : v);
+  const id = 'v' + Date.now().toString(36);
+  const patchObj = { versions: [...synced, { id, name, cv_en, cv_fr, createdAt: now }], activeVersion: use ? id : active };
+  if (use) Object.assign(patchObj, { cv_en, cv_fr, prevBase: { cv_en: p.cv_en, cv_fr: p.cv_fr, savedAt: now } });
+  await saveProfile(patchObj);
+}
+async function switchVersion(id) {
+  const p = profile(), { list, active } = versions(); if (id === active) return;
+  const target = list.find(v => v.id === id); if (!target) return;
+  const synced = list.map(v => v.id === active ? { ...v, cv_en: p.cv_en, cv_fr: p.cv_fr } : v);
+  await saveProfile({ versions: synced, activeVersion: id, cv_en: target.cv_en, cv_fr: target.cv_fr, prevBase: null });
+  toast(`Now editing “${target.name}”`); runRate();
+}
+let verDelete = false;
+function renderVersions() {
+  const { list, active } = versions();
+  $('verPick').innerHTML = list.map(v => `<option value="${esc(v.id)}" ${v.id === active ? 'selected' : ''}>${esc(v.name)} · ${esc(shortDate(v.createdAt))}</option>`).join('');
+}
+$('verPick').addEventListener('change', e => switchVersion(e.target.value).catch(err => toast(err.message || String(err))));
+$('newVerBtn').addEventListener('click', () => { $('uploadPanel').hidden = false; $('uploadPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('uploadClose').addEventListener('click', () => { $('uploadPanel').hidden = true; });
+
 let photoData = null, photoFor = null;
 async function images() {
   const p = profile();
@@ -1068,8 +1116,8 @@ let baseTab = 'edit', editLang = 'en', pendingImport = null, importLang = 'en';
 function renderBase() {
   const p = profile();
   document.querySelectorAll('#baseTabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === baseTab));
-  ['edit', 'replace', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
-  renderChat(); renderRate(); renderSections();
+  ['edit', 'supp', 'steps'].forEach(t => { $('bt-' + t).hidden = t !== baseTab; });
+  renderChat(); renderRate(); renderSections(); renderVersions();
   $('photoThumb').src = photoSrc();
   document.querySelectorAll('#baseLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === baseLang));
   document.querySelectorAll('#editLang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.l === editLang));
@@ -1077,8 +1125,8 @@ function renderBase() {
   $('basePaper').innerHTML = cvPaper(p['cv_' + baseLang], baseLang, photoSrc());
   $('suppCount').textContent = p.supplements.length ? `(${p.supplements.length})` : '';
   $('suppList').innerHTML = p.supplements.length ? p.supplements.map(s => `<div class="it"><div>${esc(s.text)}<small>Added ${esc(shortDate(s.addedAt))}</small></div><button class="btn ghost sm" type="button" data-act="supp-del" data-id="${esc(s.id)}">Remove</button></div>`).join('') : '<div class="muted small">Nothing added yet.</div>';
-  $('importResult').innerHTML = pendingImport ? `<div style="display:grid;gap:12px"><div class="row between"><h3>Check your new base CV</h3><div class="seg" id="importLang"><button type="button" data-l="en" aria-pressed="${importLang === 'en'}">English</button><button type="button" data-l="fr" aria-pressed="${importLang === 'fr'}">Français</button></div></div>${cvPaper(pendingImport['cv_' + importLang], importLang, photoSrc())}<div class="row"><button class="btn solid" type="button" data-act="import-save">Save as my base CV</button><button class="btn ghost" type="button" data-act="import-cancel">Cancel</button></div></div>` : '';
-  $('undoBox').innerHTML = saved?.prevBase ? `<div class="row"><span class="muted small">Replaced on ${esc(shortDate(saved.prevBase.savedAt))}.</span><button class="btn ghost sm" type="button" data-act="import-undo">Bring back the previous base CV</button></div>` : '';
+  $('importResult').innerHTML = pendingImport ? `<div style="display:grid;gap:12px"><div class="row between"><h3>Check what Claude read</h3><div class="seg" id="importLang"><button type="button" data-l="en" aria-pressed="${importLang === 'en'}">English</button><button type="button" data-l="fr" aria-pressed="${importLang === 'fr'}">Français</button></div></div>${cvPaper(pendingImport['cv_' + importLang], importLang, photoSrc())}<label class="f" for="importName" style="max-width:360px">Name this version<input id="importName" value="${esc(pendingImport.name || 'Uploaded CV')}"></label><div class="row"><button class="btn solid" type="button" data-act="import-save" data-use="1">Save and use this version</button><button class="btn" type="button" data-act="import-save" data-use="0">Save as a version only</button><button class="btn ghost" type="button" data-act="import-cancel">Cancel</button></div></div>` : '';
+
   // Rebuild the editors only when the stored profile changed, so typing is never interrupted.
   const sig = JSON.stringify([p.cv_en, p.cv_fr, p.facts, p.steps]);
   if (sig !== baseSig) {
@@ -1114,9 +1162,32 @@ async function docxText(file) {
     return t && p.getElementsByTagNameNS('*', 'numPr').length ? '• ' + t : t;
   }).filter(t => t.trim()).join('\n');
 }
+let pdfLib = null;
+async function pdfText(file) {
+  if (!pdfLib) {
+    await new Promise((ok, bad) => { const sc = document.createElement('script'); sc.src = 'lib/pdf.min.js'; sc.onload = ok; sc.onerror = () => bad(new Error('Could not load the PDF reader.')); document.head.appendChild(sc); });
+    pdfLib = window.pdfjsLib; pdfLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
+  }
+  const doc = await pdfLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false }).promise;
+  const pages = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const tc = await (await doc.getPage(i)).getTextContent();
+    let line = '', lastY = null; const lines = [];
+    for (const it of tc.items) { const y = Math.round(it.transform[5]); if (lastY !== null && Math.abs(y - lastY) > 2) { lines.push(line); line = ''; } line += it.str; lastY = y; if (it.hasEOL) { lines.push(line); line = ''; lastY = null; } }
+    lines.push(line); pages.push(lines.map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean).join('\n'));
+  }
+  const text = pages.join('\n');
+  if (text.replace(/\s/g, '').length < 200) throw new Error('This PDF has almost no readable text (it may be a scanned image). Export it again from Word, or paste the text.');
+  return text;
+}
 async function loadCvFile(f) {
   if (!f) return;
-  try { $('cvText').value = /\.docx$/i.test(f.name) ? await docxText(f) : await f.text(); $('cvFileName').textContent = f.name + ' loaded. Check the text below, then convert.'; }
+  try {
+    $('cvFileName').textContent = 'Reading ' + f.name + '…';
+    $('cvText').value = /\.pdf$/i.test(f.name) ? await pdfText(f) : /\.docx$/i.test(f.name) ? await docxText(f) : await f.text();
+    $('cvFileName').textContent = f.name + ' read. Press the button below.'; if (pendingImport) pendingImport = null;
+    window.__importName = f.name.replace(/\.[^.]+$/, '');
+  }
   catch (err) { toast(err.message || String(err)); }
 }
 $('cvFile').addEventListener('change', e => { loadCvFile(e.target.files?.[0]); e.target.value = ''; });
@@ -1149,13 +1220,13 @@ ${text}
 }
 $('importBtn').addEventListener('click', async () => {
   const text = $('cvText').value.trim();
-  if (text.length < 300) { toast('Add the full CV text first (it looks too short).'); return; }
+  if (text.length < 300) { toast('Choose a PDF or Word file first, or paste the CV text.'); return; }
   $('importBtn').disabled = true; $('importState').textContent = 'Converting… about 1 minute';
   try {
     const r = await askJSON(promptImport(text), { modelTier: 'complex' }, n => { $('importState').textContent = `Converting… ${n.toLocaleString()} characters`; });
     const en = normCv(r.cv_en), fr = K.deepMap(normCv(r.cv_fr), K.frTypo);
     if (!en.experience.length || !en.summary) throw new Error('Claude could not read the CV structure. Check the text and try again.');
-    pendingImport = { cv_en: en, cv_fr: fr.experience.length ? fr : null }; importLang = 'en';
+    pendingImport = { cv_en: en, cv_fr: fr.experience.length ? fr : null, name: window.__importName || 'Uploaded CV' }; importLang = 'en';
     $('importState').textContent = 'Done. Check it below.';
   } catch (err) { $('importState').textContent = ''; toast(err.message || String(err)); }
   $('importBtn').disabled = false; renderBase();
@@ -1205,7 +1276,10 @@ document.addEventListener('click', async e => {
     else if (act === 'reset-facts') { await saveProfile({ facts: K.FACTS }); toast('Original facts restored'); }
     else if (act === 'save-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: $('step-' + k).value.trim() || DEFAULT_STEPS[k] } }); toast(STEP_NAMES[k] + ' saved'); }
     else if (act === 'reset-step') { const k = el.dataset.k; await saveProfile({ steps: { ...profile().steps, [k]: DEFAULT_STEPS[k] } }); toast('Original restored'); }
-    else if (act === 'import-save') { const cur = profile(); pendingImport.cv_en.available = cur.cv_en.available ?? K.AVAIL.en; if (pendingImport.cv_fr) pendingImport.cv_fr.available = cur.cv_fr.available ?? K.AVAIL.fr; await saveProfile({ cv_en: pendingImport.cv_en, cv_fr: pendingImport.cv_fr || cur.cv_fr, prevBase: { cv_en: cur.cv_en, cv_fr: cur.cv_fr, savedAt: new Date().toISOString() } }); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; baseTab = 'edit'; toast('Your new base CV is saved'); renderBase(); runRate(); }
+    else if (act === 'import-save') { const cur = profile(), use = el.dataset.use === '1', name = $('importName')?.value.trim() || 'Uploaded CV';
+      if (pendingImport.cv_en.available == null) pendingImport.cv_en.available = ''; const fr = pendingImport.cv_fr || cur.cv_fr; if (fr.available == null) fr.available = '';
+      await addVersion(name, pendingImport.cv_en, fr, use); pendingImport = null; $('cvText').value = ''; $('cvFileName').textContent = ''; $('importState').textContent = ''; $('uploadPanel').hidden = true;
+      toast(use ? `Now editing “${name}”` : `“${name}” saved. Pick it in the version menu any time.`); renderBase(); if (use) runRate(); }
     else if (act === 'import-cancel') { pendingImport = null; renderBase(); }
     else if (act === 'import-undo') { const pb = saved.prevBase; await saveProfile({ cv_en: pb.cv_en, cv_fr: pb.cv_fr, prevBase: null }); toast('Previous base CV restored'); }
     else if (act === 'rate') runRate();
@@ -1345,17 +1419,24 @@ ${instruction}
 
 Return ONLY JSON: {"reply": string, "needs_clarification": string|null, "new_facts": [string], "en": ${sec.shape}, "fr": ${sec.shape}}`;
 }
+let openSec = null;
+document.addEventListener('toggle', e => {
+  const d = e.target; if (!d.matches?.('details.acc-item')) return;
+  if (d.dataset.sec) { if (d.open) openSec = d.dataset.sec; else if (openSec === d.dataset.sec) openSec = null; }
+  if (d.open) document.querySelectorAll('#p-base details.acc-item[open]').forEach(o => { if (o !== d && o.id !== 'rateCard') o.open = false; });
+}, true);
 function renderSections() {
   const p = profile(), kept = {};
   document.querySelectorAll('[data-secin]').forEach(t => { kept[t.dataset.secin] = t.value; });
   const log = saved?.chat || [];
   $('sectionCards').innerHTML = sections(p.cv_en).map(sec => {
     const last = [...log].reverse().find(m => m.sec === sec.key && m.role === 'ai'), b = secBusy[sec.key];
-    return `<div class="card"><div class="row between"><h3>${esc(sec.label)}</h3>${sec.sub ? `<span class="muted small">${esc(sec.sub)}</span>` : ''}</div>
+    const tmp = document.createElement('div'); tmp.innerHTML = sec.view(p.cv_en).replace(/<\/(p|li)>/g, ' '); const pv = tmp.textContent.replace(/\s+/g, ' ').trim();
+    return `<details class="acc-item" data-sec="${sec.key}" ${openSec === sec.key ? 'open' : ''}><summary><span class="t">${esc(sec.label)}${b ? '<span class="ok-dot">updating…</span>' : ''}</span><span class="pv">${esc(pv)}</span></summary><div class="in">
       <div class="secv">${sec.view(p.cv_en)}</div>
       <div class="secedit"><textarea data-secin="${sec.key}" rows="2" aria-label="Change ${esc(sec.label)}" placeholder="What should change in ${esc(sec.label.replace('Experience · ', ''))}?"></textarea>
         <button class="btn solid" type="button" data-act="sec-apply" data-sec="${sec.key}" ${b ? 'disabled' : ''}>${b ? 'Updating…' : 'Apply'}</button></div>
-      ${last ? `<div class="secreply">✓ ${esc(last.text)}</div>` : ''}</div>`;
+      ${last ? `<div class="secreply">✓ ${esc(last.text)}</div>` : ''}</div></details>`;
   }).join('');
   document.querySelectorAll('[data-secin]').forEach(t => { if (kept[t.dataset.secin]) t.value = kept[t.dataset.secin]; });
 }
@@ -1408,15 +1489,15 @@ async function runRate() {
 }
 function renderRate() {
   const r = saved?.rating, stale = r && r.sig !== cvSig();
-  if (rating) { $('rateCard').innerHTML = `<h3>How fit am I?</h3><p class="muted" style="margin:0">Rating your CV against your target roles… about 30 seconds.</p>`; return; }
-  if (!r) { $('rateCard').innerHTML = `<h3>How fit am I?</h3><p class="muted small" style="margin:0">Claude rates your CV against the roles you target (supply and demand planning, analyst, procurement, logistics), with strengths, gaps and quick wins.</p><div class="row"><button class="btn solid" type="button" data-act="rate">Rate my CV</button></div>`; return; }
-  $('rateCard').innerHTML = `<div class="row between"><h3>How fit am I?</h3><button class="btn ghost sm" type="button" data-act="rate">${stale ? 'CV changed: rate again' : 'Rate again'}</button></div>
-    <div class="gauge">${gauge(r.overall)}<div><b>${esc(r.verdict)}</b><div class="muted small" style="margin-top:6px">Rated ${esc(shortDate(r.at))}${stale ? ' · your CV changed since' : ''}</div></div></div>
+  if (rating) { $('rateCard').innerHTML = `<summary><span class="t">How fit am I?</span><span class="pv">Rating your CV… about 30 seconds</span></summary><div class="in"><p class="muted" style="margin:0">Rating your CV against your target roles…</p></div>`; return; }
+  if (!r) { $('rateCard').innerHTML = `<summary><span class="t">How fit am I?</span><span class="pv">Not rated yet</span></summary><div class="in"><p class="muted small" style="margin:0">Claude rates your CV against the roles you target, with strengths, gaps and quick wins.</p><div class="row"><button class="btn solid" type="button" data-act="rate">Rate my CV</button></div></div>`; return; }
+  $('rateCard').innerHTML = `<summary><span class="t">How fit am I? <span style="color:var(--ok)">${esc(r.overall)} / 100</span></span><span class="pv">${esc(r.verdict)}</span></summary><div class="in"><div class="row between"><span class="muted small">Rated ${esc(shortDate(r.at))}</span><button class="btn ghost sm" type="button" data-act="rate">${stale ? 'CV changed: rate again' : 'Rate again'}</button></div>
+    <div class="gauge">${gauge(r.overall)}<div><b>${esc(r.verdict)}</b></div></div>
     <div class="roles">${(r.roles || []).map(x => `<div class="r"><span>${esc(x.role)}</span><span class="sc">${esc(x.score)}</span><div class="bar"><span style="width:${Math.max(0, Math.min(100, +x.score || 0))}%"></span></div></div>`).join('')}</div>
     <ul class="clean">${(r.strengths || []).map(x => `<li><span class="ic s">✓</span><span>${esc(x)}</span></li>`).join('')}${(r.gaps || []).map(g => `<li><span class="ic g">◇</span><span>${esc(g.gap)}<small>${esc(g.fix || '')}</small></span></li>`).join('')}</ul>
-    ${(r.quick_wins || []).length ? `<div class="chips">${r.quick_wins.map(q => `<button type="button" class="chip" data-say="${esc(q)}">${esc(q)}</button>`).join('')}</div><p class="muted small" style="margin:0">Tap a quick win to put it in the chat box.</p>` : ''}`;
+    ${(r.quick_wins || []).length ? `<div class="chips">${r.quick_wins.map(q => `<button type="button" class="chip" data-say="${esc(q)}">${esc(q)}</button>`).join('')}</div><p class="muted small" style="margin:0">Tap a quick win to put it in “Anything else”.</p>` : ''}</div>`;
 }
-$('rateCard').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('chatIn').value = b.dataset.say; $('chatIn').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('chatIn').focus(); } });
+$('rateCard').addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) { $('accElse').open = true; $('chatIn').value = b.dataset.say; $('chatIn').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('chatIn').focus(); } });
 
 /* ---------- rate my fit for one job ---------- */
 function promptJobFit(j) {
