@@ -163,6 +163,16 @@ table.kw { border-collapse: collapse; width: 100%; font-size: .92rem } table.kw 
 .paper .tg { padding-right: 90px }
 .paper .sec { font-weight: 700; font-size: 14px; border-bottom: 1px solid #444; margin-top: 8px }
 .paper ul { margin: 0; padding-left: 18px } .paper p { margin: 0 }
+.paper.modern .nm { text-align: center; letter-spacing: .08em; padding: 0 90px }
+.paper.modern .tg { text-align: center; padding: 0 90px }
+.paper.modern.nophoto .nm, .paper.modern.nophoto .tg { padding: 0 }
+.paper.modern .ct { color: #555 }
+.paper.modern .sec { color: #1f3a6e; border-bottom: 1.2px solid #1f3a6e; letter-spacing: .06em; margin-top: 10px; margin-bottom: 2px }
+.paper.modern .sk { display: grid; grid-template-columns: 30% 1fr; gap: 3px 10px }
+.paper.modern .lr { display: flex; justify-content: space-between; gap: 10px; align-items: baseline }
+.paper.modern .lr span { color: #555; white-space: nowrap; flex-shrink: 0 }
+.paper.modern .cvj { margin-top: 4px }
+.paper.modern p i { color: #333 }
 .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 10px; padding: 3px; background: #0f0f12 }
 .seg button { background: none; border: 0; border-radius: 8px; padding: 6px 14px; font-size: .92rem; cursor: pointer; color: var(--muted) }
 .seg button[aria-pressed="true"] { background: var(--fg); color: #000; font-weight: 700 }
@@ -886,13 +896,16 @@ function cvPaper(cv, lang, photo) {
   if (!cv) return '';
   photo = photoUrl(cv);
   const L = lang === 'fr' ? ['PROFIL', 'COMPÉTENCES', 'EXPÉRIENCES PROFESSIONNELLES', 'FORMATION', 'LANGUES', 'Compétences techniques', 'Savoir-être', 'Outils', 'Poste visé : ', 'Disponibilité : '] : ['SUMMARY', 'SKILLS', 'EXPERIENCE', 'EDUCATION', 'LANGUAGES', 'Hard Skills', 'Soft Skills', 'Tools', 'Target: ', 'Available: '];
-  const avail = cv.available ?? K.AVAIL[lang];
-  return `<div class="paper${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${cv.headline ? `<p class="tg hl">${esc(cv.headline)}</p>` : ''}${K.whoContact(cv) ? `<p class="tg">${esc(K.whoContact(cv))}</p>` : ''}${(cv.target || '').trim() && !(!avail && cv.headline && cv.headline.toLowerCase().includes(cv.target.trim().toLowerCase())) ? `<p class="tg"><b>${esc(L[8])}${esc(cv.target)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
+  const avail = cv.available ?? K.AVAIL[lang], hl = (cv.headline || cv.target || '').trim(), t = (cv.target || '').trim();
+  const showT = t && !(!avail && hl.toLowerCase().includes(t.toLowerCase()));
+  const rows = Array.isArray(cv.skillGroups) && cv.skillGroups.length ? cv.skillGroups.map(g => [g.label, g.items]) : [[L[5], cv.skills.hard], [L[6], cv.skills.soft], [L[7], cv.skills.tools]];
+  const lr = (a, d) => `<div class="lr"><b>${esc(a)}</b>${d ? `<span>${esc(d)}</span>` : ''}</div>`;
+  return `<div class="paper modern${photo ? '' : ' nophoto'}">${photo ? `<img class="ph" src="${esc(photo)}" alt="">` : ''}<div class="nm">${esc(K.whoName(cv).toUpperCase())}</div>${hl ? `<p class="tg hl">${esc(hl)}</p>` : ''}${K.whoContact(cv) ? `<p class="tg ct">${esc(K.whoContact(cv))}</p>` : ''}${showT ? `<p class="tg"><b>${esc(L[8])}${esc(t)}${avail ? ' | ' + esc(L[9]) + esc(avail) : ''}</b></p>` : ''}
     <div class="sec">${L[0]}</div><p>${esc(cv.summary)}</p>
-    <div class="sec">${L[1]}</div>${(Array.isArray(cv.skillGroups) && cv.skillGroups.length ? cv.skillGroups.map(g => [g.label, g.items]) : [[L[5], cv.skills.hard], [L[6], cv.skills.soft], [L[7], cv.skills.tools]]).map(([l, t]) => `<p><b>${esc(l)}:</b> ${esc(t)}</p>`).join('')}
-    <div class="sec">${L[2]}</div>${cv.experience.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.company_line)}</p>${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}${K.bulletGroups(e).map(g => `${g.heading ? `<p class="gh">${esc(g.heading)}</p>` : ''}<ul>${li(g.bullets)}</ul>`).join('')}`).join('')}
-    <div class="sec">${L[3]}</div>${cv.education.map(e => `<p><b>${esc(e.title)}</b></p><p>${esc(e.school_line)}</p><p>${esc(e.details)}</p>`).join('')}
-    <div class="sec">${L[4]}</div>${cv.languages.map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
+    <div class="sec">${L[1]}</div><div class="sk">${rows.map(([l, x]) => `<b>${esc(l)}</b><span>${esc(x)}</span>`).join('')}</div>
+    <div class="sec">${L[2]}</div>${cv.experience.map(e => { const [co, d] = K.splitDate(e.company_line); return `<div class="cvj">${lr(co ? `${e.title} — ${co}` : e.title, d)}${e.description ? `<p><i>${esc(e.description)}</i></p>` : ''}${K.bulletGroups(e).map(g => `${g.heading ? `<p class="gh">${esc(g.heading)}</p>` : ''}<ul>${li(g.bullets)}</ul>`).join('')}</div>`; }).join('')}
+    <div class="sec">${L[3]}</div>${cv.education.map(e => { const [sc, d] = K.splitDate(e.school_line); return `<div class="cvj">${lr(e.title, d)}<p>${esc([sc, e.details].filter(Boolean).join(' · '))}</p></div>`; }).join('')}
+    <div class="sec">${L[4]}</div><p>${esc((cv.languages || []).join(' · '))}</p></div>`;
 }
 function atsFrom(v) {
   const kw = (Array.isArray(v?.keywords) ? v.keywords : []).filter(k => k && typeof k.term === 'string').map(k => ({ term: k.term, category: k.category || '', importance: k.importance === 'must' ? 'must' : 'nice', before: ['present', 'partial', 'missing'].includes(k.before) ? k.before : 'missing', truthful: ['yes', 'ask', 'no'].includes(k.truthful) ? k.truthful : 'ask', where: k.where || '', suggestion: k.suggestion || '' }));

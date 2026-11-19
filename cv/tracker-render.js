@@ -187,8 +187,118 @@
   const PHOTO = { x: 495.75, y: 14, w: 54.75, h: 67.75 };
   const QR = { x: 514.3, y: 760.6, w: 44.6, h: 44.6 };
 
+  // ---------- "Modern" template: the design of her Supply Chain Efficiency PDF (default for every CV) ----------
+  // Centered spaced name, navy headline, grey contact line, navy section headings with a navy rule,
+  // two-column skills, "Title — COMPANY, Place" with dates on the right, navy subheadings, one-line languages.
+  const MN = { navy: '#1f3a6e', grey: '#555555', ink: '#1a1a1a' };
+  const isClassic = cv => cv && cv.template === 'classic';
+  const splitDate = line => { const s = String(line || ''), i = s.lastIndexOf(' | '); if (i < 0) return [s, '']; const d = s.slice(i + 3).trim(); return /\d/.test(d) ? [s.slice(0, i).trim(), d] : [s, '']; };
+  const skillRows = (cv, L) => Array.isArray(cv.skillGroups) && cv.skillGroups.length
+    ? cv.skillGroups.map(g => [g.label, g.items])
+    : [[L.hard, cv.skills.hard], [L.soft, cv.skills.soft], [L.tools, cv.skills.tools]].map(([l, t]) => [l.replace(/[\s ]*:\s*$/, ''), t]);
+  const modernHead = (cv, L, lang) => { const hl = (cv.headline || cv.target || '').trim(); const tl = targetLine(L, { ...cv, headline: hl }, lang); return { hl, tl }; };
+
+  function cvPdfModern(cv, lang, scale, images) {
+    const L = LABELS[lang], f = n => +(n * scale).toFixed(2), body = f(9), { hl, tl } = modernHead(cv, L, lang);
+    const heading = t => ({ stack: [
+      { text: t, bold: true, fontSize: f(10.5), color: MN.navy, characterSpacing: 0.8, margin: [0, f(6), 0, 0] },
+      { canvas: [{ type: 'line', x1: 0, y1: 1.5, x2: CONTENT_W, y2: 1.5, lineWidth: 0.9, lineColor: MN.navy }], margin: [0, 0, 0, f(3)] },
+    ] });
+    const bullet = t => ({ columns: [{ width: 10, text: '•', fontSize: body }, { width: '*', text: t, fontSize: body }], columnGap: 0, margin: [2, 0, 0, f(0.9)] });
+    const lr = (left, right, o = {}) => ({ columns: [{ width: '*', text: left, bold: true, fontSize: body }, ...(right ? [{ width: 'auto', text: right, fontSize: body, color: MN.grey, margin: [8, 0, 0, 0] }] : [])], margin: o.margin || [0, f(3.5), 0, f(0.5)] });
+    const content = [
+      { text: whoName(cv).toUpperCase(), bold: true, fontSize: f(19), characterSpacing: 1.6, alignment: 'center', margin: [0, 0, 0, f(2)] },
+      ...(hl ? [{ text: hl, bold: true, fontSize: f(10), color: MN.navy, alignment: 'center', margin: [0, 0, 0, f(2)] }] : []),
+      ...(whoContact(cv) ? [{ text: whoContact(cv), fontSize: f(8.8), color: MN.grey, alignment: 'center', margin: [0, 0, 0, f(1)] }] : []),
+      ...(tl ? [{ text: tl, bold: true, fontSize: body, alignment: 'center', margin: [0, 0, 0, f(1)] }] : []),
+      heading(L.summary),
+      { text: cv.summary, fontSize: body },
+      heading(L.skills),
+      ...skillRows(cv, L).map(([l, t]) => ({ columns: [{ width: '30%', text: l, bold: true, fontSize: body }, { width: '*', text: t, fontSize: body }], columnGap: 8, margin: [0, 0, 0, f(3)] })),
+      heading(L.exp),
+    ];
+    cv.experience.forEach((e, i) => {
+      const [co, d] = splitDate(e.company_line);
+      content.push(lr(co ? `${e.title} — ${co}` : e.title, d, { margin: [0, i ? f(4) : 0, 0, f(0.5)] }));
+      if (e.description) content.push({ text: e.description, italics: true, fontSize: body, color: '#333333', margin: [0, 0, 0, f(1)] });
+      bulletGroups(e).forEach(g => { if (g.heading) content.push({ text: g.heading, bold: true, fontSize: body, color: MN.navy, margin: [0, f(1.5), 0, f(1)] }); g.bullets.forEach(b => content.push(bullet(b))); });
+    });
+    content.push(heading(L.edu));
+    cv.education.forEach((e, i) => {
+      const [sc, d] = splitDate(e.school_line);
+      content.push(lr(e.title, d, { margin: [0, i ? f(3.5) : 0, 0, f(0.5)] }));
+      const rest = [sc, e.details].filter(Boolean).join(' · ');
+      if (rest) content.push({ text: rest, fontSize: body });
+    });
+    content.push(heading(L.lang));
+    content.push({ text: (cv.languages || []).join(' · '), fontSize: body });
+    const bg = [
+      ...(images?.photo ? [{ image: images.photo, absolutePosition: { x: PHOTO.x, y: PHOTO.y }, width: PHOTO.w, height: PHOTO.h }] : []),
+      ...(images?.qr ? [{ image: images.qr, absolutePosition: { x: QR.x, y: QR.y }, width: QR.w, height: QR.h }] : []),
+    ];
+    return {
+      pageSize: 'A4', pageMargins: [MARGIN_X, 28, MARGIN_X, 24],
+      info: { title: `CV ${whoName(cv)}${cv.target ? ' – ' + cv.target : ''}`, author: whoName(cv) },
+      defaultStyle: { font: 'Carlito', fontSize: body, lineHeight: 1, color: MN.ink },
+      background: (page) => (page === 1 ? bg : null),
+      content,
+    };
+  }
+
+  function cvDocxModern(cv, lang, scale, images, D) {
+    const L = LABELS[lang], hp = n => Math.round(n * 2 * scale), { hl, tl } = modernHead(cv, L, lang);
+    const RIGHT = 11906 - 1440; // content width in twips (A4, 0.5" margins)
+    const run = (text, o = {}) => new D.TextRun({ text, font: 'Calibri', size: hp(o.size || 9), bold: !!o.bold, italics: !!o.italics, color: o.color, characterSpacing: o.spacing });
+    const p = (children, o = {}) => new D.Paragraph({ children, alignment: o.align, spacing: { before: o.before || 0, after: o.after ?? 10 }, border: o.border, numbering: o.numbering, tabStops: o.tabs, keepNext: o.keepNext });
+    const heading = t => p([run(t, { bold: true, size: 10.5, color: '1F3A6E', spacing: 16 })], { before: Math.round(120 * scale), after: 60, keepNext: true, border: { bottom: { style: D.BorderStyle.SINGLE, size: 8, color: '1F3A6E', space: 1 } } });
+    const lr = (left, right, before) => p([run(left, { bold: true }), ...(right ? [new D.TextRun({ text: '\t' + right, font: 'Calibri', size: hp(9), color: '555555' })] : [])], { before, after: 10, keepNext: true, tabs: [{ type: D.TabStopType.RIGHT, position: RIGHT }] });
+    const float = (img, xEmu, yEmu, wPx, hPx, name) => new D.ImageRun({
+      type: 'jpg', data: dataUrlBytes(img), transformation: { width: wPx, height: hPx },
+      floating: { horizontalPosition: { relative: D.HorizontalPositionRelativeFrom.PAGE, offset: xEmu }, verticalPosition: { relative: D.VerticalPositionRelativeFrom.PAGE, offset: yEmu }, allowOverlap: true, wrap: { type: D.TextWrappingType.NONE } },
+      altText: { name, description: name, title: name },
+    });
+    const none = { style: D.BorderStyle.NONE, size: 0, color: 'FFFFFF' }, noB = { top: none, bottom: none, left: none, right: none, insideHorizontal: none, insideVertical: none };
+    const W1 = Math.round(RIGHT * 0.30), W2 = RIGHT - W1;
+    const cell = (kids, w) => new D.TableCell({ children: kids, width: { size: w, type: D.WidthType.DXA }, borders: { top: none, bottom: none, left: none, right: none }, margins: { top: 0, bottom: 40, left: 0, right: 100 } });
+    const skills = new D.Table({ width: { size: RIGHT, type: D.WidthType.DXA }, columnWidths: [W1, W2], borders: noB, layout: D.TableLayoutType.FIXED,
+      rows: skillRows(cv, L).map(([l, t]) => new D.TableRow({ children: [cell([p([run(l, { bold: true })], { after: 0 })], W1), cell([p([run(t)], { after: 0 })], W2)] })) });
+    const children = [
+      p([...(images?.photo ? [float(images.photo, 6296025, 177800, 73, 90, 'Photo')] : []), run(whoName(cv).toUpperCase(), { bold: true, size: 19, spacing: 32 })], { align: D.AlignmentType.CENTER, after: 30 }),
+      ...(hl ? [p([run(hl, { bold: true, size: 10, color: '1F3A6E' })], { align: D.AlignmentType.CENTER, after: 30 })] : []),
+      ...(whoContact(cv) ? [p([run(whoContact(cv), { size: 8.8, color: '555555' })], { align: D.AlignmentType.CENTER })] : []),
+      ...(tl ? [p([run(tl, { bold: true })], { align: D.AlignmentType.CENTER })] : []),
+      heading(L.summary),
+      p([run(cv.summary)]),
+      heading(L.skills),
+      skills,
+      heading(L.exp),
+    ];
+    cv.experience.forEach((e, i) => {
+      const [co, d] = splitDate(e.company_line);
+      children.push(lr(co ? `${e.title} — ${co}` : e.title, d, i ? Math.round(80 * scale) : 0));
+      if (e.description) children.push(p([run(e.description, { italics: true, color: '333333' })]));
+      bulletGroups(e).forEach(g => { if (g.heading) children.push(p([run(g.heading, { bold: true, color: '1F3A6E' })], { before: 30, after: 20, keepNext: true })); g.bullets.forEach(b => children.push(p([run(b)], { after: 18, numbering: { reference: 'cv-bullets', level: 0 } }))); });
+    });
+    children.push(heading(L.edu));
+    cv.education.forEach((e, i) => {
+      const [sc, d] = splitDate(e.school_line);
+      children.push(lr(e.title, d, i ? Math.round(70 * scale) : 0));
+      const rest = [sc, e.details].filter(Boolean).join(' · ');
+      if (rest) children.push(p([run(rest)]));
+    });
+    children.push(heading(L.lang));
+    children.push(p([...(images?.qr ? [float(images.qr, 6531300, 9660235, 60, 60, 'QR code')] : []), run((cv.languages || []).join(' · '))]));
+    return new D.Document({
+      creator: whoName(cv), title: `CV ${whoName(cv)}${cv.target ? ' – ' + cv.target : ''}`,
+      styles: { default: { document: { run: { font: 'Calibri', size: hp(9), color: '1A1A1A' } } } },
+      numbering: { config: [{ reference: 'cv-bullets', levels: [{ level: 0, format: D.LevelFormat.BULLET, text: '•', alignment: D.AlignmentType.LEFT, style: { paragraph: { indent: { left: 240, hanging: 200 } } } }] }] },
+      sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 560, bottom: 480, left: 720, right: 720 } } }, children }],
+    });
+  }
+
   // ---------- CV: PDF (pdfmake doc definition) ----------
   function cvPdf(cv, lang, scale, images) {
+    if (!isClassic(cv)) return cvPdfModern(cv, lang, scale, images);
     const L = LABELS[lang], f = n => +(n * scale).toFixed(2), body = f(9);
     const heading = t => ({ stack: [
       { text: t, bold: true, fontSize: f(11), margin: [0, f(4.5), 0, 0] },
@@ -235,6 +345,7 @@
 
   // ---------- CV: Word (docx.js) ----------
   function cvDocx(cv, lang, scale, images, D) {
+    if (!isClassic(cv)) return cvDocxModern(cv, lang, scale, images, D);
     const L = LABELS[lang], hp = n => Math.round(n * 2 * scale); // half-points
     const run = (text, o = {}) => new D.TextRun({ text, font: 'Calibri', size: hp(o.size || 9), bold: !!o.bold, italics: !!o.italics });
     const p = (children, o = {}) => new D.Paragraph({ children, spacing: { before: o.before || 0, after: o.after ?? 20 }, border: o.border, numbering: o.numbering, indent: o.indent });
@@ -352,5 +463,5 @@
     };
   }
 
-  root.CVKit = { NB, CONTACT, NAME, whoName, whoContact, targetLine, skillLines, bulletGroups, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
+  root.CVKit = { NB, CONTACT, NAME, splitDate, skillRows, whoName, whoContact, targetLine, skillLines, bulletGroups, AVAIL, BASE_EN, BASE_FR, FACTS, TARGETS, RULES, frTypo, deepMap, cvPdf, cvDocx, letterPdf, letterDocx, prepPdf, PREP_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);

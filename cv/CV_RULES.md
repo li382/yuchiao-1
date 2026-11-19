@@ -68,3 +68,7 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - A tailored CV is not a copy of the base: rewrite the headline and summary for the job, rebuild the skills with the job's keywords first, reorder bullets by relevance, and rephrase every bullet that can truthfully use the job description's vocabulary, older experiences included. Aim for an 80% keyword match without adding facts.
 - French translation uses the base French CV only as a glossary, never as wording to copy.
 - When the headline already names the applied job, the separate "Target" line is not repeated.
+
+## One design for every CV (19 November 2026)
+- Every CV the page produces (base download, tailored CV, ATS CV, EN and FR, PDF and Word) uses the design of her PDF `CV_Yu_Chiao_Lin_Supply_Chain_Efficiency.pdf`: centred spaced name, navy headline, grey contact line, navy section headings with a navy rule, skills in two columns (bold label, items), "Title — COMPANY, Place" with dates right-aligned, navy subheadings inside experiences, education dates on the right, languages on one line. The on-page preview shows the same design.
+- This is the default ("modern" template in `tracker-render.js`); `cv.template = 'classic'` keeps the old Calibri layout. She never has to send a file to the chat to get this design: pasting a job description on the page is enough.
