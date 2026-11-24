@@ -535,6 +535,11 @@ function ctx() {
   return `CV RULES (follow every one)\n${K.RULES.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nCAREER TARGETS\n${K.TARGETS}\n\nCONFIRMED FACTS (true; may be used)\n${p.facts.map(f => '- ' + f).join('\n')}\n\nSUPPLEMENTARY INFORMATION (true; added by the candidate after the base CV)\n${supp}\nReview every supplementary item. Work an item into the tailored CV (summary, the matching experience bullet, skills or tools) when it is relevant to this job, giving priority to items that close this job's gaps or match its key requirements. Leave out items that do not help this job. Never stretch an item beyond what it says.`;
 }
 const CV_SHAPE = `{"target": string, "headline": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
+// Tailored CVs use her own structure: skill categories and bullet subheadings.
+const TCV_SHAPE = `{"target": string, "headline": string, "summary": string, "skillGroups": [{"label": string, "items": string}], "experience": [{"title": string, "company_line": string, "description"?: string, "groups": [{"heading": string, "bullets": [string]}]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
+const TCV_NOTE = 'Shape notes: "skillGroups" keeps the base CV\'s categories (or Hard Skills / Soft Skills / Tools when the base has none). Every experience returns "groups"; when the base job has no subheadings, return one group with heading "" holding all its bullets. Count check before you answer: each job must have exactly as many bullets as in the base CV.';
+// The CV sent to Claude, without the duplicated flat fields.
+const forPrompt = cv => { const c = clone(cv); if (Array.isArray(c.skillGroups) && c.skillGroups.length) delete c.skills; c.experience.forEach(e => { if (Array.isArray(e.groups) && e.groups.length) delete e.bullets; }); delete c.photo; delete c.qr; return c; };
 const INSIGHT_SHAPE = `{"fit_score": number 0-100, "risk_level": "low"|"medium"|"high", "risks": [string] (2-4 reasons the application could fail, e.g. experience level, language, location, visa), "strengths": [string] (3-5 strongest proofs for this job, from her real experience), "gaps": [{"gap": string, "how_to_address": string}] (3-5; how_to_address must be honest: reframe true experience, prepare an example, or learn; never invent)}`;
 
 function promptTailor(jd, link) {
@@ -544,7 +549,7 @@ function promptTailor(jd, link) {
 ${ctx()}
 
 BASE CV (JSON, English)
-${JSON.stringify(p.cv_en)}
+${JSON.stringify(forPrompt(p.cv_en))}
 
 JOB DESCRIPTION
 """
@@ -561,8 +566,8 @@ ${p.steps.s2}
 HOW MUCH TO REWRITE: this is a CV tailored to this job, not a copy of the base CV. A recruiter reading it must see this job's language everywhere.
 - "headline": rewrite the line under her name for this job (e.g. "<job title> — <2-3 of the job's key areas>").
 - "summary": write it fresh for this job, leading with what the job asks for most.
-- "skills": rebuild the three lines so the job's own keywords come first, in the job's wording; drop items this job does not care about.
-- Each job's bullets: reorder so the most relevant come first, and rephrase EVERY bullet that can truthfully be expressed in the job description's vocabulary (e.g. if the job says "coordination des flux", "gestion des aléas", "fiabilisation des données ERP", use those ideas). Keep a bullet word for word only when it already uses the job's words. This applies to every experience, including the older ones.
+- "skillGroups": keep her categories; rename labels and reorder categories and items so the job's own keywords come first, in the job's wording. Keep every tool.
+- Each job's bullets: keep ALL of them and keep her subheadings ("groups"); reorder groups and bullets so the most relevant come first, rename subheadings in the job's vocabulary, and rephrase EVERY bullet that can truthfully be expressed in the job description's vocabulary (e.g. if the job says "coordination des flux", "gestion des aléas", "fiabilisation des données ERP", use those ideas). Keep a bullet word for word only when it already uses the job's words. This applies to every experience, including the older ones.
 - Aim for at least an 80% keyword match. Never add a fact, tool, number or responsibility she does not have: rephrase and reorder only. If 80% is not reachable truthfully, say why in step1 "cannot_fix".
 
 ALSO: extract job facts (company, job title, country, city, industry, contract type). If the job description states a salary, copy it and set salary_type "posted"; otherwise estimate the gross annual range for this role, seniority and city in local currency (France: "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter. Give an honest fit and risk assessment of the TAILORED CV against this job.
@@ -572,8 +577,9 @@ Return ONLY one JSON object, no markdown fences, with exactly this shape:
  "step1": {"match_score": number, "rationale": string, "missing": [{"keyword": string, "where": string}], "recruiter_issues": [string], "section_review": {"summary": string, "experience": string, "skills": string, "education": string}, "cannot_fix": [string]},
  "step2": {"changes": [string]},
  "supplements_used": [{"item": string, "where": string}],
- "cv_en": ${CV_SHAPE},
+ "cv_en": ${TCV_SHAPE},
  "match_after": number,
+${TCV_NOTE}
  "insight": ${INSIGHT_SHAPE}}`;
 }
 function promptAts(jd, cv) {
@@ -587,17 +593,18 @@ ${jd}
 """
 
 TAILORED CV (JSON)
-${JSON.stringify(cv)}
+${JSON.stringify(forPrompt(cv))}
 
 Do this:
 1. Extract the 15 to 25 keywords an ATS would screen for in this job description: the exact job title, hard skills, tools and software, methods (e.g. S&OP, MRP, forecasting), domain terms, qualifications, languages and soft skills. Mark each "must" (clearly required or repeated) or "nice".
 2. For each keyword, check the TAILORED CV: "present" (the exact wording appears), "partial" (the idea is there in other words) or "missing".
 3. For each partial or missing keyword decide "truthful": "yes" if her CV, confirmed facts or supplementary information support it (then the optimised CV will use the job description's exact wording); "ask" if it is plausible for her role but not stated anywhere (do not add it; give in "suggestion" the exact phrase she could add if it is true); "no" if she clearly does not have it (e.g. a degree, years of experience, a certificate, a language level) and give in "suggestion" one short line on how to handle it instead (cover letter or interview). For present keywords use "yes".
-4. Write "cv_ats": start from the tailored CV and push it further; use the job description's exact job title as "target" and in "headline"; rephrase bullets with the job's exact keywords wherever true; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged.
+4. Write "cv_ats": start from the tailored CV and push it further; use the job description's exact job title as "target" and in "headline"; rephrase bullets with the job's exact keywords wherever true; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged; keep every bullet and every subheading group of each job (same number of bullets), and her skill categories.
 5. "tips": 4 to 6 ATS tips specific to this job and this CV (e.g. which file to send, exact title, which keywords must appear in the summary). No generic advice.
 "where": the CV section where the keyword is or will be (summary, skills, tools, or the company name of the experience).
 
-Return ONLY JSON: {"keywords": [{"term": string, "category": "title"|"hard"|"tool"|"method"|"domain"|"qualification"|"language"|"soft", "importance": "must"|"nice", "before": "present"|"partial"|"missing", "truthful": "yes"|"ask"|"no", "where": string, "suggestion": string}], "cv_ats": ${CV_SHAPE}, "tips": [string]}`;
+Return ONLY JSON: {"keywords": [{"term": string, "category": "title"|"hard"|"tool"|"method"|"domain"|"qualification"|"language"|"soft", "importance": "must"|"nice", "before": "present"|"partial"|"missing", "truthful": "yes"|"ask"|"no", "where": string, "suggestion": string}], "cv_ats": ${TCV_SHAPE}, "tips": [string]}
+${TCV_NOTE}`;
 }
 function promptAtsConfirm(r, items) {
   return `Yu Chiao Lin confirms that the following are TRUE about her experience. Add each one to her ATS-optimised CV in the most natural place (summary, skills, tools, or a bullet of the right experience), using the job description's exact wording. Keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar) and keep everything else unchanged.
@@ -611,9 +618,10 @@ ${r.jd}
 """
 
 ATS-OPTIMISED CV (JSON)
-${JSON.stringify(r.cv_ats)}
+${JSON.stringify(forPrompt(r.cv_ats))}
 
-Return ONLY JSON: {"cv_ats": ${CV_SHAPE}}`;
+Return ONLY JSON: {"cv_ats": ${TCV_SHAPE}}
+${TCV_NOTE}`;
 }
 function promptReview(jd, cv) {
   return `You are an ATS specialist and a busy recruiter. Review this tailored CV for the job below.
@@ -634,7 +642,7 @@ ${profile().steps.s3}
 Return ONLY JSON: {"ats": {"format_flags": [string], "requirements_present": [string], "requirements_missing": [string]}, "recruiter": {"stands_out": string, "easy_to_miss": string, "repetitive": [string], "move_higher": string}, "edits": [string]}`;
 }
 function promptFr(cv, jdLang) {
-  return `Translate this tailored CV from English into French for a recruiter in France. Return ONLY JSON with exactly the same shape and the same number of items in every list.
+  return `Translate this tailored CV from English into French for a recruiter in France. Return ONLY JSON with exactly the same shape (keep "skillGroups" and every "groups" list) and the same number of items in every list.
 
 Rules:
 - Bullets as noun phrases ("Suivi de…", "Gestion de…", "Animation de…"), not "je".
@@ -646,10 +654,10 @@ Rules:
 - Perfect French grammar.
 
 BASE FRENCH CV (reference)
-${JSON.stringify(profile().cv_fr)}
+${JSON.stringify(forPrompt(profile().cv_fr))}
 
 CV TO TRANSLATE
-${JSON.stringify(cv)}`;
+${JSON.stringify(forPrompt(cv))}`;
 }
 function promptLetter(jd, cv, job) {
   return `Write a motivation letter in English for Yu Chiao Lin, based only on her tailored CV, confirmed facts and supplementary information below. Do not invent facts about her or about the company beyond what the job description says.
@@ -741,17 +749,58 @@ function guardCv(cv, base) {
   if (!cv || typeof cv !== 'object') return out;
   const str = v => typeof v === 'string' && v.trim() ? v.trim() : null;
   out.target = str(cv.target) || out.target; out.summary = str(cv.summary) || out.summary; if (str(cv.headline)) out.headline = str(cv.headline);
-  { const before = JSON.stringify(out.skills); ['hard', 'soft', 'tools'].forEach(k => { out.skills[k] = str(cv.skills?.[k]) || out.skills[k]; }); if (JSON.stringify(out.skills) !== before) delete out.skillGroups; }
+  const sg = Array.isArray(cv.skillGroups) ? cv.skillGroups.filter(g => g && str(g.label) && str(g.items)).map(g => ({ label: str(g.label), items: str(g.items) })) : [];
+  if (sg.length >= 2) out.skillGroups = sg;
+  else if (cv.skills && typeof cv.skills === 'object') { const sk = {}; ['hard', 'soft', 'tools'].forEach(k => { sk[k] = str(cv.skills[k]) || out.skills[k]; }); if (!(Array.isArray(out.skillGroups) && out.skillGroups.length)) out.skills = sk; } // a flat answer never replaces her own categories
   const exp = Array.isArray(cv.experience) ? cv.experience : [];
   out.experience.forEach((e, i) => {
     const g = exp[i]; if (!g) return;
-    const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean); if (b.length && JSON.stringify(b) !== JSON.stringify(flatGroups(e))) { e.bullets = b; delete e.groups; }
+    const need = flatGroups(e).length;
+    const groups = Array.isArray(g.groups) ? g.groups.map(x => ({ heading: str(x?.heading) || '', bullets: (Array.isArray(x?.bullets) ? x.bullets : []).map(str).filter(Boolean) })).filter(x => x.bullets.length) : [];
+    const n = groups.reduce((a, x) => a + x.bullets.length, 0);
+    if (n >= need && n) {
+      const hadHeads = Array.isArray(e.groups) && e.groups.some(x => x.heading);
+      if (hadHeads || groups.some(x => x.heading)) e.groups = groups; else { delete e.groups; }
+      e.bullets = groups.flatMap(x => x.bullets);
+    } else {
+      const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean);
+      const hasGroups = Array.isArray(e.groups) && e.groups.length && e.groups.some(x => x.heading);
+      if (b.length >= need && b.length && !hasGroups) e.bullets = b; // flat base: accept a full flat answer
+      else (out.__lost = out.__lost || []).push(i); // never drop her bullets or subheadings: keep the base wording for this job
+    }
     if (e.description && str(g.description)) e.description = str(g.description);
   });
-  exp.slice(out.experience.length, out.experience.length + 1).forEach(g => { if (str(g?.title) && str(g?.company_line) && Array.isArray(g.bullets)) out.experience.push({ title: str(g.title), company_line: str(g.company_line), bullets: g.bullets.map(str).filter(Boolean) }); });
+  exp.slice(out.experience.length, out.experience.length + 1).forEach(g => { const b = Array.isArray(g?.groups) ? g.groups.flatMap(x => x?.bullets || []) : g?.bullets; if (str(g?.title) && str(g?.company_line) && Array.isArray(b)) out.experience.push({ title: str(g.title), company_line: str(g.company_line), bullets: b.map(str).filter(Boolean) }); });
   out.education.forEach((e, i) => { const d = str(cv.education?.[i]?.details); if (d) e.details = d; });
   const langs = Array.isArray(cv.languages) ? cv.languages.map(str).filter(Boolean) : [];
   if (langs.length >= out.languages.length && langs.length <= 5) out.languages = langs;
+  syncFlat(out);
+  if (!out.__lost) return out;
+  Object.defineProperty(out, '__lost', { value: out.__lost, enumerable: false }); return out;
+}
+// When an answer dropped bullets or subheadings for a job, ask once more for just those jobs, then guard again.
+function promptExpFix(jd, base, got, idx) {
+  return `This tailored CV lost content: for the jobs below, the answer dropped bullets or flattened her subheadings. Rewrite ONLY these jobs for the job description. Keep EVERY bullet of the base (same number per job, all facts, numbers and tool names), keep her subheading groups (you may rename them in the job's vocabulary and reorder), rephrase each bullet with the job's vocabulary where true, add nothing she has not done. British English.
+
+JOB DESCRIPTION
+"""
+${jd}
+"""
+
+BASE JOBS (JSON)
+${JSON.stringify(idx.map(i => forPrompt(base).experience[i]))}
+
+Return ONLY JSON: {"experience": [{"groups": [{"heading": string, "bullets": [string]}]}]} with one entry per base job above, in the same order.`;
+}
+async function guardFull(cv, base, jd) {
+  let out = guardCv(cv, base);
+  if (!out.__lost || !jd) return out;
+  try {
+    const idx = out.__lost, v = await askJSON(promptExpFix(jd, base, cv, idx), { modelTier: 'complex' });
+    const exp = clone(cv && Array.isArray(cv.experience) ? cv.experience : []);
+    idx.forEach((i, k) => { const g = v?.experience?.[k]; if (g) exp[i] = { ...(exp[i] || {}), groups: g.groups, bullets: undefined }; });
+    out = guardCv({ ...cv, experience: exp }, base);
+  } catch {}
   return out;
 }
 
@@ -775,7 +824,7 @@ $('newForm').addEventListener('submit', async e => {
   try {
     const p = profile();
     const t = await askJSON(promptTailor(jd, link), { modelTier: 'complex' }, n => { st.tailorLen = n; stepsUI(st); });
-    const cv_en = guardCv(t.cv_en, p.cv_en), job = t.job || {};
+    const cv_en = await guardFull(t.cv_en, p.cv_en, jd), job = t.job || {};
     st.tailor = 'done';
     const wantLetter = mode === 'yes' || (mode === 'auto' && job.cover_letter_requested === true);
     Object.assign(st, { ats: 'run', review: 'run', fr: 'run', letter: wantLetter ? 'run' : 'skip' }); stepsUI(st);
@@ -787,6 +836,7 @@ $('newForm').addEventListener('submit', async e => {
       wantLetter ? track('letter', askJSON(promptLetter(jd, cv_en, job), { modelTier: 'complex' })) : Promise.resolve(null),
     ]);
     st.save = 'run'; stepsUI(st);
+    const cv_ats = ats.status === 'fulfilled' ? await guardFull(ats.value.cv_ats, cv_en, jd) : null;
     const now = new Date().toISOString();
     const ref = await col.add({
       company: job.company || 'Unknown company', role: job.role || cv_en.target, country: job.country || '', city: job.city || '',
@@ -796,14 +846,14 @@ $('newForm').addEventListener('submit', async e => {
       cvVersion: `${job.role || cv_en.target} – ${job.company || ''} (${today()})`,
       cv_en, cv_fr: fr.status === 'fulfilled' ? K.deepMap(guardCv(fr.value, p.cv_fr), K.frTypo) : null,
       coverLetter: letter.status === 'fulfilled' ? letter.value : null,
-      ats: ats.status === 'fulfilled' ? atsFrom(ats.value) : null, cv_ats: ats.status === 'fulfilled' ? guardCv(ats.value.cv_ats, cv_en) : null, cv_ats_fr: null,
+      ats: ats.status === 'fulfilled' ? atsFrom(ats.value) : null, cv_ats, cv_ats_fr: null,
       insight: t.insight || null, supplementsUsed: Array.isArray(t.supplements_used) ? t.supplements_used : [],
       analysis: { step1: t.step1 || null, step2: t.step2 || null, step3: rev.status === 'fulfilled' ? rev.value : null },
       createdAt: now, updatedAt: now,
     });
     st.save = 'done'; stepsUI(st);
     newId = ref.id; $('jd').value = ''; $('jobLink').value = '';
-    if (ats.status === 'fulfilled') { pendingAtsCv[ref.id] = guardCv(ats.value.cv_ats, cv_en); setTimeout(() => runPart(ref.id, 'atsfr'), 600); }
+    if (ats.status === 'fulfilled') { pendingAtsCv[ref.id] = cv_ats; setTimeout(() => runPart(ref.id, 'atsfr'), 600); }
     renderAll(); $('newResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     Object.keys(st).forEach(k => { if (st[k] === 'run') st[k] = 'fail'; }); stepsUI(st);
@@ -824,14 +874,14 @@ async function runPart(id, part) {
     if (part === 'review') { const v = await askJSON(promptReview(r.jd, r.cv_en), { modelTier: 'default' }); await patch(id, { analysis: { ...(r.analysis || {}), step3: v } }); }
     if (part === 'letter') { const v = await askJSON(promptLetter(r.jd, r.cv_en || p.cv_en, r), { modelTier: 'complex' }); await patch(id, { coverLetter: v }); }
     if (part === 'insight') { const v = await askJSON(promptInsight(r), { modelTier: 'complex' }); await patch(id, { insight: v }); }
-    if (part === 'ats') { const v = await askJSON(promptAts(r.jd, r.cv_en || p.cv_en), { modelTier: 'complex' }); pendingAtsCv[id] = guardCv(v.cv_ats, r.cv_en || p.cv_en); await patch(id, { ats: atsFrom(v), cv_ats: pendingAtsCv[id], cv_ats_fr: null }); delete busy[id]; return runPart(id, 'atsfr'); }
+    if (part === 'ats') { const v = await askJSON(promptAts(r.jd, r.cv_en || p.cv_en), { modelTier: 'complex' }); pendingAtsCv[id] = await guardFull(v.cv_ats, r.cv_en || p.cv_en, r.jd); await patch(id, { ats: atsFrom(v), cv_ats: pendingAtsCv[id], cv_ats_fr: null }); delete busy[id]; return runPart(id, 'atsfr'); }
     if (part === 'atsfr') { const fr = await askJSON(promptFr(pendingAtsCv[id] || rowById(id).cv_ats, r.jdLanguage), { modelTier: 'default' }); await patch(id, { cv_ats_fr: K.deepMap(guardCv(fr, p.cv_fr), K.frTypo) }); }
     if (part === 'atsconfirm') {
       const picked = [...(atsTicks[id] || [])].map(i => r.ats.keywords[i]).filter(Boolean);
       if (!picked.length) { toast('Tick the keywords that are true for you first.'); delete busy[id]; renderAll(); return; }
       const v = await askJSON(promptAtsConfirm(r, picked), { modelTier: 'complex' });
       const kw = r.ats.keywords.map(k => picked.includes(k) ? { ...k, truthful: 'yes', confirmed: true } : k);
-      pendingAtsCv[id] = guardCv(v.cv_ats, r.cv_ats); await patch(id, { cv_ats: pendingAtsCv[id], cv_ats_fr: null, ats: { ...r.ats, keywords: kw } });
+      pendingAtsCv[id] = await guardFull(v.cv_ats, r.cv_ats, r.jd); await patch(id, { cv_ats: pendingAtsCv[id], cv_ats_fr: null, ats: { ...r.ats, keywords: kw } });
       await saveProfile({ facts: [...p.facts, ...picked.map(k => `Confirmed by her (${r.company} application): ${k.suggestion}`)] }); delete atsTicks[id];
       delete busy[id]; return runPart(id, 'atsfr');
     }

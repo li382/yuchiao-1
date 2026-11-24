@@ -72,3 +72,9 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 ## One design for every CV (19 November 2026)
 - Every CV the page produces (base download, tailored CV, ATS CV, EN and FR, PDF and Word) uses the design of her PDF `CV_Yu_Chiao_Lin_Supply_Chain_Efficiency.pdf`: centred spaced name, navy headline, grey contact line, navy section headings with a navy rule, skills in two columns (bold label, items), "Title — COMPANY, Place" with dates right-aligned, navy subheadings inside experiences, education dates on the right, languages on one line. The on-page preview shows the same design.
 - This is the default ("modern" template in `tracker-render.js`); `cv.template = 'classic'` keeps the old Calibri layout. She never has to send a file to the chat to get this design: pasting a job description on the page is enough.
+
+## Tailoring keeps all her content (24 November 2026)
+- A tailored or ATS CV keeps every bullet of the active CV (same number per job, all facts, numbers and tools) and her bullet subheadings: they may be renamed in the job's vocabulary and reordered, never merged, dropped or flattened. Her skill categories (`skillGroups`) are kept (labels may be renamed and items reordered); the Hard/Soft/Tools split is only for a CV without its own categories.
+- The old rules "Pure Trade 5 to 7 bullets" and "exactly three skill categories" were removed: they came from the October CV and made the Balenciaga CV lose its three Pure Trade subheadings and three bullets.
+- The page sends Claude the CV with its subheadings, asks for them back, and checks the answer: if a job lost bullets or subheadings, it asks once more for that job, and otherwise keeps her own wording for it.
+- Activities the job asks for but that her CV and confirmed facts don't state (for example S&OP cycles, retroplanning, capacity planning) are not claimed; coursework is named as training.
