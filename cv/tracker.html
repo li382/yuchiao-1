@@ -537,7 +537,7 @@ function ctx() {
 const CV_SHAPE = `{"target": string, "headline": string, "summary": string, "skills": {"hard": string, "soft": string, "tools": string}, "experience": [{"title": string, "company_line": string, "description"?: string, "bullets": [string]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
 // Tailored CVs use her own structure: skill categories and bullet subheadings.
 const TCV_SHAPE = `{"target": string, "headline": string, "summary": string, "skillGroups": [{"label": string, "items": string}], "experience": [{"title": string, "company_line": string, "description"?: string, "groups": [{"heading": string, "bullets": [string]}]}], "education": [{"title": string, "school_line": string, "details": string}], "languages": [string]}`;
-const TCV_NOTE = 'Shape notes: "skillGroups" keeps the base CV\'s categories (or Hard Skills / Soft Skills / Tools when the base has none). Every experience returns "groups"; when the base job has no subheadings, return one group with heading "" holding all its bullets. Count check before you answer: each job must have exactly as many bullets as in the base CV.';
+const TCV_NOTE = 'Shape notes: "skillGroups" keeps the base CV\'s categories (or Hard Skills / Soft Skills / Tools when the base has none). Every experience returns "groups" with the base CV\'s subheadings copied word for word, in the same order and with the same number of bullets under each; when the base job has no subheadings, return one group with heading "" holding all its bullets in the same order. Count check before you answer.';
 // The CV sent to Claude, without the duplicated flat fields.
 const forPrompt = cv => { const c = clone(cv); if (Array.isArray(c.skillGroups) && c.skillGroups.length) delete c.skills; c.experience.forEach(e => { if (Array.isArray(e.groups) && e.groups.length) delete e.bullets; }); delete c.photo; delete c.qr; return c; };
 const INSIGHT_SHAPE = `{"fit_score": number 0-100, "risk_level": "low"|"medium"|"high", "risks": [string] (2-4 reasons the application could fail, e.g. experience level, language, location, visa), "strengths": [string] (3-5 strongest proofs for this job, from her real experience), "gaps": [{"gap": string, "how_to_address": string}] (3-5; how_to_address must be honest: reframe true experience, prepare an example, or learn; never invent)}`;
@@ -567,8 +567,8 @@ HOW MUCH TO REWRITE: this is a CV tailored to this job, not a copy of the base C
 - "headline": rewrite the line under her name for this job (e.g. "<job title> — <2-3 of the job's key areas>").
 - "summary": write it fresh for this job, leading with what the job asks for most.
 - "skillGroups": keep her categories; rename labels and reorder categories and items so the job's own keywords come first, in the job's wording. Keep every tool.
-- Each job's bullets: keep ALL of them and keep her subheadings ("groups"); reorder groups and bullets so the most relevant come first, rename subheadings in the job's vocabulary, and rephrase EVERY bullet that can truthfully be expressed in the job description's vocabulary (e.g. if the job says "coordination des flux", "gestion des aléas", "fiabilisation des données ERP", use those ideas). Keep a bullet word for word only when it already uses the job's words. This applies to every experience, including the older ones.
-- Aim for at least an 80% keyword match. Never add a fact, tool, number or responsibility she does not have: rephrase and reorder only. If 80% is not reachable truthfully, say why in step1 "cannot_fix".
+- Each job's bullets: keep ALL of them in her structure: her subheadings ("groups") stay word for word, in the same order, with the same bullets under each in the same order. Do not rename, reorder, merge or move anything; only rephrase EVERY bullet that can truthfully be expressed in the job description's vocabulary (e.g. if the job says "coordination des flux", "gestion des aléas", "fiabilisation des données ERP", use those ideas). Keep a bullet word for word only when it already uses the job's words. This applies to every experience, including the older ones.
+- Aim for at least an 80% keyword match. Never add a fact, tool, number or responsibility she does not have: rephrase only. If 80% is not reachable truthfully, say why in step1 "cannot_fix".
 
 ALSO: extract job facts (company, job title, country, city, industry, contract type). If the job description states a salary, copy it and set salary_type "posted"; otherwise estimate the gross annual range for this role, seniority and city in local currency (France: "35–40k € brut/an") and set salary_type "estimate". Set cover_letter_requested to true only if the job asks for a cover or motivation letter. Give an honest fit and risk assessment of the TAILORED CV against this job.
 
@@ -599,7 +599,7 @@ Do this:
 1. Extract the 15 to 25 keywords an ATS would screen for in this job description: the exact job title, hard skills, tools and software, methods (e.g. S&OP, MRP, forecasting), domain terms, qualifications, languages and soft skills. Mark each "must" (clearly required or repeated) or "nice".
 2. For each keyword, check the TAILORED CV: "present" (the exact wording appears), "partial" (the idea is there in other words) or "missing".
 3. For each partial or missing keyword decide "truthful": "yes" if her CV, confirmed facts or supplementary information support it (then the optimised CV will use the job description's exact wording); "ask" if it is plausible for her role but not stated anywhere (do not add it; give in "suggestion" the exact phrase she could add if it is true); "no" if she clearly does not have it (e.g. a degree, years of experience, a certificate, a language level) and give in "suggestion" one short line on how to handle it instead (cover letter or interview). For present keywords use "yes".
-4. Write "cv_ats": start from the tailored CV and push it further; use the job description's exact job title as "target" and in "headline"; rephrase bullets with the job's exact keywords wherever true; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged; keep every bullet and every subheading group of each job (same number of bullets), and her skill categories.
+4. Write "cv_ats": start from the tailored CV and push it further; use the job description's exact job title as "target" and in "headline"; rephrase bullets with the job's exact keywords wherever true; use the exact wording of every "yes" keyword in the summary, skills, tools and bullets where it is most natural; write each important acronym once in full with the acronym (e.g. "Sales and Operations Planning (S&OP)"); keep every CV rule (one page, bullet length, summary length, tenses, perfect grammar); never add "ask" or "no" keywords; keep job titles, company lines, education and languages unchanged; keep every subheading of each job word for word, in the same order, with the same bullets under each (only the bullet wording changes), and her skill categories.
 5. "tips": 4 to 6 ATS tips specific to this job and this CV (e.g. which file to send, exact title, which keywords must appear in the summary). No generic advice.
 "where": the CV section where the keyword is or will be (summary, skills, tools, or the company name of the experience).
 
@@ -758,10 +758,13 @@ function guardCv(cv, base) {
     const need = flatGroups(e).length;
     const groups = Array.isArray(g.groups) ? g.groups.map(x => ({ heading: str(x?.heading) || '', bullets: (Array.isArray(x?.bullets) ? x.bullets : []).map(str).filter(Boolean) })).filter(x => x.bullets.length) : [];
     const n = groups.reduce((a, x) => a + x.bullets.length, 0);
-    if (n >= need && n) {
-      const hadHeads = Array.isArray(e.groups) && e.groups.some(x => x.heading);
-      if (hadHeads || groups.some(x => x.heading)) e.groups = groups; else { delete e.groups; }
-      e.bullets = groups.flatMap(x => x.bullets);
+    const hadHeads = Array.isArray(e.groups) && e.groups.some(x => x.heading);
+    // Her subheadings never change: same text, same order, same number of bullets under each; only the bullet wording is taken.
+    const fits = hadHeads ? groups.length === e.groups.length && groups.every((x, k) => x.bullets.length === e.groups[k].bullets.length) : n >= need && n;
+    if (fits) {
+      if (hadHeads) e.groups = e.groups.map((x, k) => ({ heading: x.heading, bullets: groups[k].bullets }));
+      else { delete e.groups; e.bullets = groups.flatMap(x => x.bullets); }
+      if (hadHeads) e.bullets = flatGroups(e);
     } else {
       const b = (Array.isArray(g.bullets) ? g.bullets : []).map(str).filter(Boolean);
       const hasGroups = Array.isArray(e.groups) && e.groups.length && e.groups.some(x => x.heading);
@@ -780,7 +783,7 @@ function guardCv(cv, base) {
 }
 // When an answer dropped bullets or subheadings for a job, ask once more for just those jobs, then guard again.
 function promptExpFix(jd, base, got, idx) {
-  return `This tailored CV lost content: for the jobs below, the answer dropped bullets or flattened her subheadings. Rewrite ONLY these jobs for the job description. Keep EVERY bullet of the base (same number per job, all facts, numbers and tool names), keep her subheading groups (you may rename them in the job's vocabulary and reorder), rephrase each bullet with the job's vocabulary where true, add nothing she has not done. British English.
+  return `This tailored CV lost content: for the jobs below, the answer dropped bullets or flattened her subheadings. Rewrite ONLY these jobs for the job description. Keep EVERY bullet of the base (same number per job, all facts, numbers and tool names), keep her subheadings word for word, in the same order, with the same bullets under each in the same order; only rephrase each bullet with the job's vocabulary where true, add nothing she has not done. British English.
 
 JOB DESCRIPTION
 """
