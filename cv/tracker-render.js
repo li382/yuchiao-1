@@ -391,8 +391,14 @@
 
   // ---------- Cover letter ----------
   const NAVY = '#14306b';
+  // The sign-off line carries the name once: drop any name Claude wrote into the closing itself.
+  function signOff(letter, nm) {
+    const names = [nm, nm.replace(/\s+/g, ' ')].map(x => x.toLowerCase());
+    const lines = String(letter.closing || '').split(/\n+/).map(x => x.trim()).filter(Boolean).filter(x => !names.includes(x.toLowerCase().replace(/[.,]$/, '')));
+    return lines.join('\n') || 'Yours sincerely,';
+  }
   function letterPdf(letter, cv) {
-    const nm = whoName(cv).replace(/\b\w/g, c => c.toUpperCase()), ct = whoContact(cv);
+    const nm = whoName(cv).toLowerCase().replace(/(^|[\s-])\S/g, c => c.toUpperCase()), ct = whoContact(cv);
     return {
       pageSize: 'A4', pageMargins: [60, 56, 60, 56],
       defaultStyle: { font: 'Carlito', fontSize: 11, lineHeight: 1.25 },
@@ -404,20 +410,20 @@
         { text: letter.subject, bold: true, margin: [0, 0, 0, 14] },
         { text: letter.greeting, margin: [0, 0, 0, 10] },
         ...letter.paragraphs.map(t => ({ text: t, alignment: 'justify', margin: [0, 0, 0, 10] })),
-        { text: letter.closing, margin: [0, 6, 0, 2] },
+        { text: signOff(letter, nm), margin: [0, 6, 0, 2] },
         { text: nm },
       ],
     };
   }
   function letterDocx(letter, D, cv) {
-    const nm = whoName(cv).replace(/\b\w/g, c => c.toUpperCase()), ct = whoContact(cv);
+    const nm = whoName(cv).toLowerCase().replace(/(^|[\s-])\S/g, c => c.toUpperCase()), ct = whoContact(cv);
     const p = (text, o = {}) => new D.Paragraph({ children: [new D.TextRun({ text, font: 'Calibri', size: o.size || 22, bold: !!o.bold, color: o.color })], spacing: { after: o.after ?? 200, line: 300 }, alignment: o.justify ? D.AlignmentType.JUSTIFIED : undefined });
     const kids = [p(nm, { bold: true, size: 32, after: 40 }), p(ct, { size: 19, color: '444444', after: 360 })];
     if (letter.recipient) kids.push(p(letter.recipient));
     if (letter.date) kids.push(p(letter.date));
     kids.push(p(letter.subject, { bold: true, after: 280 }), p(letter.greeting));
     letter.paragraphs.forEach(t => kids.push(p(t, { justify: true })));
-    kids.push(p(letter.closing, { after: 40 }), p(nm));
+    kids.push(p(signOff(letter, nm), { after: 40 }), p(nm));
     return new D.Document({ creator: nm, sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1120, bottom: 1120, left: 1200, right: 1200 } } }, children: kids }] });
   }
 

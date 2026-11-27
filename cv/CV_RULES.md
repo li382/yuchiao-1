@@ -78,3 +78,8 @@ Standing rules for every tailored CV. Goal: pass ATS and match each job descript
 - The old rules "Pure Trade 5 to 7 bullets" and "exactly three skill categories" were removed: they came from the October CV and made the Balenciaga CV lose its three Pure Trade subheadings and three bullets.
 - The page sends Claude the CV with its subheadings, asks for them back, and checks the answer: if a job lost bullets or subheadings, it asks once more for that job, and otherwise keeps her own wording for it.
 - Activities the job asks for but that her CV and confirmed facts don't state (for example S&OP cycles, retroplanning, capacity planning) are not claimed; coursework is named as training.
+
+## Motivation letter (27 November 2026)
+- Her name appears once at the bottom: the closing is only the sign-off phrase, and the file removes any name written into it.
+- Every letter says in one sentence that her French is intermediate and improving (she is actively studying it while living and working in France), without claiming a higher level.
+- "Write again" next to a letter's Word/PDF buttons rewrites it with the current rules.

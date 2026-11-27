@@ -672,7 +672,8 @@ ${jd || '(not provided: base it on the job title ' + (job.role || '') + ' at ' +
 TAILORED CV (JSON)
 ${JSON.stringify(cv)}
 
-Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company, using what the job description says; (2) two or three concrete proofs from her experience that match the main requirements; (3) how she works: data reliability, finding and correcting errors, supplier and cross-functional communication; (4) ${profile().cv_en.available ? 'availability (' + profile().cv_en.available + ') and ' : ''}a polite close. British English, natural tone, perfect grammar, no clichés.
+Letter rules: 250 to 330 words, 4 paragraphs: (1) the role and why this company, using what the job description says; (2) two or three concrete proofs from her experience that match the main requirements; (3) how she works: data reliability, finding and correcting errors, supplier and cross-functional communication; (4) ${profile().cv_en.available ? 'availability (' + profile().cv_en.available + ') and ' : ''}a polite close. In paragraph 3 or 4, say in one natural sentence that her French is intermediate and improving steadily (she is actively studying it while living and working in France); never claim a higher level or a certificate. British English, natural tone, perfect grammar, no clichés.
+"closing" is only the sign-off phrase (for example "Yours sincerely,"); do NOT put her name in it: the file adds her name underneath.
 
 Return ONLY JSON: {"recipient": ${JSON.stringify((job.company || 'Company') + ' – Recruitment team')}, "date": ${JSON.stringify(longDate())}, "subject": string, "greeting": string, "paragraphs": [string], "closing": string}`;
 }
@@ -996,7 +997,7 @@ function filesRow(r) {
   return `<div class="grid2">
     <div class="row">${lab('Tailored CV · EN')}${btn('cv-en-docx', 'Word')}${btn('cv-en-pdf', 'PDF')}</div>
     <div class="row">${lab('Tailored CV · FR')}${r.cv_fr ? btn('cv-fr-docx', 'Word') + btn('cv-fr-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="fr" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'fr' ? 'Translating…' : 'Create French version'}</button>`}</div>
-    <div class="row">${lab('Letter')}${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') : `<button class="btn sm" type="button" data-act="run" data-part="letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one'}</button>`}</div>
+    <div class="row">${lab('Letter')}${r.coverLetter ? btn('letter-docx', 'Word') + btn('letter-pdf', 'PDF') + `<button class="btn ghost sm" type="button" data-act="run" data-part="letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write again'}</button>` : `<button class="btn sm" type="button" data-act="run" data-part="letter" data-id="${id}" ${b ? 'disabled' : ''}>${b === 'letter' ? 'Writing…' : 'Write one'}</button>`}</div>
   </div>`;
 }
 function analysisFolds(r) {
